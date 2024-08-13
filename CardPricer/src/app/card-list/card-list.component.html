@@ -1,1 +1,11 @@
-<p>card-list works!</p>
+
+<app-header></app-header>
+
+<div *ngFor="let item of dummylist; let i = index" [class.alternateItem]="i % 2 == 1">
+    Index = {{i}}, Value = {{item}}
+</div>
+
+<div>
+    Total $999.99
+</div>
+<button>Clear list</button>

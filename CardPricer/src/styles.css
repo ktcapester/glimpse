@@ -18,6 +18,10 @@
     --Air: #fbfbfc;
 }
 
+.alternateItem {
+    background-color: var(--Air);
+}
+
 div.List {
     display: flex;
     padding-bottom: 24px;
