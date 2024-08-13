@@ -5,4 +5,5 @@
     height: auto;
     background-color: var(--Sand);
     box-sizing: border-box;
+    margin-bottom: 18px;
 }
