@@ -10,6 +10,7 @@ import { HeaderComponent } from './header/header.component';
 import { CardListComponent } from './card-list/card-list.component';
 import { SearchResultComponent } from './search-result/search-result.component';
 import { SearchStartComponent } from './search-start/search-start.component';
+import { SearchBarComponent } from "./search-bar/search-bar.component";
 
 @NgModule({
   declarations: [
@@ -24,8 +25,9 @@ import { SearchStartComponent } from './search-start/search-start.component';
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    HttpClientModule
-  ],
+    HttpClientModule,
+    SearchBarComponent
+],
   providers: [],
   bootstrap: [AppComponent]
 })
