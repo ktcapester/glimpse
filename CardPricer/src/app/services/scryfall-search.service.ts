@@ -11,6 +11,10 @@ import { Subject } from 'rxjs';
 })
 export class ScryfallSearchService {
 
+  constructor(
+    private http: HttpClient
+  ) { }
+  
   displayCard: MyCard = {
     name: '',
     imgsrc: '',
@@ -22,9 +26,6 @@ export class ScryfallSearchService {
   private listUpdated = new Subject<ScryfallCard[]>();
   private cardUpdated = new Subject<MyCard>();
 
-  constructor(
-    private http: HttpClient
-  ) { }
 
   getListUpdateListener() {
     return this.listUpdated.asObservable();
