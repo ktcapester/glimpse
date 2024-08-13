@@ -47,10 +47,15 @@
     max-width: 100%;
     border-radius: 8px;
     border: 1px solid var(--Shadow);
+    background-color: var(--White);
     display: flex;
     padding: 10px;
     justify-content: center;
     align-items: center;
     align-self: stretch;
     flex-grow: 1;
+}
+
+.clear-button:hover {
+    background-color: var(--Sand);
 }
