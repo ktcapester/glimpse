@@ -9,7 +9,7 @@
             <form class="form-inline" (submit)="onSearchSubmit(searchForm)" #searchForm="ngForm">
                 <div class="input-group">
                     <input class="form-control mr-sm-2" 
-                    type="search" [value]="mycard.name"
+                    type="search" [value]="displayedCard.name"
                     aria-label="Search"
                     name="searchField"
                     required
@@ -27,7 +27,7 @@
         <!--Row for card image-->
         <div class="col"></div>
         <div class="col">
-            <img [alt]="mycard.name" [src]="mycard.imgsrc">
+            <img [alt]="displayedCard.name" [src]="displayedCard.imgsrc">
         </div>
         <div class="col"></div>
     </div>
@@ -45,9 +45,9 @@
             </div>
             <div class="row">
                 <div class="col"></div>
-                <div class="col">${{mycard.normalprice}}</div>
+                <div class="col">${{displayedCard.normalprice}}</div>
                 <div class="col"></div>
-                <div class="col">${{mycard.fancyprice}}</div>
+                <div class="col">${{displayedCard.fancyprice}}</div>
                 <div class="col"></div>
             </div>
         </div>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ScryfallCard } from '../interfaces/scryfall-card.model';
+import { ScryfallCard } from '../interfaces/scryfall-card.interface';
 
 
 @Injectable({

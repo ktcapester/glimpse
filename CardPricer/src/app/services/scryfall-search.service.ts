@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { MyCard } from '../interfaces/my-card.model';
-import { ScryfallCard } from '../interfaces/scryfall-card.model';
-import { ScryfallList } from '../interfaces/scryfall-list.model';
+import { DisplayCard } from '../interfaces/display-card.interface';
+import { ScryfallCard } from '../interfaces/scryfall-card.interface';
+import { ScryfallList } from '../interfaces/scryfall-list.interface';
 import { Subject } from 'rxjs';
 
 
@@ -15,7 +15,7 @@ export class ScryfallSearchService {
     private http: HttpClient
   ) { }
   
-  displayCard: MyCard = {
+  displayCard: DisplayCard = {
     name: '',
     imgsrc: '',
     normalprice: '-.-',
@@ -24,7 +24,7 @@ export class ScryfallSearchService {
 
   allPrints!: [];
   private listUpdated = new Subject<ScryfallCard[]>();
-  private cardUpdated = new Subject<MyCard>();
+  private cardUpdated = new Subject<DisplayCard>();
 
 
   getListUpdateListener() {
