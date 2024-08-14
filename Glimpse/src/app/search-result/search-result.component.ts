@@ -1,15 +1,17 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { NgForm } from "@angular/forms";
+import { NgForm, FormsModule } from "@angular/forms";
 import { ScryfallSearchService } from '../services/scryfall-search.service';
 import { DisplayCard } from '../interfaces/display-card.interface';
 import { ScryfallCard } from '../interfaces/scryfall-card.interface';
 import { PriceCalculatorService } from '../services/price-calculator.service';
 
 @Component({
-  selector: 'app-search-result',
-  templateUrl: './search-result.component.html',
-  styleUrls: ['./search-result.component.css']
+    selector: 'app-search-result',
+    templateUrl: './search-result.component.html',
+    styleUrls: ['./search-result.component.css'],
+    standalone: true,
+    imports: [FormsModule]
 })
 export class SearchResultComponent implements OnInit {
 
