@@ -13,8 +13,14 @@ export const routes: Routes = [
         path: 'list',
         title: 'Glimpse',
         component: CardListComponent,
-    },{
+    },
+    {
         path: 'result',
+        title: 'Glimpse',
+        component: SearchResultComponent,
+    },
+    {
+        path: '**',
         title: 'Glimpse',
         component: SearchResultComponent,
     },
