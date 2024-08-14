@@ -1,15 +1,17 @@
 
 <app-header></app-header>
 
-<div *ngFor="let item of dummylist; let i = index" class="card-list-item" [class.alternate-item]="i % 2 == 1">
+@for (item of dummylist; track item; let i = $index) {
+  <div class="card-list-item" [class.alternate-item]="i % 2 == 1">
     <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">Card name {{i}}</p>
     <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">${{item}}{{item}}.{{item}}{{item}}</p>
-</div>
+  </div>
+}
 
 <div class="total-container">
-    <a class="total-label">Total</a>
-    <a class="total-price">$999.42</a>
+  <a class="total-label">Total</a>
+  <a class="total-price">$999.42</a>
 </div>
 <div class="button-container">
-    <button class="clear-button">Clear list</button>
+  <button class="clear-button">Clear list</button>
 </div>
