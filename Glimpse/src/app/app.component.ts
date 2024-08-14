@@ -1,13 +1,11 @@
 import { Component } from '@angular/core';
-import { SearchResultComponent } from './search-result/search-result.component';
+import { RouterLink, RouterOutlet } from '@angular/router';
 
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
     standalone: true,
-    imports: [SearchResultComponent]
+    imports: [RouterLink, RouterOutlet]
 })
-export class AppComponent {
-  title = 'Glimpse';
-}
+export class AppComponent {}
