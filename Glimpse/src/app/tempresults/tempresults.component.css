@@ -1,0 +1,92 @@
+.result-container {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: 100vh;
+}
+.result-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    flex-grow: 1;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.card-image {
+    max-width: 336; /* for <img/> it needs to be a property , not in the css? ugh */
+    max-height: 468; 
+    border-radius: 4.75% / 3.5%; /* ty scryfall */
+
+}
+
+.prices-container {
+    display: grid;
+    grid-template: auto auto / auto auto;
+    column-gap: 10px;
+    justify-items: center;
+}
+
+.label {
+    text-align: center;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 27px */
+}
+
+.value {
+    text-align: center;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 150%; /* 27px */
+}
+
+.add-list-button {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--Shadow);
+    background-color: var(--Island);
+    color: var(--White);
+    display: flex;
+    padding: 10px;
+    justify-content: center;
+    align-items: center;
+    align-self: stretch;
+    flex-grow: 1;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 150%;
+    flex-grow: 0;
+}
+
+.add-list-button:hover {
+    background-color: var(--IslandDark);
+}
+
+.view-scryfall-button {
+    margin-bottom: 24px;
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--Shadow);
+    background-color: var(--White);
+    display: flex;
+    padding: 10px;
+    justify-content: center;
+    align-items: center;
+    align-self: stretch;
+    flex-grow: 1;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 150%;
+    flex-grow: 0;
+}
+
+.view-scryfall-button:hover {
+    background-color: var(--Sand);
+}

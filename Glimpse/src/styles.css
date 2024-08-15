@@ -29,10 +29,6 @@ body {
 }
 
 
-.cardimage {
-    border-radius: 4.75% / 3.5%; /* ty scryfall */
-}
-
 /* w3schools suggested breakpoints */
 /* Extra small devices (phones, 600px and down) */
 @media only screen and (max-width: 600px) {
