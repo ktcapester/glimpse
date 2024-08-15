@@ -1,10 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NgForm, FormsModule } from "@angular/forms";
+import { ActivatedRoute } from '@angular/router';
 import { ScryfallSearchService } from '../services/scryfall-search.service';
 import { DisplayCard } from '../interfaces/display-card.interface';
 import { ScryfallCard } from '../interfaces/scryfall-card.interface';
 import { PriceCalculatorService } from '../services/price-calculator.service';
+import { CardStateService } from '../services/card-state.service';
 
 @Component({
     selector: 'app-search-result',
@@ -15,7 +17,13 @@ import { PriceCalculatorService } from '../services/price-calculator.service';
 })
 export class SearchResultComponent implements OnInit {
 
-  constructor(private searchService: ScryfallSearchService, private priceService: PriceCalculatorService) { }
+  resultCard: ScryfallCard | null;
+
+  constructor(private cards: CardStateService, private route: ActivatedRoute, private searchService: ScryfallSearchService, private priceService: PriceCalculatorService) {
+    const cardNameInput = this.route.snapshot.params['cardName'];
+    this.resultCard = this.cards.getCardByName(cardNameInput);
+    
+   }
 
   displayedCard: DisplayCard = {
     name: '',

@@ -35,6 +35,14 @@ export class ScryfallSearchService {
     return this.cardUpdated.asObservable();
   }
 
+  findCard(cardName: string | null | undefined) {
+    // encode search term for "fuzzy" key
+    const searchParams = cardName ?
+      { params: new HttpParams().set('fuzzy', cardName) } : {};
+      // then run the search
+    return this.http.get<ScryfallCard>('https://api.scryfall.com/cards/named', searchParams);
+  }
+
   fuzzySearch(searchString: string) {
     // encode search term for "fuzzy" key
     const searchParams = searchString ?

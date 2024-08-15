@@ -15,7 +15,7 @@ export const routes: Routes = [
         component: CardListComponent,
     },
     {
-        path: 'result',
+        path: 'result/:cardName',
         title: 'Glimpse',
         component: SearchResultComponent,
     },
