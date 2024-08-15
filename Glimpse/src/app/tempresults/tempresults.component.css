@@ -22,6 +22,7 @@
 }
 
 .prices-container {
+    width: 50%;
     display: grid;
     grid-template: auto auto / auto auto;
     column-gap: 10px;
