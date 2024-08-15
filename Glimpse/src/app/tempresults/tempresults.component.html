@@ -1,12 +1,12 @@
 <div class="result-container">
     <app-header></app-header>
     <div class="result-content">
-        <img src="../../assets/blb-42-bellowing-crier.jpg" alt="TBD" class="card-image" width="336" height="468">
+        <img [src]="displayCard.imgsrc" [alt]="displayCard.name" class="card-image" width="336" height="468">
         <div class="prices-container">
-            <div class="label">Cost</div>
+            <div class="label">Normal</div>
             <div class="label">Foil</div>
-            <div class="value">$4.20</div>
-            <div class="value">$13.37</div>
+            <div class="value">${{displayCard.normalprice}}</div>
+            <div class="value">${{displayCard.fancyprice}}</div>
         </div>
         <button class="button-layout add-list-style">+ Add to List</button>
         <button class="button-layout view-scryfall-style">View on Scryfall</button>
