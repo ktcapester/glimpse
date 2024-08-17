@@ -1,81 +1,58 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { NgForm, FormsModule } from "@angular/forms";
-import { ActivatedRoute } from '@angular/router';
-import { ScryfallSearchService } from '../services/scryfall-search.service';
+import { Component } from '@angular/core';
+import { HeaderComponent } from "../header/header.component";
 import { DisplayCard } from '../interfaces/display-card.interface';
+import { ActivatedRoute } from '@angular/router';
 import { ScryfallCard } from '../interfaces/scryfall-card.interface';
-import { PriceCalculatorService } from '../services/price-calculator.service';
-import { CardStateService } from '../services/card-state.service';
+import { GlimpseStateService } from '../services/glimpse-state.service';
 
 @Component({
-    selector: 'app-search-result',
-    templateUrl: './search-result.component.html',
-    styleUrls: ['./search-result.component.css'],
-    standalone: true,
-    imports: [FormsModule]
+  selector: 'app-search-result',
+  standalone: true,
+  imports: [HeaderComponent],
+  templateUrl: './search-result.component.html',
+  styleUrl: './search-result.component.css'
 })
-export class SearchResultComponent implements OnInit {
+export class SearchResultComponent {
 
+  displayCard: DisplayCard = {
+    name: 'Bellowing Crier',
+    imgsrc: '../../assets/blb-42-bellowing-crier.jpg',
+    normalprice: '0.02',
+    fancyprice: '0.06'
+  };
   resultCard: ScryfallCard | null;
 
-  constructor(private cards: CardStateService, private route: ActivatedRoute, private searchService: ScryfallSearchService, private priceService: PriceCalculatorService) {
+  constructor(private route: ActivatedRoute, private state: GlimpseStateService) {
     const cardNameInput = this.route.snapshot.params['cardName'];
-    this.resultCard = this.cards.getCardByName(cardNameInput);
-    
-   }
+    console.log(cardNameInput);
 
-  displayedCard: DisplayCard = {
-    name: '',
-    imgsrc: '',
-    normalprice: '-.-',
-    fancyprice: '-.-'
-  };
-
-  private cardsSub!: Subscription;
-  private displaySub!: Subscription;
-  cardsList: ScryfallCard[] = [];
-
-  ngOnInit(): void {
-
-    // set up callback for when fuzzy search returns a card to display
-    this.displaySub = this.searchService.getCardUpdateListener()
-      .subscribe((theCard) => {
-        this.displayedCard.name = theCard.name;
-        this.displayedCard.imgsrc = theCard.imgsrc;
-      });
-
-    // set up callback for when we get the list of all prints
-    this.cardsSub = this.searchService.getListUpdateListener()
-      .subscribe((cards: ScryfallCard[]) => {
-        this.cardsList = cards;
-
-        const avgNormal = this.priceService.cardPriceMagic(this.cardsList);
-        const avgFancy = 0;
-
-        // display averages
-        this.displayedCard.normalprice = avgNormal.toFixed(2);
-        this.displayedCard.fancyprice = avgFancy.toFixed(2);
-
-      });
-
-    // now that callbacks are set up, make http request
-    // do fuzzy search with the provided search term
-    this.searchService.fuzzySearch('fell ston');
-
+    this.resultCard = this.state.getSearchedCard();
+    this.displayCard = this.convertCard(this.resultCard);
   }
 
-  ngOnDestroy(): void {
-    this.cardsSub.unsubscribe();
-    this.displaySub.unsubscribe();
-  }
-
-  onSearchSubmit(form: NgForm) {
-
-    if (form.invalid) {
-      return;
+  convertCard(scard: ScryfallCard | null) {
+    let result: DisplayCard = {
+      name: 'Bellowing Crier',
+      imgsrc: '../../assets/blb-42-bellowing-crier.jpg',
+      normalprice: '0.02',
+      fancyprice: '0.06',
     }
-
-    this.searchService.fuzzySearch(form.value.searchField);
+    if (scard) {
+      let imgsrc = ''
+      if (scard.image_uris) {
+        imgsrc = scard.image_uris.large;
+      }
+      else {
+        imgsrc = scard.card_faces[0].image_uris.large;
+      }
+      result = {
+        name: scard.name,
+        imgsrc: imgsrc,
+        normalprice: '0.00',
+        fancyprice: '0.00',
+      }
+    }
+    return result;
   }
+
 }

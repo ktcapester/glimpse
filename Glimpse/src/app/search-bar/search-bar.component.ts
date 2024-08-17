@@ -37,13 +37,12 @@ export class SearchBarComponent {
       .subscribe(
         (responseData) => {
           // if good result, route to /result with the result as input
-          this.router.navigate(['/result', {cardName : responseData.name}]);
+          this.router.navigate(['/result', responseData.name]);
         },
         (errorData) => {
           // if bad result, stop spinner & notify
           // 404 with either zero cards matched or more than 1 matched
           console.log(errorData);
-
         });
   }
 }
