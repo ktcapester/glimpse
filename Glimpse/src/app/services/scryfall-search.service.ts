@@ -14,7 +14,7 @@ export class ScryfallSearchService {
   constructor(
     private http: HttpClient
   ) { }
-  
+
   displayCard: DisplayCard = {
     name: '',
     imgsrc: '',
@@ -39,7 +39,7 @@ export class ScryfallSearchService {
     // encode search term for "fuzzy" key
     const searchParams = cardName ?
       { params: new HttpParams().set('fuzzy', cardName) } : {};
-      // then run the search
+    // then run the search
     return this.http.get<ScryfallCard>('https://api.scryfall.com/cards/named', searchParams);
   }
 
