@@ -1,5 +1,6 @@
 export interface ScryfallCard {
     name: string;
+    id: string;
     image_uris: {
         large: string;
         normal: string;
