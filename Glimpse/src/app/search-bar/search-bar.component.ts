@@ -2,7 +2,9 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
-import { ScryfallSearchService } from '../services/scryfall-search.service';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { ScryfallCard } from '../interfaces/scryfall-card.interface';
+import { ScryfallList } from '../interfaces/scryfall-list.interface';
 
 @Component({
   selector: 'app-search-bar',
@@ -11,19 +13,9 @@ import { ScryfallSearchService } from '../services/scryfall-search.service';
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.css'
 })
-export class SearchBarComponent implements OnInit {
+export class SearchBarComponent {
 
-  private card$ = this.searchService.getResultCardUpdateListener();
-
-  constructor(private router: Router, private searchService: ScryfallSearchService) { }
-
-  ngOnInit(): void {
-    this.card$.subscribe(
-      (nextData) => {
-        this.router.navigate(['/result', nextData.name]);
-      });
-  }
-
+  constructor(private router: Router, private http: HttpClient) { }
 
   searchForm = new FormGroup({
     search: new FormControl('', [Validators.required, Validators.minLength(3)]),
@@ -41,7 +33,29 @@ export class SearchBarComponent implements OnInit {
 
     // start a spinner?
     // search for the card
-    this.searchService.findCard(this.searchForm.value.search);
+    // encode search term for "fuzzy" key
+    const searchParams = this.searchForm.value.search ?
+      { params: new HttpParams().set('fuzzy', this.searchForm.value.search) } : {};
+    // then run the search
+    this.http.get<ScryfallCard>('https://api.scryfall.com/cards/named', searchParams)
+      .subscribe(
+        (responseData) => {
+          // returns a card
+          console.log("Found card:", responseData);
+          this.http.get<ScryfallList>(responseData.prints_search_uri)
+            .subscribe(
+              (allData) => {
+                console.log("Got printings:", allData)
+                this.router.navigate(['/result', responseData.name]);
+              },
+              (listErrorData) => {
+                console.log(listErrorData);
+              });
+        },
+        (errorData) => {
+          // 404 with either zero cards matched or more than 1 matched
+          console.log(errorData);
 
+        });
   }
 }
