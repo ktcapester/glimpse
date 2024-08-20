@@ -16,6 +16,8 @@
     --InkLight: #a4998e;
     /* line items */
     --Air: #fbfbfc;
+    /* list button hover */
+    --Shaded: #e2d1c5;
 }
 
 body {

@@ -22,6 +22,6 @@ export const routes: Routes = [
     {
         path: '**',
         title: 'Glimpse',
-        component: SearchResultComponent,
+        component: SearchStartComponent,
     },
 ];
