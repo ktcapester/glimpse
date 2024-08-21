@@ -85,25 +85,28 @@ export class PriceCalculatorService {
   bigoldfunc(cards: ScryfallCard[]) {
     // process all cards in here
     var usd_cards = []
-    var usd_fancy_cards = []
+    var usd_etched_cards = []
+    var usd_foil_cards = []
     var eur_cards = []
-    var eur_fancy_cards = []
+    var eur_etched_cards = []
+    var eur_foil_cards = []
+    
     for (let index = 0; index < cards.length; index++) {
       const element = cards[index];
       if (element.prices.usd) {
         usd_cards.push(element)
       }
       if (element.prices.usd_etched) {
-        usd_fancy_cards.push(element)
+        usd_etched_cards.push(element)
       }
       if (element.prices.usd_foil) {
-        usd_fancy_cards.push(element)
+        usd_foil_cards.push(element)
       }
       if (element.prices.eur) {
         eur_cards.push(element)
       }
       if (element.prices.eur_etched) {
-        eur_fancy_cards.push(element)
+        eur_etched_cards.push(element)
       }
       if (element.prices.eur_foil) {
         eur_fancy_cards.push(element)
