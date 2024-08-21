@@ -1,10 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ScryfallCard } from '../interfaces/scryfall-card.interface';
 import { ScryfallList } from '../interfaces/scryfall-list.interface';
+import { GlimpseStateService } from '../services/glimpse-state.service';
 
 @Component({
   selector: 'app-search-bar',
@@ -15,7 +16,7 @@ import { ScryfallList } from '../interfaces/scryfall-list.interface';
 })
 export class SearchBarComponent {
 
-  constructor(private router: Router, private http: HttpClient) { }
+  constructor(private router: Router, private http: HttpClient, private state: GlimpseStateService) { }
 
   searchForm = new FormGroup({
     search: new FormControl('', [Validators.required, Validators.minLength(3)]),
@@ -46,6 +47,8 @@ export class SearchBarComponent {
             .subscribe(
               (allData) => {
                 console.log("Got printings:", allData)
+                this.state.setSearchedCard(responseData);
+                this.state.setSearchedPrints(allData);
                 this.router.navigate(['/result', responseData.name]);
               },
               (listErrorData) => {
@@ -55,7 +58,7 @@ export class SearchBarComponent {
         (errorData) => {
           // 404 with either zero cards matched or more than 1 matched
           console.log(errorData);
-
         });
   }
+
 }
