@@ -1,6 +1,6 @@
 export interface DisplayCard {
     name: string;
     imgsrc: string;
-    normalprice: string;
-    fancyprice: string;
+    normalprice: number;
+    fancyprice: number;
 }
