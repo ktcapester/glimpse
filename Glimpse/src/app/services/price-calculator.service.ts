@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ScryfallCard } from '../interfaces/scryfall-card.interface';
+import { Prices } from '../interfaces/prices.interface';
 
 
 @Injectable({
@@ -82,7 +83,7 @@ export class PriceCalculatorService {
     return p0 - p1
   }
 
-  bigoldfunc(cards: ScryfallCard[]) {
+  bigoldfunc(cards: ScryfallCard[]) : Prices {
     // process all cards in here
     var usd_cards = []
     var usd_etched_cards = []
@@ -115,10 +116,10 @@ export class PriceCalculatorService {
     
     let usd_avg = this.processList(usd_cards, "usd")
     let usd_etched_avg = this.processList(usd_etched_cards, "usd_etched")
-    let usd_foil_avg = this.processList(usd_cards, "usd_foil")
-    let eur_avg = this.processList(usd_cards, "eur")
-    let eur_etched_avg = this.processList(usd_etched_cards, "eur_etched")
-    let eur_foil_avg = this.processList(usd_cards, "eur_foil")
+    let usd_foil_avg = this.processList(usd_foil_cards, "usd_foil")
+    let eur_avg = this.processList(eur_cards, "eur")
+    let eur_etched_avg = this.processList(eur_etched_cards, "eur_etched")
+    let eur_foil_avg = this.processList(eur_foil_cards, "eur_foil")
 
     return {
       usd: usd_avg,
@@ -149,7 +150,7 @@ export class PriceCalculatorService {
     // cards.length is at least 3
     // sort by price ascending
     cards.sort((a, b) => this.cardCompareFn(a, b))
-    var medIdx = cards.length / 2;
+    var medIdx = Math.floor(cards.length / 2);
     var median = this.extractPrice(cards[medIdx], price_name)
     if (cards.length % 2 == 0) {
       var lower = this.extractPrice(cards[medIdx - 1], price_name)
