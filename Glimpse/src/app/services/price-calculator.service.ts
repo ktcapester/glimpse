@@ -21,105 +21,55 @@ export class PriceCalculatorService {
     // now do a weighted average with the distance based off index distance from the median
   }
 
-  cardPriceMagic(cardsList: ScryfallCard[]) {
-    if (cardsList.length == 0) {
-      return NaN;
-    }
-    if (cardsList.length == 1) {
-      return this.getPriceFromCard(cardsList[0])
-    }
-    if (cardsList.length == 2) {
-      // return the cheaper of the 2 prices
-      const p0 = this.getPriceFromCard(cardsList[0])
-      const p1 = this.getPriceFromCard(cardsList[1])
-      if (p0 < p1) {
-        return p0
-      }
-      return p1
-    }
-    // cardsList.length is at least 3
-    // sort by price ascending
-    cardsList.sort((a, b) => this.cardCompareFn(a, b))
-    var medIdx = cardsList.length / 2;
-    var median = this.getPriceFromCard(cardsList[medIdx])
-    if (cardsList.length % 2 == 0) {
-      var lower = this.getPriceFromCard(cardsList[medIdx - 1])
-      median = (median + lower) / 2;
-    }
-    // pure median result:
-    // return median
-
-    // calculating a weighted average with inverse price difference from the median price as the weights
-    var numerator = 0;
-    var denominator = 0;
-    for (let index = 0; index < cardsList.length; index++) {
-      const element = cardsList[index];
-      const price = this.getPriceFromCard(element)
-      if (Number.isNaN(price)) {
-        console.log("NaN price for:", element)
-      }
-      var distance = Math.abs(median - price)
-      if (distance == 0) { distance = 1 }
-      const weight = 1 / distance;
-      numerator += (price * weight);
-      denominator += weight;
-    }
-    return numerator / denominator;
-  }
-
-  getPriceFromCard(card: ScryfallCard) {
-    return Number.parseFloat(card?.prices?.usd ?? 'NaN');
-  }
-
-  cardCompareFn(card0: ScryfallCard, card1: ScryfallCard) {
-    const p0 = this.getPriceFromCard(card0)
-    const p1 = this.getPriceFromCard(card1)
+  cardCompareFn(card0: ScryfallCard, card1: ScryfallCard, price_name: string) {
+    const p0 = this.extractPrice(card0, price_name);
+    const p1 = this.extractPrice(card1, price_name);
     if (Number.isNaN(p0)) {
-      return 1
+      return 1;
     }
     if (Number.isNaN(p1)) {
-      return -1
+      return -1;
     }
-    return p0 - p1
+    return p0 - p1;
   }
 
-  bigoldfunc(cards: ScryfallCard[]) : Prices {
+  calculateAllPrices(cards: ScryfallCard[]) : Prices {
     // process all cards in here
-    var usd_cards = []
-    var usd_etched_cards = []
-    var usd_foil_cards = []
-    var eur_cards = []
-    var eur_etched_cards = []
-    var eur_foil_cards = []
+    var usd_cards = [];
+    var usd_etched_cards = [];
+    var usd_foil_cards = [];
+    var eur_cards = [];
+    var eur_etched_cards = [];
+    var eur_foil_cards = [];
     
     for (let index = 0; index < cards.length; index++) {
       const element = cards[index];
       if (element.prices.usd) {
-        usd_cards.push(element)
+        usd_cards.push(element);
       }
       if (element.prices.usd_etched) {
-        usd_etched_cards.push(element)
+        usd_etched_cards.push(element);
       }
       if (element.prices.usd_foil) {
-        usd_foil_cards.push(element)
+        usd_foil_cards.push(element);
       }
       if (element.prices.eur) {
-        eur_cards.push(element)
+        eur_cards.push(element);
       }
       if (element.prices.eur_etched) {
-        eur_etched_cards.push(element)
+        eur_etched_cards.push(element);
       }
       if (element.prices.eur_foil) {
-        eur_foil_cards.push(element)
+        eur_foil_cards.push(element);
       }
     }
     
-    let usd_avg = this.processList(usd_cards, "usd")
-    let usd_etched_avg = this.processList(usd_etched_cards, "usd_etched")
-    let usd_foil_avg = this.processList(usd_foil_cards, "usd_foil")
-    let eur_avg = this.processList(eur_cards, "eur")
-    let eur_etched_avg = this.processList(eur_etched_cards, "eur_etched")
-    let eur_foil_avg = this.processList(eur_foil_cards, "eur_foil")
+    let usd_avg = this.processList(usd_cards, "usd");
+    let usd_etched_avg = this.processList(usd_etched_cards, "usd_etched");
+    let usd_foil_avg = this.processList(usd_foil_cards, "usd_foil");
+    let eur_avg = this.processList(eur_cards, "eur");
+    let eur_etched_avg = this.processList(eur_etched_cards, "eur_etched");
+    let eur_foil_avg = this.processList(eur_foil_cards, "eur_foil");
 
     return {
       usd: usd_avg,
@@ -128,7 +78,7 @@ export class PriceCalculatorService {
       eur: eur_avg,
       eur_etched: eur_etched_avg,
       eur_foil: eur_foil_avg
-    }
+    };
   }
 
   processList(cards: ScryfallCard[], price_name: string) {
@@ -136,28 +86,29 @@ export class PriceCalculatorService {
       return NaN;
     }
     if (cards.length == 1) {
-      return this.extractPrice(cards[0], price_name)
+      return this.extractPrice(cards[0], price_name);
     }
     if (cards.length == 2) {
       // return the cheaper of the 2 prices
-      const p0 = this.extractPrice(cards[0], price_name)
-      const p1 = this.extractPrice(cards[1], price_name)
+      const p0 = this.extractPrice(cards[0], price_name);
+      const p1 = this.extractPrice(cards[1], price_name);
       if (p0 < p1) {
-        return p0
+        return p0;
       }
-      return p1
+      return p1;
     }
     // cards.length is at least 3
     // sort by price ascending
-    cards.sort((a, b) => this.cardCompareFn(a, b))
+    cards.sort((a, b) => this.cardCompareFn(a, b, price_name));
     var medIdx = Math.floor(cards.length / 2);
-    var median = this.extractPrice(cards[medIdx], price_name)
+    var median = this.extractPrice(cards[medIdx], price_name);
     if (cards.length % 2 == 0) {
-      var lower = this.extractPrice(cards[medIdx - 1], price_name)
+      var lower = this.extractPrice(cards[medIdx - 1], price_name);
       median = (median + lower) / 2;
     }
     // pure median result:
     // return median
+
     // calculating a weighted average with inverse price difference from the median price as the weights
     var numerator = 0;
     var denominator = 0;
@@ -167,7 +118,7 @@ export class PriceCalculatorService {
       if (Number.isNaN(price)) {
         console.log("NaN price for:", element)
       }
-      var distance = Math.abs(median - price)
+      var distance = Math.abs(median - price);
       if (distance == 0) { distance = 1 }
       const weight = 1 / distance;
       numerator += (price * weight);
