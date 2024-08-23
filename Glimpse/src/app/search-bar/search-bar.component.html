@@ -1,10 +1,23 @@
 <div class="search-bar">
-    <form class="input-wrapper" [formGroup]="searchForm" (ngSubmit)="handleSubmit()">
-        <input type="search" class="input-field" placeholder="Card name" formControlName="search">
-        <img src="../../assets/icon-search.svg" alt="Search Icon" class="input-icon">
-    </form>
-    <button class="list-button" (click)="navigateToList()">
-        <img src="../../assets/icon-list.svg" alt="List Icon" class="list-icon">
-        $0.00
-    </button>
+  <form
+    class="input-wrapper"
+    [formGroup]="searchForm"
+    (ngSubmit)="handleSubmit()"
+  >
+    <input
+      type="search"
+      class="input-field"
+      placeholder="Card name"
+      formControlName="search"
+    />
+    <img
+      src="../../assets/icon-search.svg"
+      alt="Search Icon"
+      class="input-icon"
+    />
+  </form>
+  <button class="list-button" (click)="navigateToList()">
+    <img src="../../assets/icon-list.svg" alt="List Icon" class="list-icon" />
+    $0.00
+  </button>
 </div>

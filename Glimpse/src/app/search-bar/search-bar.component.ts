@@ -12,11 +12,14 @@ import { GlimpseStateService } from '../services/glimpse-state.service';
   standalone: true,
   imports: [ReactiveFormsModule],
   templateUrl: './search-bar.component.html',
-  styleUrl: './search-bar.component.css'
+  styleUrl: './search-bar.component.css',
 })
 export class SearchBarComponent {
-
-  constructor(private router: Router, private http: HttpClient, private state: GlimpseStateService) { }
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private state: GlimpseStateService
+  ) {}
 
   searchForm = new FormGroup({
     search: new FormControl('', [Validators.required, Validators.minLength(3)]),
@@ -35,30 +38,32 @@ export class SearchBarComponent {
     // start a spinner?
     // search for the card
     // encode search term for "fuzzy" key
-    const searchParams = this.searchForm.value.search ?
-      { params: new HttpParams().set('fuzzy', this.searchForm.value.search) } : {};
+    const searchParams = this.searchForm.value.search
+      ? { params: new HttpParams().set('fuzzy', this.searchForm.value.search) }
+      : {};
     // then run the search
-    this.http.get<ScryfallCard>('https://api.scryfall.com/cards/named', searchParams)
+    this.http
+      .get<ScryfallCard>('https://api.scryfall.com/cards/named', searchParams)
       .subscribe(
         (responseData) => {
           // returns a card
-          console.log("Found card:", responseData);
-          this.http.get<ScryfallList>(responseData.prints_search_uri)
-            .subscribe(
-              (allData) => {
-                console.log("Got printings:", allData)
-                this.state.setSearchedCard(responseData);
-                this.state.setSearchedPrints(allData);
-                this.router.navigate(['/result', responseData.name]);
-              },
-              (listErrorData) => {
-                console.log(listErrorData);
-              });
+          console.log('Found card:', responseData);
+          this.http.get<ScryfallList>(responseData.prints_search_uri).subscribe(
+            (allData) => {
+              console.log('Got printings:', allData);
+              this.state.setSearchedCard(responseData);
+              this.state.setSearchedPrints(allData);
+              this.router.navigate(['/result', responseData.name]);
+            },
+            (listErrorData) => {
+              console.log(listErrorData);
+            }
+          );
         },
         (errorData) => {
           // 404 with either zero cards matched or more than 1 matched
           console.log(errorData);
-        });
+        }
+      );
   }
-
 }

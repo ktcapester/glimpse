@@ -2,13 +2,11 @@ import { Injectable } from '@angular/core';
 import { ScryfallCard } from '../interfaces/scryfall-card.interface';
 import { Prices } from '../interfaces/prices.interface';
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PriceCalculatorService {
-
-  constructor() { }
+  constructor() {}
 
   georgeMethod(pricesList: number[]) {
     pricesList.sort((a, b) => a - b);
@@ -33,7 +31,7 @@ export class PriceCalculatorService {
     return p0 - p1;
   }
 
-  calculateAllPrices(cards: ScryfallCard[]) : Prices {
+  calculateAllPrices(cards: ScryfallCard[]): Prices {
     // process all cards in here
     var usd_cards = [];
     var usd_etched_cards = [];
@@ -41,7 +39,7 @@ export class PriceCalculatorService {
     var eur_cards = [];
     var eur_etched_cards = [];
     var eur_foil_cards = [];
-    
+
     for (let index = 0; index < cards.length; index++) {
       const element = cards[index];
       if (element.prices.usd) {
@@ -63,13 +61,13 @@ export class PriceCalculatorService {
         eur_foil_cards.push(element);
       }
     }
-    
-    let usd_avg = this.processList(usd_cards, "usd");
-    let usd_etched_avg = this.processList(usd_etched_cards, "usd_etched");
-    let usd_foil_avg = this.processList(usd_foil_cards, "usd_foil");
-    let eur_avg = this.processList(eur_cards, "eur");
-    let eur_etched_avg = this.processList(eur_etched_cards, "eur_etched");
-    let eur_foil_avg = this.processList(eur_foil_cards, "eur_foil");
+
+    let usd_avg = this.processList(usd_cards, 'usd');
+    let usd_etched_avg = this.processList(usd_etched_cards, 'usd_etched');
+    let usd_foil_avg = this.processList(usd_foil_cards, 'usd_foil');
+    let eur_avg = this.processList(eur_cards, 'eur');
+    let eur_etched_avg = this.processList(eur_etched_cards, 'eur_etched');
+    let eur_foil_avg = this.processList(eur_foil_cards, 'eur_foil');
 
     return {
       usd: usd_avg,
@@ -77,7 +75,7 @@ export class PriceCalculatorService {
       usd_foil: usd_foil_avg,
       eur: eur_avg,
       eur_etched: eur_etched_avg,
-      eur_foil: eur_foil_avg
+      eur_foil: eur_foil_avg,
     };
   }
 
@@ -114,14 +112,16 @@ export class PriceCalculatorService {
     var denominator = 0;
     for (let index = 0; index < cards.length; index++) {
       const element = cards[index];
-      const price = this.extractPrice(element, price_name)
+      const price = this.extractPrice(element, price_name);
       if (Number.isNaN(price)) {
-        console.log("NaN price for:", element)
+        console.log('NaN price for:', element);
       }
       var distance = Math.abs(median - price);
-      if (distance == 0) { distance = 1 }
+      if (distance == 0) {
+        distance = 1;
+      }
       const weight = 1 / distance;
-      numerator += (price * weight);
+      numerator += price * weight;
       denominator += weight;
     }
     return numerator / denominator;
@@ -129,21 +129,20 @@ export class PriceCalculatorService {
 
   extractPrice(card: ScryfallCard, price_name: string) {
     switch (price_name) {
-      case "usd":
+      case 'usd':
         return Number.parseFloat(card.prices.usd!);
-      case "usd_etched":
+      case 'usd_etched':
         return Number.parseFloat(card.prices.usd_etched!);
-      case "usd_foil":
+      case 'usd_foil':
         return Number.parseFloat(card.prices.usd_foil!);
-      case "eur":
+      case 'eur':
         return Number.parseFloat(card.prices.eur!);
-      case "eur_etched":
+      case 'eur_etched':
         return Number.parseFloat(card.prices.eur_etched!);
-      case "eur_foil":
+      case 'eur_foil':
         return Number.parseFloat(card.prices.eur_foil!);
       default:
         return NaN;
     }
   }
-
 }

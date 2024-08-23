@@ -6,20 +6,19 @@ import { ScryfallList } from '../interfaces/scryfall-list.interface';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GlimpseStateService {
-
   user: User | null = null;
   searchedCard: ScryfallCard | null = null;
   searchedPrints: ScryfallList | null = null;
   currentList: CardList | null = null;
-  private cardSubject = new BehaviorSubject<ScryfallCard|null>(null);
+  private cardSubject = new BehaviorSubject<ScryfallCard | null>(null);
   card$ = this.cardSubject.asObservable();
-  private printsSubject = new BehaviorSubject<ScryfallList|null>(null);
+  private printsSubject = new BehaviorSubject<ScryfallList | null>(null);
   prints$ = this.printsSubject.asObservable();
 
-  constructor() { }
+  constructor() {}
 
   getUser() {
     return this.user;

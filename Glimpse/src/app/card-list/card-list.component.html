@@ -1,11 +1,14 @@
-
 <app-header></app-header>
 
 @for (item of dummylist; track item; let i = $index) {
-  <div class="card-list-item" [class.alternate-item]="i % 2 == 1">
-    <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">Card name {{i}}</p>
-    <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">${{item}}{{item}}.{{item}}{{item}}</p>
-  </div>
+<div class="card-list-item" [class.alternate-item]="i % 2 == 1">
+  <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">
+    Card name {{ i }}
+  </p>
+  <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">
+    ${{ item }}{{ item }}.{{ item }}{{ item }}
+  </p>
+</div>
 }
 
 <div class="total-container">

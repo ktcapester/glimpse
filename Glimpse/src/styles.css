@@ -1,68 +1,68 @@
 /* You can add global styles to this file, and also import other style files */
 :root {
-    /* text */
-    --Ink: #160f29;
-    /* buttons */
-    --Island: #368f8b;
-    /* hover */
-    --IslandDark: #246a73;
-    /* backgrounds */
-    --Sand: #fff8ef;
-    /* accents */
-    --Shadow: #f4e4d8;
-    /* light */
-    --White: #ffffff;
-    /* placeholder */
-    --InkLight: #a4998e;
-    /* line items */
-    --Air: #fbfbfc;
-    /* list button hover */
-    --Shaded: #e2d1c5;
+  /* text */
+  --Ink: #160f29;
+  /* buttons */
+  --Island: #368f8b;
+  /* hover */
+  --IslandDark: #246a73;
+  /* backgrounds */
+  --Sand: #fff8ef;
+  /* accents */
+  --Shadow: #f4e4d8;
+  /* light */
+  --White: #ffffff;
+  /* placeholder */
+  --InkLight: #a4998e;
+  /* line items */
+  --Air: #fbfbfc;
+  /* list button hover */
+  --Shaded: #e2d1c5;
 }
 
 body {
-    margin: 0;
+  margin: 0;
 }
 
 * {
-    color: var(--Ink);
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    letter-spacing: -0.2px;
+  color: var(--Ink);
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
+  letter-spacing: -0.2px;
 }
-
 
 /* w3schools suggested breakpoints */
 /* Extra small devices (phones, 600px and down) */
 @media only screen and (max-width: 600px) {
-    div {
-        background-color: var(--White);
-    }
+  div {
+    background-color: var(--White);
+  }
 }
 
 /* Small devices (portrait tablets and large phones, 600px and up) */
 @media only screen and (min-width: 600px) {
-    div {
-        background-color: var(--White);
-    }
+  div {
+    background-color: var(--White);
+  }
 }
 
 /* Medium devices (landscape tablets, 768px and up) */
 @media only screen and (min-width: 768px) {
-    div {
-        background-color: var(--White);
-    }
+  div {
+    background-color: var(--White);
+  }
 }
 
 /* Large devices (laptops/desktops, 992px and up) */
 @media only screen and (min-width: 992px) {
-    div {
-        background-color: var(--White);
-    }
+  div {
+    background-color: var(--White);
+  }
 }
 
 /* Extra large devices (large laptops and desktops, 1200px and up) */
 @media only screen and (min-width: 1200px) {
-    div {
-        background-color: var(--White);
-    }
+  div {
+    background-color: var(--White);
+  }
 }

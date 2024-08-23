@@ -1,80 +1,79 @@
 .result-container {
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100vh;
 }
 .result-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    box-sizing: border-box;
-    flex-grow: 1;
-    padding: 0px 24px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  flex-grow: 1;
+  padding: 0px 24px 24px 24px;
 }
 
 .card-image {
-    max-width: 336; /* for <img/> it needs to be a property , not in the css? ugh */
-    max-height: 468; 
-    border-radius: 4.75% / 3.5%; /* ty scryfall */
-
+  max-width: 336; /* for <img/> it needs to be a property , not in the css? ugh */
+  max-height: 468;
+  border-radius: 4.75% / 3.5%; /* ty scryfall */
 }
 
 .prices-container {
-    width: 50%;
-    display: grid;
-    grid-template: auto auto / auto auto;
-    column-gap: 10px;
-    justify-items: center;
+  width: 50%;
+  display: grid;
+  grid-template: auto auto / auto auto;
+  column-gap: 10px;
+  justify-items: center;
 }
 
 .text {
-    text-align: center;
-    font-size: 18px;
-    font-style: normal;
-    line-height: 150%; /* 27px */
+  text-align: center;
+  font-size: 18px;
+  font-style: normal;
+  line-height: 150%; /* 27px */
 }
 
 .label {
-    font-weight: 700;
+  font-weight: 700;
 }
 
 .value {
-    font-weight: 400;
+  font-weight: 400;
 }
 
 .button-layout {
-    max-width: 100%;
-    border-radius: 8px;
-    display: flex;
-    padding: 10px;
-    justify-content: center;
-    align-items: center;
-    align-self: stretch;
-    flex-grow: 1;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 150%;
-    flex-grow: 0;
+  max-width: 100%;
+  border-radius: 8px;
+  display: flex;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  flex-grow: 1;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+  flex-grow: 0;
 }
 
 .add-list-style {
-    border: 1px solid var(--Shadow);
-    background-color: var(--Island);
-    color: var(--White);
+  border: 1px solid var(--Shadow);
+  background-color: var(--Island);
+  color: var(--White);
 }
 
 .add-list-style:hover {
-    background-color: var(--IslandDark);
+  background-color: var(--IslandDark);
 }
 
 .view-scryfall-style {
-    border: 1px solid var(--Shadow);
-    background-color: var(--White);
+  border: 1px solid var(--Shadow);
+  background-color: var(--White);
 }
 
 .view-scryfall-style:hover {
-    background-color: var(--Sand);
+  background-color: var(--Sand);
 }

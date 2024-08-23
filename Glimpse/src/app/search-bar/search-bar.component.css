@@ -1,81 +1,79 @@
 .search-bar {
-    display: flex;
-    max-width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--Sand);
+  display: flex;
+  max-width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--Sand);
 }
 
 .input-wrapper {
-    position: relative;
-    flex-grow: 1;
-    max-width: 300px;
-    width: 100%;
+  position: relative;
+  flex-grow: 1;
+  max-width: 300px;
+  width: 100%;
 }
 
 .input-field {
-    border-radius: 8px;
-    border: 1px solid var(--Shadow);
-    background: var(--White);
-    height: 44px;
-    padding: 10px 10px 10px 36px;
-    flex-grow: 1;
-    width: 100%;
-    box-sizing: border-box;
-    
+  border-radius: 8px;
+  border: 1px solid var(--Shadow);
+  background: var(--White);
+  height: 44px;
+  padding: 10px 10px 10px 36px;
+  flex-grow: 1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input-field::placeholder {
-    color: var(--InkLight);
-    opacity: 1;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 150%;
+  color: var(--InkLight);
+  opacity: 1;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
 }
 
 .ng-touched.ng-invalid:not(form) {
-    border: 1px dashed rgb(170, 0, 0);
+  border: 1px dashed rgb(170, 0, 0);
 }
 
-
 .input-icon {
-    position:absolute;
-    left:10px;
-    top:50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    pointer-events: none;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
 }
 
 .list-button {
-    height: 44px;
-    padding: 10px 13px;
-    margin-left: 10px;
-    flex-shrink: 0;
-    border-radius: 8px;
-    background: var(--Shadow);
-    border-width: 0;
-    font-weight: 700;
-    font-size: 16px;
-    font-style: normal;
-    line-height: 150%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  height: 44px;
+  padding: 10px 13px;
+  margin-left: 10px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--Shadow);
+  border-width: 0;
+  font-weight: 700;
+  font-size: 16px;
+  font-style: normal;
+  line-height: 150%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .list-icon {
-    margin-right: 8px;
-    width: 12px;
-    height: 20px;
+  margin-right: 8px;
+  width: 12px;
+  height: 20px;
 }
 
 button:hover {
-    background-color: var(--Shaded);
+  background-color: var(--Shaded);
 }
 
 button:hover img {
-    background-color: var(--Shaded);
+  background-color: var(--Shaded);
 }
