@@ -45,7 +45,7 @@ export class SearchResultComponent implements OnInit {
         this.printsList = prints;
         console.log("New prints list:", prints);
         let data = prints?.data ?? [];
-        let prices = this.pricer.bigoldfunc(data);
+        let prices = this.pricer.calculateAllPrices(data);
         console.log("Calculated Prices:", prices);
         this.displayCard = this.updatePrices(this.displayCard, prices)
       }
@@ -65,9 +65,9 @@ export class SearchResultComponent implements OnInit {
       imgsrc: '../../assets/blb-42-bellowing-crier.jpg',
       normalprice: 0.02,
       fancyprice: 0.06,
-    }
+    };
     if (scard) {
-      let imgsrc = ''
+      let imgsrc = '';
       if (scard.image_uris) {
         imgsrc = scard.image_uris.large;
       }
@@ -79,7 +79,7 @@ export class SearchResultComponent implements OnInit {
         imgsrc: imgsrc,
         normalprice: 0.00,
         fancyprice: 0.00,
-      }
+      };
     }
     return result;
   }
