@@ -63,6 +63,9 @@ export class SearchBarComponent {
         (errorData) => {
           // 404 with either zero cards matched or more than 1 matched
           console.log(errorData);
+          console.log('Error detail:');
+          console.log(errorData?.error?.details);
+          this.state.setErrorMessage(errorData?.error?.details);
         }
       );
   }
