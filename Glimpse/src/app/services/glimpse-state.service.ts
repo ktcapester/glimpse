@@ -9,38 +9,74 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class GlimpseStateService {
-  user: User | null = null;
-  searchedCard: ScryfallCard | null = null;
-  searchedPrints: ScryfallList | null = null;
-  currentList: CardList | null = null;
+  // internals
+  private userSubject = new BehaviorSubject<User | null>(null);
+  private userListSubject = new BehaviorSubject<CardList | null>(null);
   private cardSubject = new BehaviorSubject<ScryfallCard | null>(null);
-  card$ = this.cardSubject.asObservable();
   private printsSubject = new BehaviorSubject<ScryfallList | null>(null);
-  prints$ = this.printsSubject.asObservable();
+  private errorMessageSubject = new BehaviorSubject<string>(
+    'Default Error Message'
+  );
 
   constructor() {}
 
-  getUser() {
-    return this.user;
+  getUserListener() {
+    return this.userSubject.asObservable();
   }
 
-  setSearchedCard(card: ScryfallCard) {
-    this.cardSubject.next(card);
+  getUserListListener() {
+    return this.userListSubject.asObservable();
+  }
+
+  getCardListener() {
+    return this.cardSubject.asObservable();
+  }
+
+  getPrintsListener() {
+    return this.printsSubject.asObservable();
+  }
+
+  getErrorMessageListener() {
+    return this.errorMessageSubject.asObservable();
+  }
+
+  getUser() {
+    return this.userSubject.value;
+  }
+
+  setUser(user: User | null) {
+    this.userSubject.next(user);
+  }
+
+  getCurrentList() {
+    return this.userListSubject.value;
+  }
+
+  setCurrentList(list: CardList) {
+    this.userListSubject.next(list);
   }
 
   getSearchedCard() {
     return this.cardSubject.value;
   }
 
-  getCurrentList() {
-    return this.user?.getActiveList();
+  setSearchedCard(card: ScryfallCard) {
+    this.cardSubject.next(card);
+  }
+
+  getPrints() {
+    return this.printsSubject.value;
   }
 
   setSearchedPrints(prints: ScryfallList) {
     this.printsSubject.next(prints);
   }
 
-  getPrints() {
-    return this.printsSubject.value;
+  getErrorMessage() {
+    return this.errorMessageSubject.value;
+  }
+
+  setErrorMessage(message: string) {
+    this.errorMessageSubject.next(message);
   }
 }
