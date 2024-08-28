@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
 import { DisplayCard } from '../interfaces/display-card.interface';
 import { ActivatedRoute } from '@angular/router';
@@ -8,6 +8,7 @@ import { ScryfallList } from '../interfaces/scryfall-list.interface';
 import { PriceCalculatorService } from '../services/price-calculator.service';
 import { Prices } from '../interfaces/prices.interface';
 import { CurrencyPipe } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-search-result',
@@ -16,7 +17,7 @@ import { CurrencyPipe } from '@angular/common';
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.css',
 })
-export class SearchResultComponent implements OnInit {
+export class SearchResultComponent implements OnInit, OnDestroy {
   displayCard: DisplayCard = {
     name: 'Bellowing Crier',
     imgsrc: '../../assets/blb-42-bellowing-crier.jpg',
@@ -25,6 +26,8 @@ export class SearchResultComponent implements OnInit {
   };
   resultCard!: ScryfallCard | null;
   printsList!: ScryfallList | null;
+  private card$!: Subscription;
+  private prints$!: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -35,13 +38,18 @@ export class SearchResultComponent implements OnInit {
     console.log(cardNameInput);
   }
 
+  ngOnDestroy(): void {
+    this.card$.unsubscribe();
+    this.prints$.unsubscribe();
+  }
+
   ngOnInit(): void {
-    this.state.card$.subscribe((card) => {
+    this.card$ = this.state.getCardListener().subscribe((card) => {
       this.resultCard = card;
       this.displayCard = this.convertCard(this.resultCard);
       console.log('New card searched:', card);
     });
-    this.state.prints$.subscribe((prints) => {
+    this.prints$ = this.state.getPrintsListener().subscribe((prints) => {
       this.printsList = prints;
       console.log('New prints list:', prints);
       let data = prints?.data ?? [];
