@@ -57,6 +57,12 @@ export class SearchBarComponent {
             },
             (listErrorData) => {
               console.log(listErrorData);
+              let message = listErrorData?.error?.details;
+              if (!message) {
+                message = 'Unknown error when fetching list of prints.';
+              }
+              this.state.setErrorMessage(message);
+              this.router.navigate(['/404']);
             }
           );
         },
@@ -66,6 +72,7 @@ export class SearchBarComponent {
           console.log('Error detail:');
           console.log(errorData?.error?.details);
           this.state.setErrorMessage(errorData?.error?.details);
+          this.router.navigate(['/404']);
         }
       );
   }
