@@ -1,4 +1,10 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
@@ -6,6 +12,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { ScryfallCard } from '../interfaces/scryfall-card.interface';
 import { ScryfallList } from '../interfaces/scryfall-list.interface';
 import { GlimpseStateService } from '../services/glimpse-state.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-search-bar',
@@ -14,7 +21,7 @@ import { GlimpseStateService } from '../services/glimpse-state.service';
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.css',
 })
-export class SearchBarComponent {
+export class SearchBarComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private http: HttpClient,
@@ -25,6 +32,19 @@ export class SearchBarComponent {
     search: new FormControl('', [Validators.required, Validators.minLength(3)]),
   });
   @ViewChild('inputField') inputElement!: ElementRef;
+  private card$!: Subscription;
+
+  ngOnInit(): void {
+    this.card$ = this.state.getCardListener().subscribe((card) => {
+      if (card) {
+        this.searchForm.patchValue({ search: card.name });
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.card$.unsubscribe();
+  }
 
   navigateToList() {
     this.router.navigate(['/list']);
