@@ -20,6 +20,7 @@ export class GlimpseStateService {
 
   constructor() {}
 
+  // get observables for other components
   getUserListener() {
     return this.userSubject.asObservable();
   }
@@ -40,6 +41,7 @@ export class GlimpseStateService {
     return this.errorMessageSubject.asObservable();
   }
 
+  // get & set current values
   getUser() {
     return this.userSubject.value;
   }
