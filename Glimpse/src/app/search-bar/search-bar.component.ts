@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
@@ -24,9 +24,14 @@ export class SearchBarComponent {
   searchForm = new FormGroup({
     search: new FormControl('', [Validators.required, Validators.minLength(3)]),
   });
+  @ViewChild('inputField') inputElement!: ElementRef;
 
   navigateToList() {
     this.router.navigate(['/list']);
+  }
+
+  clearInput() {
+    this.searchForm.patchValue({ search: '' });
   }
 
   handleSubmit() {
@@ -36,6 +41,9 @@ export class SearchBarComponent {
     }
 
     // start a spinner?
+    // make input lose focus
+    this.inputElement.nativeElement.blur();
+
     // search for the card
     // encode search term for "fuzzy" key
     const searchParams = this.searchForm.value.search
