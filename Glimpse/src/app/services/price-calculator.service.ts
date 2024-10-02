@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { ScryfallCard } from '../interfaces/scryfall-card.interface';
 import { Prices } from '../interfaces/prices.interface';
+import { environment } from 'src/environments/environment';
+
+const BACKEND_URL = environment.apiURL + '/price';
 
 @Injectable({
   providedIn: 'root',
