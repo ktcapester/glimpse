@@ -1,9 +1,9 @@
 .header {
-    padding: 24px;
-    border-bottom: 1px solid var(--Shadow);
-    width: 100%;
-    height: auto;
-    background-color: var(--Sand);
-    box-sizing: border-box;
-    margin-bottom: 18px;
+  padding: 24px;
+  border-bottom: 1px solid var(--Shadow);
+  width: 100%;
+  height: auto;
+  background-color: var(--Sand);
+  box-sizing: border-box;
+  margin-bottom: 18px;
 }

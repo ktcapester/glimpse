@@ -1,73 +1,92 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { NgForm, FormsModule } from "@angular/forms";
-import { ScryfallSearchService } from '../services/scryfall-search.service';
+import { HeaderComponent } from '../header/header.component';
 import { DisplayCard } from '../interfaces/display-card.interface';
+import { ActivatedRoute } from '@angular/router';
 import { ScryfallCard } from '../interfaces/scryfall-card.interface';
+import { GlimpseStateService } from '../services/glimpse-state.service';
+import { ScryfallList } from '../interfaces/scryfall-list.interface';
 import { PriceCalculatorService } from '../services/price-calculator.service';
+import { Prices } from '../interfaces/prices.interface';
+import { CurrencyPipe } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 @Component({
-    selector: 'app-search-result',
-    templateUrl: './search-result.component.html',
-    styleUrls: ['./search-result.component.css'],
-    standalone: true,
-    imports: [FormsModule]
+  selector: 'app-search-result',
+  standalone: true,
+  imports: [HeaderComponent, CurrencyPipe],
+  templateUrl: './search-result.component.html',
+  styleUrl: './search-result.component.css',
 })
-export class SearchResultComponent implements OnInit {
-
-  constructor(private searchService: ScryfallSearchService, private priceService: PriceCalculatorService) { }
-
-  displayedCard: DisplayCard = {
-    name: '',
-    imgsrc: '',
-    normalprice: '-.-',
-    fancyprice: '-.-'
+export class SearchResultComponent implements OnInit, OnDestroy {
+  displayCard: DisplayCard = {
+    name: 'Bellowing Crier',
+    imgsrc: '../../assets/blb-42-bellowing-crier.jpg',
+    normalprice: 0.02,
+    fancyprice: 0.06,
   };
+  resultCard!: ScryfallCard | null;
+  printsList!: ScryfallList | null;
+  private card$!: Subscription;
+  private prints$!: Subscription;
 
-  private cardsSub!: Subscription;
-  private displaySub!: Subscription;
-  cardsList: ScryfallCard[] = [];
-
-  ngOnInit(): void {
-
-    // set up callback for when fuzzy search returns a card to display
-    this.displaySub = this.searchService.getCardUpdateListener()
-      .subscribe((theCard) => {
-        this.displayedCard.name = theCard.name;
-        this.displayedCard.imgsrc = theCard.imgsrc;
-      });
-
-    // set up callback for when we get the list of all prints
-    this.cardsSub = this.searchService.getListUpdateListener()
-      .subscribe((cards: ScryfallCard[]) => {
-        this.cardsList = cards;
-
-        const avgNormal = this.priceService.cardPriceMagic(this.cardsList);
-        const avgFancy = 0;
-
-        // display averages
-        this.displayedCard.normalprice = avgNormal.toFixed(2);
-        this.displayedCard.fancyprice = avgFancy.toFixed(2);
-
-      });
-
-    // now that callbacks are set up, make http request
-    // do fuzzy search with the provided search term
-    this.searchService.fuzzySearch('fell ston');
-
+  constructor(
+    private route: ActivatedRoute,
+    private state: GlimpseStateService,
+    private pricer: PriceCalculatorService
+  ) {
+    const cardNameInput = this.route.snapshot.params['cardName'];
+    console.log(cardNameInput);
   }
 
   ngOnDestroy(): void {
-    this.cardsSub.unsubscribe();
-    this.displaySub.unsubscribe();
+    this.card$.unsubscribe();
+    this.prints$.unsubscribe();
   }
 
-  onSearchSubmit(form: NgForm) {
+  ngOnInit(): void {
+    this.card$ = this.state.getCardListener().subscribe((card) => {
+      this.resultCard = card;
+      this.displayCard = this.convertCard(this.resultCard);
+      console.log('New card searched:', card);
+    });
+    this.prints$ = this.state.getPrintsListener().subscribe((prints) => {
+      this.printsList = prints;
+      console.log('New prints list:', prints);
+      let data = prints?.data ?? [];
+      let prices = this.pricer.calculateAllPrices(data);
+      console.log('Calculated Prices:', prices);
+      this.displayCard = this.updatePrices(this.displayCard, prices);
+    });
+  }
 
-    if (form.invalid) {
-      return;
+  updatePrices(card: DisplayCard, prices: Prices) {
+    let result = { ...card };
+    result.normalprice = prices.usd;
+    result.fancyprice = prices.usd_foil;
+    return result;
+  }
+
+  convertCard(scard: ScryfallCard | null) {
+    let result: DisplayCard = {
+      name: 'Bellowing Crier',
+      imgsrc: '../../assets/blb-42-bellowing-crier.jpg',
+      normalprice: 0.02,
+      fancyprice: 0.06,
+    };
+    if (scard) {
+      let imgsrc = '';
+      if (scard.image_uris) {
+        imgsrc = scard.image_uris.large;
+      } else {
+        imgsrc = scard.card_faces[0].image_uris.large;
+      }
+      result = {
+        name: scard.name,
+        imgsrc: imgsrc,
+        normalprice: 0.0,
+        fancyprice: 0.0,
+      };
     }
-
-    this.searchService.fuzzySearch(form.value.searchField);
+    return result;
   }
 }
