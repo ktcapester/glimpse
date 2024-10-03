@@ -1,0 +1,15 @@
+From within the backend folder (...\Glimpse\backend>) run:
+
+npx nodemon server.js
+
+to start the backend server and have it auto restart on file change.
+Looks like I'll still need to refresh the page in the browser, but that's ok
+
+From the Glimpse folder, run:
+
+ng serve
+
+to run the Angular frontend as normal.
+
+VSCode can keep 2 cmd terminals open, so leave one in \Glimpse, and one in \backend
+
