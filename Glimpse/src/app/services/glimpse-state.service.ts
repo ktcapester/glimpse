@@ -4,6 +4,7 @@ import { ScryfallCard } from '../interfaces/scryfall-card.interface';
 import { CardList } from '../models/card-list.model';
 import { ScryfallList } from '../interfaces/scryfall-list.interface';
 import { BehaviorSubject } from 'rxjs';
+import { CardSearch } from '../interfaces/backend.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +14,7 @@ export class GlimpseStateService {
   private userSubject = new BehaviorSubject<User | null>(null);
   private userListSubject = new BehaviorSubject<CardList | null>(null);
   private cardSubject = new BehaviorSubject<ScryfallCard | null>(null);
+  private backendSubject = new BehaviorSubject<CardSearch | null>(null);
   private printsSubject = new BehaviorSubject<ScryfallList | null>(null);
   private errorMessageSubject = new BehaviorSubject<string>(
     'Default Error Message'
@@ -21,6 +23,10 @@ export class GlimpseStateService {
   constructor() {}
 
   // get observables for other components
+  getBackendCardListener() {
+    return this.backendSubject.asObservable();
+  }
+
   getUserListener() {
     return this.userSubject.asObservable();
   }
@@ -42,6 +48,10 @@ export class GlimpseStateService {
   }
 
   // get & set current values
+  setBackendCard(card: CardSearch | null) {
+    this.backendSubject.next(card);
+  }
+
   getUser() {
     return this.userSubject.value;
   }
