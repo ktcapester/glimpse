@@ -8,11 +8,9 @@ import {
 import { Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { ScryfallCard } from '../interfaces/scryfall-card.interface';
-import { ScryfallList } from '../interfaces/scryfall-list.interface';
-import { GlimpseStateService } from '../services/glimpse-state.service';
 import { Subscription } from 'rxjs';
+import { GlimpseStateService } from '../services/glimpse-state.service';
+import { BackendGlueService } from '../services/backend-glue.service';
 
 @Component({
   selector: 'app-search-bar',
@@ -24,8 +22,8 @@ import { Subscription } from 'rxjs';
 export class SearchBarComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
-    private http: HttpClient,
-    private state: GlimpseStateService
+    private state: GlimpseStateService,
+    private glue: BackendGlueService
   ) {}
 
   searchForm = new FormGroup({
@@ -35,7 +33,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   private card$!: Subscription;
 
   ngOnInit(): void {
-    this.card$ = this.state.getCardListener().subscribe((card) => {
+    this.card$ = this.state.getBackendCardListener().subscribe((card) => {
       if (card) {
         this.searchForm.patchValue({ search: card.name });
       }
@@ -63,45 +61,24 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     // start a spinner?
     // make input lose focus
     this.inputElement.nativeElement.blur();
-
-    // search for the card
-    // encode search term for "fuzzy" key
-    const searchParams = this.searchForm.value.search
-      ? { params: new HttpParams().set('fuzzy', this.searchForm.value.search) }
-      : {};
-    // then run the search
-    this.http
-      .get<ScryfallCard>('https://api.scryfall.com/cards/named', searchParams)
-      .subscribe(
-        (responseData) => {
-          // returns a card
-          console.log('Found card:', responseData);
-          this.http.get<ScryfallList>(responseData.prints_search_uri).subscribe(
-            (allData) => {
-              console.log('Got printings:', allData);
-              this.state.setSearchedCard(responseData);
-              this.state.setSearchedPrints(allData);
-              this.router.navigate(['/result', responseData.name]);
-            },
-            (listErrorData) => {
-              console.log(listErrorData);
-              let message = listErrorData?.error?.details;
-              if (!message) {
-                message = 'Unknown error when fetching list of prints.';
-              }
-              this.state.setErrorMessage(message);
-              this.router.navigate(['/404']);
-            }
-          );
-        },
-        (errorData) => {
-          // 404 with either zero cards matched or more than 1 matched
-          console.log(errorData);
-          console.log('Error detail:');
-          console.log(errorData?.error?.details);
-          this.state.setErrorMessage(errorData?.error?.details);
-          this.router.navigate(['/404']);
-        }
-      );
+    // extract search term
+    let word = this.searchForm.value.search ? this.searchForm.value.search : '';
+    if (word === '') {
+      console.log('how did you do this');
+      return;
+    }
+    // use backend to search and process the result
+    this.glue.getCardSearch(word).subscribe((response) => {
+      if (typeof response === 'string') {
+        // error response
+        this.state.setErrorMessage(response);
+        this.router.navigate(['/404']);
+      } else {
+        // successful response
+        // aka response is CardSearch obj
+        this.state.setBackendCard(response);
+        this.router.navigate(['/result', response.name]);
+      }
+    });
   }
 }
