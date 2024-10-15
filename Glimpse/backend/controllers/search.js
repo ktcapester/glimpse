@@ -1,4 +1,4 @@
-import pricer from "../models/price";
+const pricer = require("../models/price");
 
 // Controller function for GET requests
 const getCardSearch = async (req, res) => {
@@ -32,12 +32,12 @@ const getCardSearch = async (req, res) => {
       const all_prints_uri = scryfallData.prints_search_uri;
       const all_response = await fetch(all_prints_uri);
       const all_data = await all_response.json();
-      const calculated_prices = pricer.calculateAllPrices(all_data);
+      const calculated_prices = pricer.calculateAllPrices(all_data.data);
       var img_src = "";
-      if (scryfallData.img_uris) {
-        img_src = scryfallData.img_uris.large;
+      if (scryfallData.image_uris) {
+        img_src = scryfallData.image_uris.large;
       } else {
-        img_src = scryfallData.card_faces[0].img_uris.large;
+        img_src = scryfallData.card_faces[0].image_uris.large;
       }
 
       const manipulated = {
@@ -50,12 +50,10 @@ const getCardSearch = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({
-        error: "An error occurred while fetching data from Scryfall.",
-        errorCode: "SERVER_ERROR",
-      });
+    return res.status(500).json({
+      error: "An error occurred while fetching data from Scryfall.",
+      errorCode: "SERVER_ERROR",
+    });
   }
 };
 
