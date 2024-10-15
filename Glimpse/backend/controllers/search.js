@@ -2,7 +2,7 @@ import pricer from "../models/price";
 
 // Controller function for GET requests
 const getCardSearch = async (req, res) => {
-  const searchTerm = req.query.query;
+  const searchTerm = req.query.name;
 
   if (!searchTerm) {
     return res.status(400).json({ error: "Search term is required." });
