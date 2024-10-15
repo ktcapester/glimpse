@@ -18,13 +18,15 @@ const getCardSearch = async (req, res) => {
 
     if (scryfallResponse.status == 404) {
       if (scryfallData.type == "ambiguous") {
-        res
-          .status(404)
-          .json({ error: "Scryfall found too many cards with that query." });
+        return res.status(404).json({
+          error: "Scryfall found too many cards with that query.",
+          errorCode: "CARD_AMBIGUOUS",
+        });
       } else {
-        res
-          .status(404)
-          .json({ error: "Scryfall couldn't find a card with that query." });
+        return res.status(404).json({
+          error: "Scryfall couldn't find a card with that query.",
+          errorCode: "CARD_NOT_FOUND",
+        });
       }
     } else {
       const all_prints_uri = scryfallData.prints_search_uri;
@@ -48,9 +50,12 @@ const getCardSearch = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(500)
-      .json({ error: "An error occurred while fetching data from Scryfall." });
+      .json({
+        error: "An error occurred while fetching data from Scryfall.",
+        errorCode: "SERVER_ERROR",
+      });
   }
 };
 
