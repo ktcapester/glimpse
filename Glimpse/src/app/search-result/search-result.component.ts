@@ -3,13 +3,13 @@ import { HeaderComponent } from '../header/header.component';
 import { DisplayCard } from '../interfaces/display-card.interface';
 import { ActivatedRoute } from '@angular/router';
 import { GlimpseStateService } from '../services/glimpse-state.service';
-import { CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-search-result',
   standalone: true,
-  imports: [HeaderComponent, CurrencyPipe],
+  imports: [HeaderComponent, CurrencyPipe, CommonModule],
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.css',
 })
@@ -40,8 +40,9 @@ export class SearchResultComponent implements OnInit, OnDestroy {
       this.displayCard = {
         name: card.name,
         imgsrc: card.imgsrc,
-        fancyprice: card.usd_foil,
+        foilprice: card.usd_foil,
         normalprice: card.usd,
+        etchedprice: card.usd_etched,
       };
     });
   }
