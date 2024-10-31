@@ -20,7 +20,12 @@ export class GlimpseStateService {
     'Default Error Message'
   );
 
-  constructor() {}
+  constructor() {
+    const savedCard = sessionStorage.getItem('lastSearchedCard');
+    if (savedCard) {
+      this.backendSubject.next(JSON.parse(savedCard));
+    }
+  }
 
   // get observables for other components
   getBackendCardListener() {
@@ -49,6 +54,7 @@ export class GlimpseStateService {
 
   // get & set current values
   setBackendCard(card: CardSearch | null) {
+    sessionStorage.setItem('lastSearchedCard', JSON.stringify(card));
     this.backendSubject.next(card);
   }
 
