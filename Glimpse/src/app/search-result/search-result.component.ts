@@ -41,62 +41,42 @@ export class SearchResultComponent implements OnInit, OnDestroy {
       if (!card) {
         console.log('Card from state.backendSubject was null, checking url');
         if (this.cardNameFromRoute) {
-          this.glue
-            .getCardSearch(this.cardNameFromRoute)
-            .subscribe((response) => {
-              if (typeof response === 'string') {
-                // error response
-                this.state.setErrorMessage(response);
-                this.router.navigate(['/404']);
-              } else {
-                // successful response
-                // aka response is CardSearch obj
-                this.state.setBackendCard(response);
-                this.displayCard = {
-                  name: response.name,
-                  imgsrc: response.imgsrc,
-                  foilprice: response.usd_foil,
-                  normalprice: response.usd,
-                  etchedprice: response.usd_etched,
-                };
-                return;
-              }
-            });
+          this.getCardFromBack(this.cardNameFromRoute);
+        } else {
+          console.log('no backend card, no URL card, probably an error');
         }
-        console.log('no backend card, no URL card, probably an error');
         return;
       }
 
       if (this.cardNameFromRoute != card.name) {
-        this.glue
-          .getCardSearch(this.cardNameFromRoute)
-          .subscribe((response) => {
-            if (typeof response === 'string') {
-              // error response
-              this.state.setErrorMessage(response);
-              this.router.navigate(['/404']);
-            } else {
-              // successful response
-              // aka response is CardSearch obj
-              this.state.setBackendCard(response);
-              this.displayCard = {
-                name: response.name,
-                imgsrc: response.imgsrc,
-                foilprice: response.usd_foil,
-                normalprice: response.usd,
-                etchedprice: response.usd_etched,
-              };
-              return;
-            }
-          });
+        this.getCardFromBack(this.cardNameFromRoute);
+      } else {
+        this.setDisplayCard(card);
       }
-      this.displayCard = {
-        name: card.name,
-        imgsrc: card.imgsrc,
-        foilprice: card.usd_foil,
-        normalprice: card.usd,
-        etchedprice: card.usd_etched,
-      };
     });
+  }
+
+  private getCardFromBack(cardName: string): void {
+    this.glue.getCardSearch(cardName).subscribe((response) => {
+      if (typeof response === 'string') {
+        // error response
+        this.state.setErrorMessage(response);
+        this.router.navigate(['/404']);
+      } else {
+        // successful response, response is CardSearch object
+        this.state.setBackendCard(response);
+        this.setDisplayCard(response);
+      }
+    });
+  }
+
+  private setDisplayCard(card: any): void {
+    this.displayCard = {
+      name: card.name,
+      imgsrc: card.imgsrc,
+      foilprice: card.usd_foil,
+      normalprice: card.usd,
+      etchedprice: card.usd_etched,
+    };
   }
 }
