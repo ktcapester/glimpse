@@ -38,19 +38,21 @@ export class SearchResultComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.backend$ = this.state.getBackendCardListener().subscribe((card) => {
       console.log(card);
-      if (!card) {
-        console.log('Card from state.backendSubject was null, checking url');
-        if (this.cardNameFromRoute) {
-          this.getCardFromBack(this.cardNameFromRoute);
-        } else {
-          console.log('no backend card, no URL card, probably an error');
-        }
-        return;
-      }
-
-      if (this.cardNameFromRoute != card.name) {
+      // 4 cases to check due to existence or lack thereof for card & URL name
+      if (
+        this.cardNameFromRoute &&
+        (!card || this.cardNameFromRoute !== card.name)
+      ) {
+        // Case 1 and Case 3 combined: Either no backend card but URL card exists,
+        // or backend card exists and doesn’t match the URL card
         this.getCardFromBack(this.cardNameFromRoute);
-      } else {
+      } else if (!card && !this.cardNameFromRoute) {
+        // Case 2: No backend card, no URL card name
+        console.log('No backend card, no URL card, likely an error');
+        this.state.setErrorMessage('Card not found');
+        this.router.navigate(['/404']);
+      } else if (card) {
+        // Case 4: Backend card exists and matches (or no URL card name)
         this.setDisplayCard(card);
       }
     });
