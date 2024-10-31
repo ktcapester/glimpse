@@ -8,7 +8,14 @@
       width="336"
       height="468"
     />
-    <div class="prices-container">
+    <div
+      class="prices-container"
+      [ngStyle]="{
+        'grid-template': displayCard.etchedprice
+          ? 'auto auto / auto auto auto'
+          : 'auto auto / auto auto'
+      }"
+    >
       <div class="text label">Normal</div>
       <div class="text label">Foil</div>
       <div class="text label" *ngIf="displayCard.etchedprice">Etched</div>
