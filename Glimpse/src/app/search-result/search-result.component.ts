@@ -27,6 +27,10 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     private glue: BackendGlueService
   ) {
     this.cardNameFromRoute = this.route.snapshot.params['cardName'];
+    this.route.paramMap.subscribe((params) => {
+      const name = params.get('cardName');
+      this.cardNameFromRoute = name ? name : '';
+    });
     console.log(this.cardNameFromRoute);
   }
 
