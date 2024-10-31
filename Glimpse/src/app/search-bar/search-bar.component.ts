@@ -41,6 +41,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    sessionStorage.removeItem('lastSearchedCard');
     this.card$.unsubscribe();
   }
 
