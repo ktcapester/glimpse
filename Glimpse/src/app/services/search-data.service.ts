@@ -3,7 +3,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { BackendGlueService } from './backend-glue.service';
 import { Router } from '@angular/router';
 import { GlimpseStateService } from './glimpse-state.service';
-import { switchMap, tap } from 'rxjs/operators';
+import { filter, switchMap, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +12,7 @@ export class SearchDataService {
   private searchTermSubject = new BehaviorSubject<string>('');
 
   searchResults$ = this.searchTermSubject.pipe(
+    filter((term) => !!term),
     switchMap((term) => {
       const storedData = sessionStorage.getItem('lastSearchedCard');
       if (storedData && term === JSON.parse(storedData).name) {
