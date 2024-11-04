@@ -1,6 +1,6 @@
 <div class="result-container">
   <app-header></app-header>
-  <div class="result-content">
+  <div class="result-content" *ngIf="displayCard">
     <img
       [src]="displayCard.imgsrc"
       [alt]="displayCard.name"
