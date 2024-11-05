@@ -25,7 +25,11 @@
         {{ displayCard.etchedprice | currency }}
       </div>
     </div>
-    <button class="button-layout add-list-style">+ Add to List</button>
-    <button class="button-layout view-scryfall-style">View on Scryfall</button>
+    <button class="button-layout add-list-style" (click)="onAddToList()">
+      + Add to List
+    </button>
+    <div class="button-layout view-scryfall-style" (click)="onGoToScryfall()">
+      View on Scryfall
+    </div>
   </div>
 </div>

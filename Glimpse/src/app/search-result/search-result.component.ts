@@ -62,6 +62,15 @@ export class SearchResultComponent implements OnInit, OnDestroy {
       foilprice: card.usd_foil,
       normalprice: card.usd,
       etchedprice: card.usd_etched,
+      scryfallLink: card.scryfallLink,
     };
+  }
+
+  onAddToList() {
+    // use backend to add to the list
+  }
+
+  onGoToScryfall() {
+    window.open(this.displayCard.scryfallLink, '_blank');
   }
 }

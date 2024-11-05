@@ -4,4 +4,5 @@ export interface DisplayCard {
   normalprice: number;
   foilprice: number;
   etchedprice: number;
+  scryfallLink: string;
 }

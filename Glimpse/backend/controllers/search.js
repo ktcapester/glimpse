@@ -43,6 +43,7 @@ const getCardSearch = async (req, res) => {
       const manipulated = {
         name: scryfallData.name,
         imgsrc: img_src,
+        scryfallLink: scryfallData.scryfall_uri,
         ...calculated_prices,
       };
 
