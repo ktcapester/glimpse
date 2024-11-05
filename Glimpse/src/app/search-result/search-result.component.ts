@@ -7,6 +7,7 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { SearchDataService } from '../services/search-data.service';
+import { BackendGlueService } from '../services/backend-glue.service';
 
 @Component({
   selector: 'app-search-result',
@@ -23,12 +24,13 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private state: GlimpseStateService,
-    private searchdata: SearchDataService
+    private searchdata: SearchDataService,
+    private glue: BackendGlueService
   ) {}
 
   ngOnDestroy(): void {
     console.log('SearchResult ngOnDestroy called!', Date.now());
-    // this.searchdata.clearSearchResults(); // maybe not needed here?
+    this.searchdata.clearSearchResults(); // turned on due to leaving the page i guess?
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -68,6 +70,22 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
   onAddToList() {
     // use backend to add to the list
+    console.log('onAddToList() called!');
+    // Note: the observable from http.post must be subscribed to in order to actually run!
+    this.glue
+      .postCardList({
+        name: this.displayCard.name,
+        price: this.displayCard.normalprice,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((list_response) => {
+        if (list_response.card.name === this.displayCard.name) {
+          console.log('Successfully added to list!');
+        } else {
+          console.log('Something went wrong.');
+          console.log(list_response);
+        }
+      });
   }
 
   onGoToScryfall() {
