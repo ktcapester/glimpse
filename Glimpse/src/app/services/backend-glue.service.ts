@@ -46,6 +46,8 @@ export class BackendGlueService {
   }
 
   postCardList(card: { name: string; price: number }) {
-    return this.http.post(this.apiUrl + '/list', { card });
+    return this.http.post<{ card: { name: string } }>(this.apiUrl + '/list', {
+      card,
+    });
   }
 }
