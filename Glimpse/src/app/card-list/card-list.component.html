@@ -1,5 +1,9 @@
 <app-header></app-header>
 
+<h4 *ngIf="!dummylist || dummylist.length == 0">
+  There doesn't seem to be anything here...
+</h4>
+
 @for (item of dummylist; track item.id; let i = $index) {
 <div class="card-list-item" [class.alternate-item]="i % 2 == 1">
   <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">

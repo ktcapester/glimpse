@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { HeaderComponent } from '../header/header.component';
 import { BackendGlueService } from '../services/backend-glue.service';
 import { Subject } from 'rxjs';
@@ -11,14 +11,14 @@ import { CardListItem } from '../interfaces/backend.interface';
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.css'],
   standalone: true,
-  imports: [HeaderComponent, CurrencyPipe],
+  imports: [HeaderComponent, CurrencyPipe, CommonModule],
 })
 export class CardListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(private glue: BackendGlueService) {}
 
-  dummylist: CardListItem[] = [{ id: 0, name: 'init', price: 21.23 }];
+  dummylist: CardListItem[] = [];
   totalPrice = 0.0;
 
   ngOnDestroy(): void {
