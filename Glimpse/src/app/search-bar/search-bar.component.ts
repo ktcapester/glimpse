@@ -68,26 +68,11 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       console.log('how did you do this');
       return;
     }
-    // **************************************************
+
     this.searchdata.updateSearchTerm(word);
     if (!this.router.url.includes('/result')) {
-      // on the results page, so just update the data after getting from backend
-      // might just need to notify the results page to fetch new card with form data
+      // only need to navigate if not already on a results page
       this.router.navigate(['/result', word]);
     }
-    // **************************************************
-    // use backend to search and process the result
-    // this.glue.getCardSearch(word).subscribe((response) => {
-    //   if (typeof response === 'string') {
-    //     // error response
-    //     this.state.setErrorMessage(response);
-    //     this.router.navigate(['/404']);
-    //   } else {
-    //     // successful response
-    //     // aka response is CardSearch obj
-    //     this.state.setBackendCard(response);
-    //     this.router.navigate(['/result', response.name]);
-    //   }
-    // });
   }
 }
