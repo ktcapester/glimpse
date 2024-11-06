@@ -1,17 +1,45 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { HeaderComponent } from '../header/header.component';
+import { BackendGlueService } from '../services/backend-glue.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { CardListItem } from '../interfaces/backend.interface';
 
 @Component({
   selector: 'app-card-list',
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.css'],
   standalone: true,
-  imports: [HeaderComponent],
+  imports: [HeaderComponent, CurrencyPipe],
 })
-export class CardListComponent implements OnInit {
-  constructor() {}
+export class CardListComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
 
-  dummylist = [1, 2, 3, 4, 5, 6, 7, 8, 9, 9];
+  constructor(private glue: BackendGlueService) {}
 
-  ngOnInit(): void {}
+  dummylist: CardListItem[] = [{ id: 0, name: 'init', price: 21.23 }];
+  totalPrice = 0.0;
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  ngOnInit(): void {
+    this.glue
+      .getCardList()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((list) => {
+        this.dummylist = list;
+        for (let index = 0; index < list.length; index++) {
+          const element = list[index];
+          this.totalPrice += element.price;
+        }
+      });
+  }
+
+  onClearList() {
+    alert('Are you sure?');
+  }
 }
