@@ -31,12 +31,10 @@ export class CardListComponent implements OnInit, OnDestroy {
     this.glue
       .getCardList()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((list) => {
-        this.dummylist = list;
-        for (let index = 0; index < list.length; index++) {
-          const element = list[index];
-          this.totalPrice += element.price;
-        }
+      .subscribe((response) => {
+        console.log('getCardList returned:', response);
+        this.dummylist = response.list;
+        this.totalPrice = response.currentTotal;
       });
   }
 

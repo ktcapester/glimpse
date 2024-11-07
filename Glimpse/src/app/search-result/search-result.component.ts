@@ -79,8 +79,9 @@ export class SearchResultComponent implements OnInit, OnDestroy {
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe((list_response) => {
-        if (list_response.name === this.displayCard.name) {
+        if (list_response.data.name === this.displayCard.name) {
           console.log('Successfully added to list!');
+          this.state.pushNewTotal(list_response.currentTotal);
         } else {
           console.log('Something went wrong.');
           console.log(list_response);
