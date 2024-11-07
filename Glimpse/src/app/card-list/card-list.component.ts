@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CardListItem } from '../interfaces/backend.interface';
 import { Router } from '@angular/router';
+import { GlimpseStateService } from '../services/glimpse-state.service';
 
 @Component({
   selector: 'app-card-list',
@@ -17,7 +18,11 @@ import { Router } from '@angular/router';
 export class CardListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  constructor(private glue: BackendGlueService, private router: Router) {}
+  constructor(
+    private glue: BackendGlueService,
+    private state: GlimpseStateService,
+    private router: Router
+  ) {}
 
   dummylist: CardListItem[] = [];
   totalPrice = 0.0;
@@ -35,6 +40,7 @@ export class CardListComponent implements OnInit, OnDestroy {
         console.log('getCardList returned:', response);
         this.dummylist = response.list;
         this.totalPrice = response.currentTotal;
+        this.state.pushNewTotal(response.currentTotal);
       });
   }
 
@@ -44,5 +50,14 @@ export class CardListComponent implements OnInit, OnDestroy {
 
   onClearList() {
     alert('Are you sure?');
+    this.glue
+      .deleteCardList()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        console.log('deleteCardList returned:', response);
+        this.dummylist = response.list;
+        this.totalPrice = response.currentTotal;
+        this.state.pushNewTotal(response.currentTotal);
+      });
   }
 }
