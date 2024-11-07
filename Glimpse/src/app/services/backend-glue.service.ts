@@ -55,4 +55,31 @@ export class BackendGlueService {
       }
     );
   }
+
+  deleteCardList() {
+    return this.http.delete<{ list: CardListItem[]; currentTotal: number }>(
+      this.apiUrl + '/list'
+    );
+  }
+
+  deleteSingleCard(card_id: number) {
+    let params = new HttpParams().set('id', card_id);
+    return this.http
+      .delete<{ list: CardListItem[]; currentTotal: number }>(
+        this.apiUrl + '/list',
+        { params }
+      )
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 404) {
+            console.log('removing a card from list failed');
+            return of(error.message);
+          } else if (error.status === 500) {
+            return of('A server error occurred. Try again later.');
+          } else {
+            return of('An unknown error occured.');
+          }
+        })
+      );
+  }
 }
