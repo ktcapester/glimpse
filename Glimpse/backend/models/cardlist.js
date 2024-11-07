@@ -5,9 +5,13 @@ const getAllCards = () => {
 };
 
 const addCard = (newData) => {
+  console.log("got data:", newData);
+
   const newId = tempStore.length + 1;
   const data = { id: newId, ...newData };
   tempStore.push(data);
+  console.log("stored as:", data);
+
   return data;
 };
 

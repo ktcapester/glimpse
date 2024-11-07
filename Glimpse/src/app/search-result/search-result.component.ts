@@ -1,92 +1,94 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
 import { DisplayCard } from '../interfaces/display-card.interface';
-import { ActivatedRoute } from '@angular/router';
-import { ScryfallCard } from '../interfaces/scryfall-card.interface';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GlimpseStateService } from '../services/glimpse-state.service';
-import { ScryfallList } from '../interfaces/scryfall-list.interface';
-import { PriceCalculatorService } from '../services/price-calculator.service';
-import { Prices } from '../interfaces/prices.interface';
-import { CurrencyPipe } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { CommonModule, CurrencyPipe } from '@angular/common';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { SearchDataService } from '../services/search-data.service';
+import { BackendGlueService } from '../services/backend-glue.service';
 
 @Component({
   selector: 'app-search-result',
   standalone: true,
-  imports: [HeaderComponent, CurrencyPipe],
+  imports: [HeaderComponent, CurrencyPipe, CommonModule],
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.css',
 })
 export class SearchResultComponent implements OnInit, OnDestroy {
-  displayCard: DisplayCard = {
-    name: 'Bellowing Crier',
-    imgsrc: '../../assets/blb-42-bellowing-crier.jpg',
-    normalprice: 0.02,
-    fancyprice: 0.06,
-  };
-  resultCard!: ScryfallCard | null;
-  printsList!: ScryfallList | null;
-  private card$!: Subscription;
-  private prints$!: Subscription;
+  displayCard!: DisplayCard;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private state: GlimpseStateService,
-    private pricer: PriceCalculatorService
-  ) {
-    const cardNameInput = this.route.snapshot.params['cardName'];
-    console.log(cardNameInput);
-  }
+    private searchdata: SearchDataService,
+    private glue: BackendGlueService
+  ) {}
 
   ngOnDestroy(): void {
-    this.card$.unsubscribe();
-    this.prints$.unsubscribe();
+    console.log('SearchResult ngOnDestroy called!', Date.now());
+    this.searchdata.clearSearchResults(); // turned on due to leaving the page i guess?
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnInit(): void {
-    this.card$ = this.state.getCardListener().subscribe((card) => {
-      this.resultCard = card;
-      this.displayCard = this.convertCard(this.resultCard);
-      console.log('New card searched:', card);
+    console.log('SearchResult ngOnInit called!', Date.now());
+    // Set up getting names out of the URL
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const name = params.get('cardName') || '';
+      this.searchdata.updateSearchTerm(name);
     });
-    this.prints$ = this.state.getPrintsListener().subscribe((prints) => {
-      this.printsList = prints;
-      console.log('New prints list:', prints);
-      let data = prints?.data ?? [];
-      let prices = this.pricer.calculateAllPrices(data);
-      console.log('Calculated Prices:', prices);
-      this.displayCard = this.updatePrices(this.displayCard, prices);
-    });
+
+    this.searchdata.searchResults$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((card) => {
+        if (card) {
+          this.setDisplayCard(card);
+          this.router.navigate(['/result', card.name]);
+        } else {
+          // card was null
+          this.state.setErrorMessage('Trouble with searchResults$');
+          this.router.navigate(['/404']);
+        }
+      });
   }
 
-  updatePrices(card: DisplayCard, prices: Prices) {
-    let result = { ...card };
-    result.normalprice = prices.usd;
-    result.fancyprice = prices.usd_foil;
-    return result;
-  }
-
-  convertCard(scard: ScryfallCard | null) {
-    let result: DisplayCard = {
-      name: 'Bellowing Crier',
-      imgsrc: '../../assets/blb-42-bellowing-crier.jpg',
-      normalprice: 0.02,
-      fancyprice: 0.06,
+  private setDisplayCard(card: any): void {
+    this.displayCard = {
+      name: card.name,
+      imgsrc: card.imgsrc,
+      foilprice: card.usd_foil,
+      normalprice: card.usd,
+      etchedprice: card.usd_etched,
+      scryfallLink: card.scryfallLink,
     };
-    if (scard) {
-      let imgsrc = '';
-      if (scard.image_uris) {
-        imgsrc = scard.image_uris.large;
-      } else {
-        imgsrc = scard.card_faces[0].image_uris.large;
-      }
-      result = {
-        name: scard.name,
-        imgsrc: imgsrc,
-        normalprice: 0.0,
-        fancyprice: 0.0,
-      };
-    }
-    return result;
+  }
+
+  onAddToList() {
+    // use backend to add to the list
+    console.log('onAddToList() called!');
+    // Note: the observable from http.post must be subscribed to in order to actually run!
+    this.glue
+      .postCardList({
+        name: this.displayCard.name,
+        price: this.displayCard.normalprice,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((list_response) => {
+        if (list_response.name === this.displayCard.name) {
+          console.log('Successfully added to list!');
+        } else {
+          console.log('Something went wrong.');
+          console.log(list_response);
+        }
+      });
+  }
+
+  onGoToScryfall() {
+    window.open(this.displayCard.scryfallLink, '_blank');
   }
 }

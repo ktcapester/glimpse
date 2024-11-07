@@ -1,5 +1,6 @@
 <div class="result-container">
   <app-header></app-header>
+  @if (displayCard){
   <div class="result-content">
     <img
       [src]="displayCard.imgsrc"
@@ -8,13 +9,36 @@
       width="336"
       height="468"
     />
-    <div class="prices-container">
+    <div
+      class="prices-container"
+      [ngStyle]="{
+        'grid-template': displayCard.etchedprice
+          ? 'auto auto / auto auto auto'
+          : 'auto auto / auto auto'
+      }"
+    >
       <div class="text label">Normal</div>
       <div class="text label">Foil</div>
+      @if (displayCard.etchedprice) {
+      <div class="text label">Etched</div>
+      }
       <div class="text value">{{ displayCard.normalprice | currency }}</div>
-      <div class="text value">{{ displayCard.fancyprice | currency }}</div>
+      <div class="text value">{{ displayCard.foilprice | currency }}</div>
+      @if (displayCard.etchedprice) {
+      <div class="text value">
+        {{ displayCard.etchedprice | currency }}
+      </div>
+      }
     </div>
-    <button class="button-layout add-list-style">+ Add to List</button>
-    <button class="button-layout view-scryfall-style">View on Scryfall</button>
+    <button class="button-layout add-list-style" (click)="onAddToList()">
+      + Add to List
+    </button>
+    <button
+      class="button-layout view-scryfall-style"
+      (click)="onGoToScryfall()"
+    >
+      View on Scryfall
+    </button>
   </div>
+  }
 </div>
