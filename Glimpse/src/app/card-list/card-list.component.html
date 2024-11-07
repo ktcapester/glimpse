@@ -5,7 +5,11 @@
 </h4>
 
 @for (item of dummylist; track item.id; let i = $index) {
-<div class="card-list-item" [class.alternate-item]="i % 2 == 1">
+<div
+  class="card-list-item"
+  [class.alternate-item]="i % 2 == 1"
+  (click)="onItemClick(item)"
+>
   <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">
     {{ item.name }}
   </p>

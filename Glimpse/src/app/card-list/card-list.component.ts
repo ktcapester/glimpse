@@ -5,6 +5,7 @@ import { BackendGlueService } from '../services/backend-glue.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CardListItem } from '../interfaces/backend.interface';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-card-list',
@@ -16,7 +17,7 @@ import { CardListItem } from '../interfaces/backend.interface';
 export class CardListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  constructor(private glue: BackendGlueService) {}
+  constructor(private glue: BackendGlueService, private router: Router) {}
 
   dummylist: CardListItem[] = [];
   totalPrice = 0.0;
@@ -37,6 +38,10 @@ export class CardListComponent implements OnInit, OnDestroy {
           this.totalPrice += element.price;
         }
       });
+  }
+
+  onItemClick(item: CardListItem) {
+    this.router.navigate(['/result', item.name]);
   }
 
   onClearList() {
