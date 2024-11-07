@@ -1,6 +1,7 @@
 <div class="result-container">
   <app-header></app-header>
-  <div class="result-content" *ngIf="displayCard">
+  @if (displayCard){
+  <div class="result-content">
     <img
       [src]="displayCard.imgsrc"
       [alt]="displayCard.name"
@@ -18,12 +19,16 @@
     >
       <div class="text label">Normal</div>
       <div class="text label">Foil</div>
-      <div class="text label" *ngIf="displayCard.etchedprice">Etched</div>
+      @if (displayCard.etchedprice) {
+      <div class="text label">Etched</div>
+      }
       <div class="text value">{{ displayCard.normalprice | currency }}</div>
       <div class="text value">{{ displayCard.foilprice | currency }}</div>
-      <div class="text value" *ngIf="displayCard.etchedprice">
+      @if (displayCard.etchedprice) {
+      <div class="text value">
         {{ displayCard.etchedprice | currency }}
       </div>
+      }
     </div>
     <button class="button-layout add-list-style" (click)="onAddToList()">
       + Add to List
@@ -35,4 +40,5 @@
       View on Scryfall
     </button>
   </div>
+  }
 </div>

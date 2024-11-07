@@ -1,10 +1,8 @@
 <app-header></app-header>
 
-<h4 *ngIf="!dummylist || dummylist.length == 0">
-  There doesn't seem to be anything here...
-</h4>
-
-@for (item of dummylist; track item.id; let i = $index) {
+@if (!dummylist || dummylist.length == 0){
+<h4>There doesn't seem to be anything here...</h4>
+} @for (item of dummylist; track item.id; let i = $index) {
 <div
   class="card-list-item"
   [class.alternate-item]="i % 2 == 1"
