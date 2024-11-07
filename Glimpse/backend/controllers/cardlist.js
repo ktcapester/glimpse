@@ -13,4 +13,19 @@ const postList = (req, res) => {
   res.status(201).json(createdData);
 };
 
-module.exports = { getList, postList };
+const deleteList = (req, res) => {
+  const response = CardListModel.clearList();
+  res.json(response);
+};
+
+const removeItem = (req, res) => {
+  const item = req.params.id;
+  const response = CardListModel.removeItem(item);
+  if (response.message) {
+    res.status(404).json(response);
+  } else {
+    res.json(response);
+  }
+};
+
+module.exports = { getList, postList, deleteList, removeItem };
