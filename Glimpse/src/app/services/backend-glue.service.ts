@@ -42,12 +42,17 @@ export class BackendGlueService {
   }
 
   getCardList() {
-    return this.http.get<CardListItem[]>(this.apiUrl + '/list');
+    return this.http.get<{ list: CardListItem[]; currentTotal: number }>(
+      this.apiUrl + '/list'
+    );
   }
 
   postCardList(card: { name: string; price: number }) {
-    return this.http.post<{ name: string }>(this.apiUrl + '/list', {
-      card,
-    });
+    return this.http.post<{ data: CardListItem; currentTotal: number }>(
+      this.apiUrl + '/list',
+      {
+        card,
+      }
+    );
   }
 }
