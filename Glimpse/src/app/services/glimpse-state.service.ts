@@ -16,6 +16,8 @@ export class GlimpseStateService {
   private cardSubject = new BehaviorSubject<ScryfallCard | null>(null);
   private backendSubject = new BehaviorSubject<CardSearch | null>(null);
   private printsSubject = new BehaviorSubject<ScryfallList | null>(null);
+  private currentTotalSubject = new BehaviorSubject<number>(0);
+
   private errorMessageSubject = new BehaviorSubject<string>(
     'Default Error Message'
   );
@@ -25,6 +27,14 @@ export class GlimpseStateService {
     if (savedCard) {
       this.backendSubject.next(JSON.parse(savedCard));
     }
+  }
+
+  getCurrentTotalListener() {
+    return this.currentTotalSubject.asObservable();
+  }
+
+  pushNewTotal(total: number) {
+    this.currentTotalSubject.next(total);
   }
 
   // get observables for other components

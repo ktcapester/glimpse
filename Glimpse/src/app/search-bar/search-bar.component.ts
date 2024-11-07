@@ -8,25 +8,32 @@ import {
 import { Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
+import { CurrencyPipe } from '@angular/common';
 import { Subject } from 'rxjs';
 import { SearchDataService } from '../services/search-data.service';
 import { takeUntil } from 'rxjs/operators';
+import { GlimpseStateService } from '../services/glimpse-state.service';
 
 @Component({
   selector: 'app-search-bar',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CurrencyPipe],
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.css',
 })
 export class SearchBarComponent implements OnInit, OnDestroy {
-  constructor(private router: Router, private searchdata: SearchDataService) {}
+  constructor(
+    private router: Router,
+    private searchdata: SearchDataService,
+    private state: GlimpseStateService
+  ) {}
 
   searchForm = new FormGroup({
     search: new FormControl('', [Validators.required, Validators.minLength(3)]),
   });
   @ViewChild('inputField') inputElement!: ElementRef;
   private destroy$ = new Subject<void>();
+  displayTotal = 0;
 
   ngOnInit(): void {
     this.searchdata.searchResults$
@@ -35,6 +42,12 @@ export class SearchBarComponent implements OnInit, OnDestroy {
         if (card) {
           this.searchForm.patchValue({ search: card.name });
         }
+      });
+    this.state
+      .getCurrentTotalListener()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((currentTotal) => {
+        this.displayTotal = currentTotal;
       });
   }
 
