@@ -13,3 +13,14 @@ to run the Angular frontend as normal.
 
 VSCode can keep 2 cmd terminals open, so leave one in \Glimpse, and one in \backend
 
+
+
+No cards found == same as results screen, but with "no cards found" in place of the image
+Too many cards == same layout, "Multiple possible results found, be more specific"
+    if possible, show first X suggestions as cards (up to 2x3 grid 2 across 3 down)
+    "did you mean one of these? if not, type more"
+
+from card list, clicking on a list item brings you to "details" page
+    - similar to results page, but change buttons to count buttons and remove from list
+
+    
