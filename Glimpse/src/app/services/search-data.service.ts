@@ -4,6 +4,7 @@ import { BackendGlueService } from './backend-glue.service';
 import { Router } from '@angular/router';
 import { GlimpseStateService } from './glimpse-state.service';
 import { filter, switchMap, tap } from 'rxjs/operators';
+import { ErrorCode } from '../enums/error-code';
 
 @Injectable({
   providedIn: 'root',
@@ -22,8 +23,15 @@ export class SearchDataService {
           tap((results) => {
             if (typeof results === 'string') {
               // error response
-              this.state.setErrorMessage(results);
-              this.router.navigate(['/404']);
+              if (results === ErrorCode.CARD_NOT_FOUND) {
+                // go to no-results component
+                this.router.navigate(['/none', term]);
+              } else if (results === ErrorCode.CARD_AMBIGUOUS) {
+                // go to suggestions component
+                this.router.navigate(['/suggestions', term]);
+              } else {
+                this.router.navigate(['/404']);
+              }
             } else {
               // successful response
               // aka response is CardSearch obj

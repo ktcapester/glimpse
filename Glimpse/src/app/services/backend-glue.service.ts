@@ -26,9 +26,9 @@ export class BackendGlueService {
         if (error.status === 404) {
           const errorCode = error.error?.errorCode;
           if (errorCode === ErrorCode.CARD_AMBIGUOUS) {
-            return of('Too many cards found');
+            return of(ErrorCode.CARD_AMBIGUOUS);
           } else if (errorCode === ErrorCode.CARD_NOT_FOUND) {
-            return of('No card found.');
+            return of(ErrorCode.CARD_NOT_FOUND);
           } else {
             return of('Unknown 404 error');
           }

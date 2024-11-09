@@ -5,7 +5,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { CurrencyPipe } from '@angular/common';
@@ -24,6 +24,7 @@ import { GlimpseStateService } from '../services/glimpse-state.service';
 export class SearchBarComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private searchdata: SearchDataService,
     private state: GlimpseStateService
   ) {}
@@ -33,13 +34,23 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   });
   @ViewChild('inputField') inputElement!: ElementRef;
   private destroy$ = new Subject<void>();
+  private useParam = false;
   displayTotal = 0;
 
   ngOnInit(): void {
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      if (params.has('term')) {
+        const term = params.get('term') || '';
+        this.useParam = true;
+        this.searchForm.patchValue({ search: term });
+      } else {
+        this.useParam = false;
+      }
+    });
     this.searchdata.searchResults$
       .pipe(takeUntil(this.destroy$))
       .subscribe((card) => {
-        if (card) {
+        if (card && !this.useParam) {
           this.searchForm.patchValue({ search: card.name });
         }
       });
