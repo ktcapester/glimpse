@@ -5,6 +5,7 @@ import { SearchResultComponent } from './search-result/search-result.component';
 import { FourOhFourComponent } from './four-oh-four/four-oh-four.component';
 import { SuggestionsComponent } from './suggestions/suggestions.component';
 import { NoResultsComponent } from './no-results/no-results.component';
+import { CardDetailComponent } from './card-detail/card-detail.component';
 
 export const routes: Routes = [
   {
@@ -16,6 +17,11 @@ export const routes: Routes = [
     path: 'list',
     title: 'Glimpse',
     component: CardListComponent,
+  },
+  {
+    path: 'detail/:cardName',
+    title: 'Glimpse',
+    component: CardDetailComponent,
   },
   {
     path: 'result/:cardName',

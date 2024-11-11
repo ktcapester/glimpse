@@ -1,3 +1,53 @@
-<app-header></app-header>
-
-<p>card-detail works!</p>
+<div class="detail-container">
+  <app-header></app-header>
+  @if (displayCard){
+  <div class="detail-content">
+    <img
+      [src]="displayCard.imgsrc"
+      [alt]="displayCard.name"
+      class="card-image"
+      width="336"
+      height="468"
+    />
+    <div
+      class="prices-container"
+      [ngStyle]="{
+        'grid-template': displayCard.etchedprice
+          ? 'auto auto / auto auto auto'
+          : 'auto auto / auto auto'
+      }"
+    >
+      <div class="text label">Normal</div>
+      <div class="text label">Foil</div>
+      @if (displayCard.etchedprice) {
+      <div class="text label">Etched</div>
+      }
+      <div class="text value">{{ displayCard.normalprice | currency }}</div>
+      <div class="text value">{{ displayCard.foilprice | currency }}</div>
+      @if (displayCard.etchedprice) {
+      <div class="text value">
+        {{ displayCard.etchedprice | currency }}
+      </div>
+      }
+    </div>
+    <div class="count-container">
+      <button
+        class="button-layout light-button-style count-button"
+        (click)="onItemDecrease()"
+      >
+        -
+      </button>
+      <div class="text label">{{ myCard.count }}</div>
+      <button
+        class="button-layout light-button-style count-button"
+        (click)="onItemIncrease()"
+      >
+        +
+      </button>
+    </div>
+    <button class="button-layout light-button-style" (click)="onItemRemove()">
+      Remove
+    </button>
+  </div>
+  }
+</div>
