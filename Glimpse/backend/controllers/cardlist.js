@@ -18,7 +18,27 @@ const deleteList = (req, res) => {
   res.json(response);
 };
 
-const removeItem = (req, res) => {
+const getCard = (req, res) => {
+  const item = req.params.id;
+  const response = CardListModel.getItem(item);
+  if (response.message) {
+    res.status(404).json(response);
+  } else {
+    res.json(response);
+  }
+};
+
+const patchCard = (req, res) => {
+  const newData = req.body;
+  const updatedResponse = CardListModel.updateItem(newData.card);
+  if (updatedResponse.message) {
+    res.status(404).json(updatedResponse);
+  } else {
+    res.json(updatedResponse);
+  }
+};
+
+const deleteCard = (req, res) => {
   const item = req.params.id;
   const response = CardListModel.removeItem(item);
   if (response.message) {
@@ -28,4 +48,11 @@ const removeItem = (req, res) => {
   }
 };
 
-module.exports = { getList, postList, deleteList, removeItem };
+module.exports = {
+  getList,
+  postList,
+  deleteList,
+  getCard,
+  patchCard,
+  deleteCard,
+};

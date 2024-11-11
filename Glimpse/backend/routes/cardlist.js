@@ -3,7 +3,9 @@ const {
   getList,
   postList,
   deleteList,
-  removeItem,
+  deleteCard,
+  getCard,
+  patchCard,
 } = require("../controllers/cardlist");
 const router = express.Router();
 
@@ -11,6 +13,8 @@ const router = express.Router();
 router.get("/", getList);
 router.post("/", postList);
 router.delete("/", deleteList);
-router.delete("/:id", removeItem);
+router.get("/:id", getCard);
+router.patch("/:id", patchCard);
+router.delete("/:id", deleteCard);
 
 module.exports = router;
