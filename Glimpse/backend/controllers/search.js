@@ -1,4 +1,9 @@
 const pricer = require("../models/price");
+var lastAPICall = Date.now();
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 // Controller function for GET requests
 const getCardSearch = async (req, res) => {
@@ -11,6 +16,15 @@ const getCardSearch = async (req, res) => {
   try {
     const scryfallAPIurl = new URL("https://api.scryfall.com/cards/named");
     scryfallAPIurl.searchParams.append("fuzzy", searchTerm);
+
+    const thisAPICall = Date.now();
+
+    if (thisAPICall - lastAPICall < 100) {
+      // scryfall asks for 50-100ms between API calls, so wait for 100ms
+      await delay(100);
+    }
+
+    lastAPICall = thisAPICall;
 
     const scryfallResponse = await fetch(scryfallAPIurl);
 
