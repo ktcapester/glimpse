@@ -8,7 +8,7 @@ const getAllCards = () => {
 const addCard = (newData) => {
   console.log("got data:", newData);
   const newId = tempStore.length + 1;
-  const data = { id: newId, ...newData };
+  const data = { id: newId, count: 1, ...newData };
   tempStore.push(data);
   currentTotal += data.price;
   console.log("stored as:", data);
@@ -54,7 +54,10 @@ const updateItem = (cardItem) => {
     return { message: "Item not found!" };
   }
   const target = tempStore[itemidx];
-  if (target.count === cardItem.count) {
+  if (target.count !== cardItem.count) {
+    console.log("target=", target);
+    console.log("cardItem=", cardItem);
+
     currentTotal -= target.count * target.price;
     tempStore[itemidx] = cardItem;
     currentTotal += cardItem.cound * cardItem.price;
