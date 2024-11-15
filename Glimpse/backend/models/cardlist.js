@@ -12,6 +12,7 @@ const addCard = (newData) => {
   tempStore.push(data);
   currentTotal += data.price;
   console.log("stored as:", data);
+  console.log("updated total:", currentTotal);
   return { data, currentTotal };
 };
 
@@ -60,7 +61,7 @@ const updateItem = (cardItem) => {
 
     currentTotal -= target.count * target.price;
     tempStore[itemidx] = cardItem;
-    currentTotal += cardItem.cound * cardItem.price;
+    currentTotal += cardItem.count * cardItem.price;
   }
   return { currentTotal: currentTotal };
 };
