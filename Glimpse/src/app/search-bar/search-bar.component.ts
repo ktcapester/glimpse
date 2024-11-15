@@ -60,6 +60,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       .subscribe((currentTotal) => {
         this.displayTotal = currentTotal;
       });
+    this.searchdata.initTotal();
   }
 
   ngOnDestroy(): void {

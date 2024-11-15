@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { BackendGlueService } from './backend-glue.service';
 import { Router } from '@angular/router';
 import { GlimpseStateService } from './glimpse-state.service';
-import { catchError, filter, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, take } from 'rxjs/operators';
 import { ErrorCode } from '../enums/error-code';
 
 @Injectable({
@@ -56,5 +56,16 @@ export class SearchDataService {
 
   clearSearchResults() {
     this.searchTermSubject.next('');
+  }
+
+  initTotal() {
+    this.glue
+      .getCardList()
+      .pipe(
+        take(1) // only need to get value once, then complete please.
+      )
+      .subscribe((results) => {
+        this.state.pushNewTotal(results.currentTotal);
+      });
   }
 }
