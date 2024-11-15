@@ -5,7 +5,7 @@ import { DisplayCard } from '../interfaces/display-card.interface';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GlimpseStateService } from '../services/glimpse-state.service';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Subject } from 'rxjs';
+import { combineLatest, Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
 import { SearchDataService } from '../services/search-data.service';
 import { BackendGlueService } from '../services/backend-glue.service';
@@ -27,6 +27,7 @@ export class CardDetailComponent implements OnInit, OnDestroy {
     count: 4,
   };
   myID = 0;
+  loadingDone = false;
 
   private destroy$ = new Subject<void>();
 
@@ -53,42 +54,43 @@ export class CardDetailComponent implements OnInit, OnDestroy {
       new Date().toISOString().split('T')[1].slice(0, 12)
     );
     // Set up getting names out of the URL
-    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      const name = params.get('cardName') || '';
-      this.searchdata.updateSearchTerm(name);
-      const id = parseInt(params.get('cardID') || '');
-      this.myID = id;
-      this.details.updateDetailFromID(id);
-    });
+    this.route.paramMap
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((params) => {
+          const name = params.get('cardName') || '';
+          this.searchdata.updateSearchTerm(name);
+          const id = parseInt(params.get('cardID') || '');
+          this.myID = id;
+          this.details.updateDetailFromID(id);
+        })
+      )
+      .subscribe();
 
-    // why is this here, what is it doing, i don't remember
-    // currently this gets the actual card image and prices
-    // i think this is okay, i'd like it to get new prices when you look at the detail
-    this.searchdata.searchResults$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((card) => {
-        if (card) {
-          this.setDisplayCard(card);
-          this.router.navigate(['/detail', this.myID, card.name]);
-        } else {
-          // card was null
-          this.state.setErrorMessage('Trouble with searchResults$');
-          this.router.navigate(['/404']);
-        }
-      });
-
-    this.details.cardFromID$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((result) => {
-        console.log('card-detail subscription recieved:', result);
-        if (result) {
-          this.myCard = result.card;
-        } else {
-          // error
-          this.state.setErrorMessage('Trouble with cardDetails$');
-          this.router.navigate(['/404']);
-        }
-      });
+    // wait for both API calls to return before presenting data
+    combineLatest([this.searchdata.searchResults$, this.details.cardFromID$])
+      .pipe(
+        takeUntil(this.destroy$),
+        tap(([searchResult, cardDetails]) => {
+          if (!searchResult) {
+            this.state.setErrorMessage('Trouble with searchResults$');
+            this.router.navigate(['/404']);
+            return;
+          }
+          if (!cardDetails) {
+            this.state.setErrorMessage('Trouble with cardFromID$');
+            this.router.navigate(['/404']);
+            return;
+          }
+          console.log('stuff from combineLatest:');
+          console.log('searchResult:', searchResult);
+          console.log('cardDetails:', cardDetails);
+          this.myCard = cardDetails;
+          this.setDisplayCard(searchResult);
+          this.loadingDone = true;
+        })
+      )
+      .subscribe();
 
     this.details.patchCard$
       .pipe(takeUntil(this.destroy$))
