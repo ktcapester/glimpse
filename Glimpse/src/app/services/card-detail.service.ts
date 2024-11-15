@@ -38,9 +38,11 @@ export class CardDetailService {
   );
 
   patchCard$ = this.patchCardSubject.pipe(
-    filter((card_list_item) => !!card_list_item),
-    switchMap((card_list_item) => {
-      return this.glue.patchCardDetails(card_list_item!).pipe(
+    filter(
+      (card_list_item): card_list_item is CardListItem => !!card_list_item
+    ),
+    switchMap((cardLI) => {
+      return this.glue.patchCardDetails(cardLI).pipe(
         tap((results) => {
           console.log('patchCardDetails returned:', results);
           if (typeof results === 'string') {
