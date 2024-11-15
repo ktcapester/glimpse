@@ -63,11 +63,10 @@ export class BackendGlueService {
   }
 
   deleteSingleCard(card_id: number) {
-    let params = new HttpParams().set('id', card_id);
+    // let params = new HttpParams().set('id', card_id);
     return this.http
       .delete<{ list: CardListItem[]; currentTotal: number }>(
-        this.apiUrl + '/list',
-        { params }
+        `${this.apiUrl}/list/${card_id}`
       )
       .pipe(
         catchError((error: HttpErrorResponse) => {
@@ -84,9 +83,9 @@ export class BackendGlueService {
   }
 
   getCardDetails(card_id: number) {
-    let params = new HttpParams().set('id', card_id);
+    // let params = new HttpParams().set('id', card_id);
     return this.http
-      .get<{ card: CardListItem }>(this.apiUrl + '/list', { params })
+      .get<{ card: CardListItem }>(`${this.apiUrl}/list/${card_id}`)
       .pipe(
         catchError((error: HttpErrorResponse) => {
           if (error.status === 404) {
@@ -102,13 +101,11 @@ export class BackendGlueService {
   }
 
   patchCardDetails(card: CardListItem) {
-    let params = new HttpParams().set('id', card.id);
+    // let params = new HttpParams().set('id', card.id);
     return this.http
-      .patch<{ currentTotal: number }>(
-        this.apiUrl + '/list',
-        { card },
-        { params }
-      )
+      .patch<{ currentTotal: number }>(`${this.apiUrl}/list/${card.id}`, {
+        card,
+      })
       .pipe(
         catchError((error: HttpErrorResponse) => {
           if (error.status === 404) {
