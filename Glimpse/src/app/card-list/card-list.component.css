@@ -1,3 +1,20 @@
+.card-list-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: 100vh;
+}
+
+.empty-list {
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%;
+  padding: 4px 24px;
+  text-align: center;
+}
+
 .card-list-item {
   display: flex;
   max-width: 100%;

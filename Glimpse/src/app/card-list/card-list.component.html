@@ -1,26 +1,30 @@
-<app-header></app-header>
-
-@if (!displayList || displayList.length == 0){
-<h4>Add cards to your list!</h4>
-} @for (item of displayList; track item.id; let i = $index) {
-<div
-  class="card-list-item"
-  [class.alternate-item]="i % 2 == 1"
-  (click)="onItemClick(item)"
->
-  <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">
-    {{ item.count }} {{ item.name }}
-  </p>
-  <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">
-    {{ item.price | currency }}
-  </p>
-</div>
-}
-
-<div class="total-container">
-  <a class="total-label">Total</a>
-  <a class="total-price">{{ totalPrice | currency }}</a>
-</div>
-<div class="button-container">
-  <button class="clear-button" (click)="onClearList()">Clear list</button>
+<div class="card-list-container">
+  <div>
+    <app-header></app-header>
+    @if (!displayList || displayList.length == 0){
+    <div class="empty-list">Add cards to your list!</div>
+    } @for (item of displayList; track item.id; let i = $index) {
+    <div
+      class="card-list-item"
+      [class.alternate-item]="i % 2 == 1"
+      (click)="onItemClick(item)"
+    >
+      <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">
+        {{ item.count }} {{ item.name }}
+      </p>
+      <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">
+        {{ item.price | currency }}
+      </p>
+    </div>
+    }
+  </div>
+  <div>
+    <div class="total-container">
+      <a class="total-label">Total</a>
+      <a class="total-price">{{ totalPrice | currency }}</a>
+    </div>
+    <div class="button-container">
+      <button class="clear-button" (click)="onClearList()">Clear list</button>
+    </div>
+  </div>
 </div>
