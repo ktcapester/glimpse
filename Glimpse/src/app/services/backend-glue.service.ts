@@ -14,6 +14,11 @@ import { ErrorCode } from '../enums/error-code';
   providedIn: 'root',
 })
 export class BackendGlueService {
+  /*
+   * This service is a centralized location of all backend HTTP requests.
+   * It catches network errors and enforces return types for use in other components.
+   *
+   */
   private apiUrl = environment.apiURL;
 
   constructor(private http: HttpClient) {}
