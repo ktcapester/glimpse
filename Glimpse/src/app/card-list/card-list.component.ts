@@ -45,7 +45,7 @@ export class CardListComponent implements OnInit, OnDestroy {
   }
 
   onItemClick(item: CardListItem) {
-    this.router.navigate(['/result', item.name]);
+    this.router.navigate(['/detail', item.id, item.name]);
   }
 
   onClearList() {
