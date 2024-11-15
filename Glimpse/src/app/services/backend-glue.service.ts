@@ -89,20 +89,18 @@ export class BackendGlueService {
 
   getCardDetails(card_id: number) {
     // let params = new HttpParams().set('id', card_id);
-    return this.http
-      .get<{ card: CardListItem }>(`${this.apiUrl}/list/${card_id}`)
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 404) {
-            console.log('getting a card from list failed');
-            return of(error.message);
-          } else if (error.status === 500) {
-            return of('A server error occurred. Try again later.');
-          } else {
-            return of('An unknown error occured.');
-          }
-        })
-      );
+    return this.http.get<CardListItem>(`${this.apiUrl}/list/${card_id}`).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 404) {
+          console.log('getting a card from list failed');
+          return of(error.message);
+        } else if (error.status === 500) {
+          return of('A server error occurred. Try again later.');
+        } else {
+          return of('An unknown error occured.');
+        }
+      })
+    );
   }
 
   patchCardDetails(card: CardListItem) {
