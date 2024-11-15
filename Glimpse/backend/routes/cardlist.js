@@ -10,11 +10,11 @@ const {
 const router = express.Router();
 
 // Define routes & link to controller functions
-router.get("/", getList);
-router.post("/", postList);
-router.delete("/", deleteList);
 router.get("/:id", getCard);
-router.patch("/:id", patchCard);
+router.get("/", getList);
 router.delete("/:id", deleteCard);
+router.delete("/", deleteList);
+router.patch("/:id", patchCard);
+router.post("/", postList);
 
 module.exports = router;
