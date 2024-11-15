@@ -93,14 +93,13 @@ export class CardDetailComponent implements OnInit, OnDestroy {
       .subscribe();
 
     this.details.patchCard$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((response) => {
-        if (typeof response === 'string') {
-          console.log('what how huh');
-        } else {
-          this.state.pushNewTotal(response.currentTotal);
-        }
-      });
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((response) => {
+          this.state.pushNewTotal(response);
+        })
+      )
+      .subscribe();
   }
 
   private setDisplayCard(card: any): void {

@@ -43,15 +43,23 @@ export class CardDetailService {
     ),
     switchMap((cardLI) => {
       return this.glue.patchCardDetails(cardLI).pipe(
-        tap((results) => {
+        map((results) => {
           console.log('patchCardDetails returned:', results);
           if (typeof results === 'string') {
             // error response
             this.router.navigate(['/404']);
+            throw new Error('Error response handled');
           } else {
             // successful response
-            // aka response is a { currentTotal:number } obj
+            // response is a { currentTotal:number } obj
+            // extract the number out of it and pass it along
+            return results.currentTotal;
           }
+        }),
+        catchError((error) => {
+          console.error('An unexpected error occurred in patchCard$:', error);
+          this.router.navigate(['/404']);
+          return [];
         })
       );
     })
