@@ -15,10 +15,6 @@ export class SearchDataService {
   searchResults$ = this.searchTermSubject.pipe(
     filter((term) => !!term),
     switchMap((term) => {
-      const storedData = sessionStorage.getItem('lastSearchedCard');
-      if (storedData && term === JSON.parse(storedData).name) {
-        return of(JSON.parse(storedData));
-      } else {
         return this.glue.getCardSearch(term).pipe(
           tap((results) => {
             if (typeof results === 'string') {
@@ -42,7 +38,6 @@ export class SearchDataService {
             }
           })
         );
-      }
     })
   );
 
@@ -50,12 +45,7 @@ export class SearchDataService {
     private glue: BackendGlueService,
     private router: Router,
     private state: GlimpseStateService
-  ) {
-    const storedResults = sessionStorage.getItem('lastSearchedCard');
-    if (storedResults) {
-      this.searchTermSubject.next(JSON.parse(storedResults).name);
-    }
-  }
+  ) {}
 
   updateSearchTerm(term: string): void {
     this.searchTermSubject.next(term);
@@ -63,6 +53,5 @@ export class SearchDataService {
 
   clearSearchResults() {
     this.searchTermSubject.next('');
-    sessionStorage.removeItem('lastSearchedCard');
   }
 }
