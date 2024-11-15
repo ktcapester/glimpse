@@ -24,7 +24,7 @@ export class CardListComponent implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
-  dummylist: CardListItem[] = [];
+  displayList: CardListItem[] = [];
   totalPrice = 0.0;
 
   ngOnDestroy(): void {
@@ -38,8 +38,7 @@ export class CardListComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         tap((response) => {
-          console.log('getCardList returned:', response);
-          this.dummylist = response.list;
+          this.displayList = response.list;
           this.totalPrice = response.currentTotal;
           this.state.pushNewTotal(response.currentTotal);
         })
@@ -55,12 +54,14 @@ export class CardListComponent implements OnInit, OnDestroy {
     alert('Are you sure?');
     this.glue
       .deleteCardList()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((response) => {
-        console.log('deleteCardList returned:', response);
-        this.dummylist = response.list;
-        this.totalPrice = response.currentTotal;
-        this.state.pushNewTotal(response.currentTotal);
-      });
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((response) => {
+          this.displayList = response.list;
+          this.totalPrice = response.currentTotal;
+          this.state.pushNewTotal(response.currentTotal);
+        })
+      )
+      .subscribe();
   }
 }

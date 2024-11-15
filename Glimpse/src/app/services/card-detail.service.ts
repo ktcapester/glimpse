@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BackendGlueService } from './backend-glue.service';
-import { BehaviorSubject, of } from 'rxjs';
-import { catchError, filter, map, switchMap, tap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
+import { catchError, filter, map, switchMap } from 'rxjs/operators';
 import { CardListItem } from '../interfaces/backend.interface';
 
 @Injectable({
@@ -17,7 +17,6 @@ export class CardDetailService {
     switchMap((id) => {
       return this.glue.getCardDetails(id).pipe(
         map((results) => {
-          console.log('getCardDetails returned:', results);
           if (typeof results === 'string') {
             // error response
             this.router.navigate(['/404']);
@@ -44,7 +43,6 @@ export class CardDetailService {
     switchMap((cardLI) => {
       return this.glue.patchCardDetails(cardLI).pipe(
         map((results) => {
-          console.log('patchCardDetails returned:', results);
           if (typeof results === 'string') {
             // error response
             this.router.navigate(['/404']);

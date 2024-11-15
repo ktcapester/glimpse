@@ -78,7 +78,6 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
   onAddToList() {
     // use backend to add to the list
-    console.log('onAddToList() called!');
     // Note: the observable from http.post must be subscribed to in order to actually run!
     this.glue
       .postCardList({
@@ -89,7 +88,6 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         tap((list_response) => {
           if (list_response.data.name === this.displayCard.name) {
-            console.log('Successfully added to list!');
             this.state.pushNewTotal(list_response.currentTotal);
           } else {
             console.log('Something went wrong.');

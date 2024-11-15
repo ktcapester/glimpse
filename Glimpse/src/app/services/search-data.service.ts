@@ -64,8 +64,6 @@ export class SearchDataService {
       .pipe(
         take(1), // only need to get value once, then complete please.
         tap((results) => {
-          console.log('hello?');
-          console.log(results);
           this.state.pushNewTotal(results.currentTotal);
         })
       )

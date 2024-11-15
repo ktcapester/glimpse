@@ -101,7 +101,6 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     // extract search term
     let word = this.searchForm.value.search ? this.searchForm.value.search : '';
     if (word === '') {
-      console.log('how did you do this');
       return;
     }
 

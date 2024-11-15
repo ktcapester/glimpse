@@ -20,12 +20,7 @@ import { CardDetailService } from '../services/card-detail.service';
 })
 export class CardDetailComponent implements OnInit, OnDestroy {
   displayCard!: DisplayCard;
-  myCard: CardListItem = {
-    id: 0,
-    name: 'Arachnogenesis',
-    price: 0,
-    count: 4,
-  };
+  myCard!: CardListItem;
   myID = 0;
   loadingDone = false;
 
@@ -82,9 +77,6 @@ export class CardDetailComponent implements OnInit, OnDestroy {
             this.router.navigate(['/404']);
             return;
           }
-          console.log('stuff from combineLatest:');
-          console.log('searchResult:', searchResult);
-          console.log('cardDetails:', cardDetails);
           this.myCard = cardDetails;
           this.setDisplayCard(searchResult);
           this.loadingDone = true;
@@ -118,14 +110,14 @@ export class CardDetailComponent implements OnInit, OnDestroy {
   onItemIncrease() {
     if (this.myCard.count < 99) {
       this.myCard.count += 1;
-      this.updateBackend();
+      this.details.updatePatchCard(this.myCard);
     }
   }
 
   onItemDecrease() {
     if (this.myCard.count > 0) {
       this.myCard.count -= 1;
-      this.updateBackend();
+      this.details.updatePatchCard(this.myCard);
     }
   }
 
@@ -147,25 +139,5 @@ export class CardDetailComponent implements OnInit, OnDestroy {
         }
       })
     );
-  }
-
-  private updateBackend() {
-    console.log('updateBackend call');
-    console.log('myCard:', this.myCard);
-    this.details.updatePatchCard(this.myCard);
-    // this.glue.patchCardDetails(this.myCard).pipe(
-    //   tap((result) => {
-    //     console.log(result);
-
-    //     if (typeof result === 'string') {
-    //       //error sresponse
-    //       this.state.setErrorMessage(result);
-    //       this.router.navigate(['/404']);
-    //     } else {
-    //       // successful response
-    //       this.state.pushNewTotal(result.currentTotal);
-    //     }
-    //   })
-    // );
   }
 }

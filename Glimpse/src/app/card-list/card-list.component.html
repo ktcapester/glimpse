@@ -1,8 +1,8 @@
 <app-header></app-header>
 
-@if (!dummylist || dummylist.length == 0){
+@if (!displayList || displayList.length == 0){
 <h4>Add cards to your list!</h4>
-} @for (item of dummylist; track item.id; let i = $index) {
+} @for (item of displayList; track item.id; let i = $index) {
 <div
   class="card-list-item"
   [class.alternate-item]="i % 2 == 1"
