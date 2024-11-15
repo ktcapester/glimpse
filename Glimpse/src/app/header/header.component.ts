@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -9,7 +10,11 @@ import { SearchBarComponent } from '../search-bar/search-bar.component';
   imports: [SearchBarComponent],
 })
 export class HeaderComponent implements OnInit {
-  constructor() {}
+  constructor(private router: Router) {}
 
   ngOnInit(): void {}
+
+  onLogoClick() {
+    this.router.navigate(['']);
+  }
 }
