@@ -19,7 +19,7 @@ export const routes: Routes = [
     component: CardListComponent,
   },
   {
-    path: 'detail/:cardName',
+    path: 'detail/:cardID/:cardName',
     title: 'Glimpse',
     component: CardDetailComponent,
   },
