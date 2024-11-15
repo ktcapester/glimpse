@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { GlimpseStateService } from '../services/glimpse-state.service';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, tap } from 'rxjs/operators';
 import { SearchDataService } from '../services/search-data.service';
 import { BackendGlueService } from '../services/backend-glue.service';
 
@@ -38,23 +38,31 @@ export class SearchResultComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     console.log('SearchResult ngOnInit called!', Date.now());
     // Set up getting names out of the URL
-    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      const name = params.get('cardName') || '';
-      this.searchdata.updateSearchTerm(name);
-    });
+    this.route.paramMap
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((params) => {
+          const name = params.get('cardName') || '';
+          this.searchdata.updateSearchTerm(name);
+        })
+      )
+      .subscribe();
 
     this.searchdata.searchResults$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((card) => {
-        if (card) {
-          this.setDisplayCard(card);
-          this.router.navigate(['/result', card.name]);
-        } else {
-          // card was null
-          this.state.setErrorMessage('Trouble with searchResults$');
-          this.router.navigate(['/404']);
-        }
-      });
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((card) => {
+          if (card) {
+            this.setDisplayCard(card);
+            this.router.navigate(['/result', card.name]);
+          } else {
+            // card was null
+            this.state.setErrorMessage('Trouble with searchResults$');
+            this.router.navigate(['/404']);
+          }
+        })
+      )
+      .subscribe();
   }
 
   private setDisplayCard(card: any): void {
@@ -77,16 +85,19 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         name: this.displayCard.name,
         price: this.displayCard.normalprice,
       })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((list_response) => {
-        if (list_response.data.name === this.displayCard.name) {
-          console.log('Successfully added to list!');
-          this.state.pushNewTotal(list_response.currentTotal);
-        } else {
-          console.log('Something went wrong.');
-          console.log(list_response);
-        }
-      });
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((list_response) => {
+          if (list_response.data.name === this.displayCard.name) {
+            console.log('Successfully added to list!');
+            this.state.pushNewTotal(list_response.currentTotal);
+          } else {
+            console.log('Something went wrong.');
+            console.log(list_response);
+          }
+        })
+      )
+      .subscribe();
   }
 
   onGoToScryfall() {

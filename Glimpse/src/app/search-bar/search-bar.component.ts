@@ -11,7 +11,7 @@ import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { CurrencyPipe } from '@angular/common';
 import { Subject } from 'rxjs';
 import { SearchDataService } from '../services/search-data.service';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, tap } from 'rxjs/operators';
 import { GlimpseStateService } from '../services/glimpse-state.service';
 
 @Component({
@@ -38,28 +38,39 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   displayTotal = 0;
 
   ngOnInit(): void {
-    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      if (params.has('term')) {
-        const term = params.get('term') || '';
-        this.useParam = true;
-        this.searchForm.patchValue({ search: term });
-      } else {
-        this.useParam = false;
-      }
-    });
+    this.route.paramMap
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((params) => {
+          if (params.has('term')) {
+            const term = params.get('term') || '';
+            this.useParam = true;
+            this.searchForm.patchValue({ search: term });
+          } else {
+            this.useParam = false;
+          }
+        })
+      )
+      .subscribe();
     this.searchdata.searchResults$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((card) => {
-        if (card && !this.useParam) {
-          this.searchForm.patchValue({ search: card.name });
-        }
-      });
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((card) => {
+          if (card && !this.useParam) {
+            this.searchForm.patchValue({ search: card.name });
+          }
+        })
+      )
+      .subscribe();
     this.state
       .getCurrentTotalListener()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((currentTotal) => {
-        this.displayTotal = currentTotal;
-      });
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((currentTotal) => {
+          this.displayTotal = currentTotal;
+        })
+      )
+      .subscribe();
     this.searchdata.initTotal();
   }
 

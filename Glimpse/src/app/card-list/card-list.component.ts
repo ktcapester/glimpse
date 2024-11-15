@@ -3,7 +3,7 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
 import { HeaderComponent } from '../header/header.component';
 import { BackendGlueService } from '../services/backend-glue.service';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, tap } from 'rxjs/operators';
 import { CardListItem } from '../interfaces/backend.interface';
 import { Router } from '@angular/router';
 import { GlimpseStateService } from '../services/glimpse-state.service';
@@ -35,13 +35,16 @@ export class CardListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.glue
       .getCardList()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((response) => {
-        console.log('getCardList returned:', response);
-        this.dummylist = response.list;
-        this.totalPrice = response.currentTotal;
-        this.state.pushNewTotal(response.currentTotal);
-      });
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((response) => {
+          console.log('getCardList returned:', response);
+          this.dummylist = response.list;
+          this.totalPrice = response.currentTotal;
+          this.state.pushNewTotal(response.currentTotal);
+        })
+      )
+      .subscribe();
   }
 
   onItemClick(item: CardListItem) {
