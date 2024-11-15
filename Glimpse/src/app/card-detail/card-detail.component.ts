@@ -79,10 +79,10 @@ export class CardDetailComponent implements OnInit, OnDestroy {
 
     this.details.cardFromID$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((card) => {
-        console.log('card-detail subscription recieved:', card);
-        if (card) {
-          this.myCard = card;
+      .subscribe((result) => {
+        console.log('card-detail subscription recieved:', result);
+        if (result) {
+          this.myCard = result.card;
         } else {
           // error
           this.state.setErrorMessage('Trouble with cardDetails$');

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BackendGlueService } from './backend-glue.service';
 import { BehaviorSubject, of } from 'rxjs';
-import { filter, switchMap, tap } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, tap } from 'rxjs/operators';
 import { CardListItem } from '../interfaces/backend.interface';
 
 @Injectable({
@@ -15,19 +15,25 @@ export class CardDetailService {
   cardFromID$ = this.cardFromIDSubject.pipe(
     filter((id) => !!id),
     switchMap((id) => {
-        return this.glue.getCardDetails(id).pipe(
-          tap((results) => {
-            console.log('getCardDetails returned:', results);
-            if (typeof results === 'string') {
-              // error response
-              this.router.navigate(['/404']);
-            } else {
-              // successful response
-              // aka response is a CardListItem obj
-              sessionStorage.setItem('lastCardDetail', JSON.stringify(results));
-            }
-          })
-        );
+      return this.glue.getCardDetails(id).pipe(
+        map((results) => {
+          console.log('getCardDetails returned:', results);
+          if (typeof results === 'string') {
+            // error response
+            this.router.navigate(['/404']);
+            throw new Error('Error response handled');
+          } else {
+            // successful response
+            // aka response is a CardListItem obj
+            return results;
+          }
+        }),
+        catchError((error) => {
+          console.error('An unexpected error occurred in cardFromID$:', error);
+          this.router.navigate(['/404']);
+          return [];
+        })
+      );
     })
   );
 

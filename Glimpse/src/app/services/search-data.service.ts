@@ -3,7 +3,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { BackendGlueService } from './backend-glue.service';
 import { Router } from '@angular/router';
 import { GlimpseStateService } from './glimpse-state.service';
-import { filter, switchMap, tap } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, tap } from 'rxjs/operators';
 import { ErrorCode } from '../enums/error-code';
 
 @Injectable({
@@ -15,29 +15,32 @@ export class SearchDataService {
   searchResults$ = this.searchTermSubject.pipe(
     filter((term) => !!term),
     switchMap((term) => {
-        return this.glue.getCardSearch(term).pipe(
-          tap((results) => {
-            if (typeof results === 'string') {
-              // error response
-              if (results === ErrorCode.CARD_NOT_FOUND) {
-                // go to no-results component
-                this.router.navigate(['/none', term]);
-              } else if (results === ErrorCode.CARD_AMBIGUOUS) {
-                // go to suggestions component
-                this.router.navigate(['/suggestions', term]);
-              } else {
-                this.router.navigate(['/404']);
-              }
+      return this.glue.getCardSearch(term).pipe(
+        map((results) => {
+          if (typeof results === 'string') {
+            // error response
+            if (results === ErrorCode.CARD_NOT_FOUND) {
+              // go to no-results component
+              this.router.navigate(['/none', term]);
+            } else if (results === ErrorCode.CARD_AMBIGUOUS) {
+              // go to suggestions component
+              this.router.navigate(['/suggestions', term]);
             } else {
-              // successful response
-              // aka response is CardSearch obj
-              sessionStorage.setItem(
-                'lastSearchedCard',
-                JSON.stringify(results)
-              );
+              this.router.navigate(['/404']);
             }
-          })
-        );
+            throw new Error('Error response encountered');
+          } else {
+            // successful response
+            // aka response is CardSearch obj
+            return results;
+          }
+        }),
+        catchError((error) => {
+          console.error('An unexpected error occurered:', error);
+          this.router.navigate(['/404']);
+          return [];
+        })
+      );
     })
   );
 
