@@ -1,4 +1,11 @@
 <div class="header">
-  <img src="../../assets/logo.svg" alt="Glimpse logo" width="42" height="42" />
-  <app-search-bar></app-search-bar>
+  <img
+    src="../../assets/logo.svg"
+    alt="Glimpse logo"
+    width="42"
+    height="42"
+    (click)="onLogoClick()"
+    class="logo"
+  />
+  <app-search-bar class="special"></app-search-bar>
 </div>
