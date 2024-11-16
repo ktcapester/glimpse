@@ -1,4 +1,4 @@
-<div class="card-list-container">
+<div class="component-container">
   <div>
     <app-header></app-header>
     @if (!displayList || displayList.length == 0){
@@ -18,13 +18,34 @@
     </div>
     }
   </div>
-  <div>
+  <div class="bottom-anchor">
+    @if (isModalActive) {
+    <div class="total-container">
+      <div class="total-label">Are you sure?</div>
+    </div>
+    <div class="button-container">
+      <button class="large-button primary-button-style" (click)="onConfirm()">
+        Yee
+      </button>
+    </div>
+    <div class="button-container">
+      <button class="large-button secondary-button-style" (click)="onCancel()">
+        Cancel
+      </button>
+    </div>
+    } @else {
     <div class="total-container">
       <a class="total-label">Total</a>
       <a class="total-price">{{ totalPrice | currency }}</a>
     </div>
     <div class="button-container">
-      <button class="clear-button" (click)="onClearList()">Clear list</button>
+      <button
+        class="large-button secondary-button-style"
+        (click)="onClearList()"
+      >
+        Clear list
+      </button>
     </div>
+    }
   </div>
 </div>

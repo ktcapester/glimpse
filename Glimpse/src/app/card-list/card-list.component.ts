@@ -26,6 +26,7 @@ export class CardListComponent implements OnInit, OnDestroy {
 
   displayList: CardListItem[] = [];
   totalPrice = 0.0;
+  isModalActive = false;
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -51,7 +52,16 @@ export class CardListComponent implements OnInit, OnDestroy {
   }
 
   onClearList() {
-    alert('Are you sure?');
+    if (this.displayList.length) {
+      this.isModalActive = true;
+    }
+  }
+
+  onCancel() {
+    this.isModalActive = false;
+  }
+
+  onConfirm() {
     this.glue
       .deleteCardList()
       .pipe(
@@ -60,6 +70,7 @@ export class CardListComponent implements OnInit, OnDestroy {
           this.displayList = response.list;
           this.totalPrice = response.currentTotal;
           this.state.pushNewTotal(response.currentTotal);
+          this.isModalActive = false;
         })
       )
       .subscribe();
