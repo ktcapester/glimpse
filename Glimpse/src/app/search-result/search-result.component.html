@@ -1,7 +1,7 @@
-<div class="result-container">
+<div class="component-container">
   <app-header></app-header>
   @if (displayCard){
-  <div class="result-content">
+  <div class="card-image-container">
     <img
       [src]="displayCard.imgsrc"
       [alt]="displayCard.name"
@@ -9,6 +9,8 @@
       width="336"
       height="468"
     />
+  </div>
+  <div class="prices-super">
     <div
       class="prices-container"
       [ngStyle]="{
@@ -30,11 +32,16 @@
       </div>
       }
     </div>
-    <button class="button-layout add-list-style" (click)="onAddToList()">
+  </div>
+
+  <div class="button-container">
+    <button class="large-button primary-button-style" (click)="onAddToList()">
       + Add to List
     </button>
+  </div>
+  <div class="button-container">
     <button
-      class="button-layout view-scryfall-style"
+      class="large-button secondary-button-style"
       (click)="onGoToScryfall()"
     >
       View on Scryfall
