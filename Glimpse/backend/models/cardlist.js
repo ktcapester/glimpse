@@ -7,11 +7,21 @@ const getAllCards = () => {
 
 const addCard = (newData) => {
   console.log("got data:", newData);
-  const newId = tempStore.length + 1;
-  const data = { id: newId, count: 1, ...newData };
-  tempStore.push(data);
-  currentTotal += data.price;
-  console.log("stored as:", data);
+  const itemidx = tempStore.findIndex((item) => item.name === newData.name);
+  var data;
+  if (itemidx === -1) {
+    const newId = tempStore.length + 1;
+    data = { id: newId, count: 1, ...newData };
+    tempStore.push(data);
+    currentTotal += data.price;
+  } else {
+    console.log("already in list, incrementing count");
+    const foo = tempStore[itemidx];
+    foo.count += 1;
+    currentTotal += foo.price;
+    data = tempStore[itemidx];
+  }
+  console.log("stored data:", data);
   console.log("updated total:", currentTotal);
   return { data, currentTotal };
 };
