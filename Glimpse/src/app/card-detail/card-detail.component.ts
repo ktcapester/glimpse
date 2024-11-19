@@ -124,20 +124,24 @@ export class CardDetailComponent implements OnInit, OnDestroy {
   onItemRemove() {
     console.log('onItemRemove');
     console.log(this.myCard);
-    this.glue.deleteSingleCard(this.myCard.id).pipe(
-      tap((result) => {
-        console.log('glue.delete result:', result);
-        if (typeof result === 'string') {
-          this.state.setErrorMessage(result);
-          this.router.navigate(['/404']);
-        } else {
-          // successful response
-          // aka response is { list, total}
-          this.state.pushNewTotal(result.currentTotal);
-          // return to list page after removing
-          this.router.navigate(['/list']);
-        }
-      })
-    );
+    this.glue
+      .deleteSingleCard(this.myCard.id)
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((result) => {
+          console.log('glue.delete result:', result);
+          if (typeof result === 'string') {
+            this.state.setErrorMessage(result);
+            this.router.navigate(['/404']);
+          } else {
+            // successful response
+            // aka response is { list, total}
+            this.state.pushNewTotal(result.currentTotal);
+            // return to list page after removing
+            this.router.navigate(['/list']);
+          }
+        })
+      )
+      .subscribe();
   }
 }
