@@ -1,5 +1,5 @@
 const express = require("express");
-const { getCardSearch, postCardSearch } = require("../controllers/search");
+const { getCardSearch } = require("../controllers/search");
 const router = express.Router();
 
 // Define routes & link to controller functions
