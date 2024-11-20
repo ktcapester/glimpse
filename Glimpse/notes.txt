@@ -20,17 +20,20 @@ Too many cards == same layout, "Multiple possible results found, be more specifi
     if possible, show first X suggestions as cards (up to 2x3 grid 2 across 3 down)
     "did you mean one of these? if not, type more"
 
-from card list, clicking on a list item brings you to "details" page
+DONE from card list, clicking on a list item brings you to "details" page
     - similar to results page, but change buttons to count buttons and remove from list
 
 separate number from card name so when it wraps the letters wrap to letters
 shrink line height so the second line is closer to the first line than the next item
-what happens when there's a really long list? scroll bar?
+^ NOPE REJECTED ^
+DONE truncate card name when it's too long 
+
+DONE what happens when there's a really long list? scroll bar?
     keep total anchored at the bottom, have the list scroll as needed
     make the div that has the list scroll, keep the rest anchored
 
-backend: when adding card to list, if already in list, just increase count
-onItemRemove not working?
+DONE backend: when adding card to list, if already in list, just increase count
+DONE onItemRemove not working?
 
 
 suggestion related cards / frequently used together

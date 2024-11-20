@@ -1,3 +1,9 @@
+.scrollable-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
 .empty-list {
   font-size: 24px;
   font-style: normal;
@@ -26,6 +32,15 @@
   font-style: normal;
   font-weight: 400;
   line-height: 110%;
+}
+
+.card-name-special {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  flex: 1;
+  min-width: 0;
 }
 
 .total-container {
