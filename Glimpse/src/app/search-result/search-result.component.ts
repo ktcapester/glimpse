@@ -19,6 +19,7 @@ import { BackendGlueService } from '../services/backend-glue.service';
 export class SearchResultComponent implements OnInit, OnDestroy {
   displayCard!: DisplayCard;
   private destroy$ = new Subject<void>();
+  listButtonText = '+ Add to List';
 
   constructor(
     private route: ActivatedRoute,
@@ -89,6 +90,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         tap((list_response) => {
           if (list_response.data.name === this.displayCard.name) {
             this.state.pushNewTotal(list_response.currentTotal);
+            this.listFeedback();
           } else {
             console.log('Something went wrong.');
             console.log(list_response);
@@ -96,6 +98,14 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe();
+  }
+
+  async listFeedback() {
+    const prevText = this.listButtonText;
+    this.listButtonText = 'Added to list!';
+    // wait for a bit
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    this.listButtonText = prevText;
   }
 
   onGoToScryfall() {
