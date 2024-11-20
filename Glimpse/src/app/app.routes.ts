@@ -29,7 +29,7 @@ export const routes: Routes = [
     component: SearchResultComponent,
   },
   {
-    path: 'suggestions/:term',
+    path: 'suggestions',
     title: 'Glimpse',
     component: SuggestionsComponent,
   },
