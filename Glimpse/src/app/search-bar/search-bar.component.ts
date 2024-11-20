@@ -57,7 +57,11 @@ export class SearchBarComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         tap((card) => {
           if (card && !this.useParam) {
-            this.searchForm.patchValue({ search: card.name });
+            if (Array.isArray(card)) {
+              this.searchForm.patchValue({ search: card[0].name });
+            } else {
+              this.searchForm.patchValue({ search: card.name });
+            }
           }
         })
       )

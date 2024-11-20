@@ -36,5 +36,9 @@ DONE backend: when adding card to list, if already in list, just increase count
 DONE onItemRemove not working?
 
 
+oh geez got a bunch done on suggestions page. feels like a mess but my head is all fogged up.
+
+
+
 suggestion related cards / frequently used together
 
