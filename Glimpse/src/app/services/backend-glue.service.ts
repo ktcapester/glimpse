@@ -26,24 +26,25 @@ export class BackendGlueService {
   getCardSearch(cardName: string) {
     let params = new HttpParams().set('name', cardName);
 
-    return this.http.get<CardSearch>(this.apiUrl + '/search', { params }).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 404) {
-          const errorCode = error.error?.errorCode;
-          if (errorCode === ErrorCode.CARD_AMBIGUOUS) {
-            return of(ErrorCode.CARD_AMBIGUOUS);
-          } else if (errorCode === ErrorCode.CARD_NOT_FOUND) {
-            return of(ErrorCode.CARD_NOT_FOUND);
+    return this.http
+      .get<CardSearch[]>(this.apiUrl + '/search', { params })
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 404) {
+            if (error.error?.errorCode === ErrorCode.CARD_NOT_FOUND) {
+              return of(ErrorCode.CARD_NOT_FOUND);
+            } else {
+              return of('Unknown 404 error');
+            }
+          } else if (error.status === 400) {
+            return of('No search term provided!');
+          } else if (error.status === 500) {
+            return of('A server error occurred. Try again later.');
           } else {
-            return of('Unknown 404 error');
+            return of('An unknown error occured.');
           }
-        } else if (error.status === 500) {
-          return of('A server error occurred. Try again later.');
-        } else {
-          return of('An unknown error occured.');
-        }
-      })
-    );
+        })
+      );
   }
 
   getCardList() {
