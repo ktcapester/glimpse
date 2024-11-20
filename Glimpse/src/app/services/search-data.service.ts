@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { GlimpseStateService } from './glimpse-state.service';
 import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
 import { ErrorCode } from '../enums/error-code';
+import { CardSuggestionService } from './card-suggestion.service';
 
 @Injectable({
   providedIn: 'root',
@@ -22,17 +23,21 @@ export class SearchDataService {
             if (results === ErrorCode.CARD_NOT_FOUND) {
               // go to no-results component
               this.router.navigate(['/none', term]);
-            } else if (results === ErrorCode.CARD_AMBIGUOUS) {
-              // go to suggestions component
-              this.router.navigate(['/suggestions', term]);
+              return;
             } else {
               this.router.navigate(['/404']);
             }
             throw new Error('Error response encountered');
           } else {
             // successful response
-            // aka response is CardSearch obj
-            return results;
+            // aka response is CardSearch[]
+            if (results.length > 1) {
+              // go to suggestions component
+              this.suggests.updateSuggestions(results);
+              this.router.navigate(['/suggestions']);
+              return results;
+            }
+            return results[0];
           }
         }),
         catchError((error) => {
@@ -47,7 +52,8 @@ export class SearchDataService {
   constructor(
     private glue: BackendGlueService,
     private router: Router,
-    private state: GlimpseStateService
+    private state: GlimpseStateService,
+    private suggests: CardSuggestionService
   ) {}
 
   updateSearchTerm(term: string): void {
