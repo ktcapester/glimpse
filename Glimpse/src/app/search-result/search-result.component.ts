@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
 import { SearchDataService } from '../services/search-data.service';
 import { BackendGlueService } from '../services/backend-glue.service';
+import { CardSuggestionService } from '../services/card-suggestion.service';
 
 @Component({
   selector: 'app-search-result',
@@ -26,7 +27,8 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     private router: Router,
     private state: GlimpseStateService,
     private searchdata: SearchDataService,
-    private glue: BackendGlueService
+    private glue: BackendGlueService,
+    private suggests: CardSuggestionService
   ) {}
 
   ngOnDestroy(): void {
@@ -54,8 +56,13 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         tap((card) => {
           if (card) {
-            this.setDisplayCard(card);
-            this.router.navigate(['/result', card.name]);
+            if (Array.isArray(card)) {
+              this.suggests.updateSuggestions(card);
+              this.router.navigate(['/suggestions']);
+            } else {
+              this.setDisplayCard(card);
+              this.router.navigate(['/result', card.name]);
+            }
           } else {
             // card was null
             this.state.setErrorMessage('Trouble with searchResults$');
