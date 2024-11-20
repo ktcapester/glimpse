@@ -7,8 +7,9 @@ function delay(ms) {
 
 async function searchScryfall(searchTerm) {
   try {
-    const scryfallAPIurl = new URL("https://api.scryfall.com/cards/named");
-    scryfallAPIurl.searchParams.append("fuzzy", searchTerm);
+    const scryfallAPIbase = "https://api.scryfall.com/";
+    const apiNamedurl = new URL(`${scryfallAPIbase}/cards/named`);
+    apiNamedurl.searchParams.append("fuzzy", searchTerm);
 
     const thisAPICall = Date.now();
 
@@ -19,17 +20,36 @@ async function searchScryfall(searchTerm) {
 
     lastAPICall = thisAPICall;
 
-    const scryfallResponse = await fetch(scryfallAPIurl);
+    const scryfallResponse = await fetch(apiNamedurl);
 
     const scryfallData = await scryfallResponse.json();
 
     if (scryfallResponse.status == 404) {
       if (scryfallData.type == "ambiguous") {
-        return {
-          status: 404,
-          error: "Scryfall found too many cards with that query.",
-          errorCode: "CARD_AMBIGUOUS",
-        };
+        const apiSearchurl = new URL(`${scryfallAPIbase}/cards/search`);
+        apiSearchurl.searchParams.append("q", searchTerm);
+        const searchResponse = await fetch(apiSearchurl);
+        const searchData = await searchResponse.json();
+        if (searchResponse.status === 200) {
+          // retrieved a list of matching cards
+          var cardsList = searchData.data;
+          if (cardsList.length > 6) {
+            cardsList = cardsList.slice(0, 6);
+          }
+          const manipd = cardsList.map((item) => {
+            return {
+              name: item.name,
+              imgsrc: item.image_uris.small,
+              scryfallLink: item.scryfall_uri,
+            };
+          });
+          return { status: 200, data: manipd };
+        }
+        // return {
+        //   status: 404,
+        //   error: "Scryfall found too many cards with that query.",
+        //   errorCode: "CARD_AMBIGUOUS",
+        // };
       } else {
         return {
           status: 404,
@@ -39,7 +59,7 @@ async function searchScryfall(searchTerm) {
       }
     } else {
       const result = await processAllPrints(scryfallData.prints_search_uri);
-      return { status: 200, data: result };
+      return { status: 200, data: [result] };
     }
   } catch (error) {
     console.error(error);
