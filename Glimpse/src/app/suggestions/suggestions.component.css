@@ -1,0 +1,26 @@
+.scrollable-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  display: grid;
+  grid-template: auto auto auto / auto auto;
+  justify-content: space-evenly;
+}
+
+.suggestion-question {
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+  text-align: center;
+  padding: 0px 24px;
+  margin-bottom: 18px;
+}
+
+.suggestion-item {
+  margin: 8px;
+}
+
+.card-image {
+  border-radius: 4.75% / 3.5%; /* ty scryfall */
+}

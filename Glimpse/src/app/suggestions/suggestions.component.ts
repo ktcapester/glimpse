@@ -3,21 +3,28 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BackendGlueService } from '../services/backend-glue.service';
 import { Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
+import { CardSuggestionService } from '../services/card-suggestion.service';
+import { CardSearch } from '../interfaces/backend.interface';
+import { HeaderComponent } from '../header/header.component';
 
 @Component({
   selector: 'app-suggestions',
   standalone: true,
-  imports: [],
+  imports: [HeaderComponent],
   templateUrl: './suggestions.component.html',
   styleUrl: './suggestions.component.css',
 })
 export class SuggestionsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  displayList: CardSearch[] = [];
+  card_height = 204;
+  card_width = 146;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private glue: BackendGlueService
+    private glue: BackendGlueService,
+    private suggests: CardSuggestionService
   ) {}
 
   ngOnDestroy(): void {
@@ -37,5 +44,20 @@ export class SuggestionsComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe();
+
+    this.suggests
+      .getCurrentSuggestionsListener()
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((cards) => {
+          console.log(cards);
+          this.displayList = cards;
+        })
+      )
+      .subscribe();
+  }
+
+  cardOnClick(card: CardSearch) {
+    console.log('you clicked on a card!', card);
   }
 }
