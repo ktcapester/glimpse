@@ -15,6 +15,10 @@ VSCode can keep 2 cmd terminals open, so leave one in \Glimpse, and one in \back
 
 
 
+Common mobile screen sizes:
+360x800, 390x844, 393x873, 412x915, 414x896, 360x780
+
+
 No cards found == same as results screen, but with "no cards found" in place of the image
 Too many cards == same layout, "Multiple possible results found, be more specific"
     if possible, show first X suggestions as cards (up to 2x3 grid 2 across 3 down)
