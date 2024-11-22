@@ -13,4 +13,5 @@ export interface CardListItem {
   id: number;
   name: string;
   price: number;
+  count: number;
 }

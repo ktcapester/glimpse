@@ -1,26 +1,54 @@
-<app-header></app-header>
+<div class="component-container">
+  <app-header></app-header>
 
-@if (!dummylist || dummylist.length == 0){
-<h4>There doesn't seem to be anything here...</h4>
-} @for (item of dummylist; track item.id; let i = $index) {
-<div
-  class="card-list-item"
-  [class.alternate-item]="i % 2 == 1"
-  (click)="onItemClick(item)"
->
-  <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">
-    {{ item.name }}
-  </p>
-  <p class="card-list-item-typography" [class.alternate-item]="i % 2 == 1">
-    {{ item.price | currency }}
-  </p>
-</div>
-}
+  <div class="scrollable-list">
+    @if (!displayList || displayList.length == 0){
+    <div class="empty-list">Add cards to your list!</div>
+    } @for (item of displayList; track item.id; let i = $index) {
+    <div
+      class="card-list-item"
+      [class.alternate-item]="i % 2 == 1"
+      (click)="onItemClick(item)"
+    >
+      <div
+        class="card-list-item-typography card-name-special"
+        [class.alternate-item]="i % 2 == 1"
+      >
+        {{ item.count }} {{ item.name }}
+      </div>
+      <div
+        class="card-list-item-typography"
+        [class.alternate-item]="i % 2 == 1"
+      >
+        {{ item.price * item.count | currency }}
+      </div>
+    </div>
+    }
+  </div>
 
-<div class="total-container">
-  <a class="total-label">Total</a>
-  <a class="total-price">{{ totalPrice | currency }}</a>
-</div>
-<div class="button-container">
-  <button class="clear-button" (click)="onClearList()">Clear list</button>
+  @if (isModalActive) {
+  <div class="total-container">
+    <div class="total-label">Clear list?</div>
+  </div>
+  <div class="button-container">
+    <button class="large-button primary-button-style" (click)="onConfirm()">
+      Yee
+    </button>
+  </div>
+  <div class="button-container">
+    <button class="large-button secondary-button-style" (click)="onCancel()">
+      Cancel
+    </button>
+  </div>
+  } @else {
+  <div class="total-container">
+    <a class="total-label">Total</a>
+    <a class="total-price">{{ totalPrice | currency }}</a>
+  </div>
+  <div class="button-container">
+    <button class="large-button secondary-button-style" (click)="onClearList()">
+      Clear list
+    </button>
+  </div>
+  }
 </div>

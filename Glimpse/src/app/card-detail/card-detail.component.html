@@ -1,6 +1,6 @@
 <div class="component-container">
   <app-header></app-header>
-  @if (displayCard){
+  @if (loadingDone){
   <div class="card-image-container">
     <img
       [src]="displayCard.imgsrc"
@@ -33,18 +33,31 @@
       }
     </div>
   </div>
-
-  <div class="button-container">
-    <button class="large-button primary-button-style" (click)="onAddToList()">
-      {{ listButtonText }}
-    </button>
+  <div class="count-container">
+    <div class="button-container small-button">
+      <button
+        class="secondary-button-style count-button text label"
+        (click)="onItemDecrease()"
+      >
+        -
+      </button>
+    </div>
+    <div class="text label">{{ myCard.count }}</div>
+    <div class="button-container small-button">
+      <button
+        class="secondary-button-style count-button text label"
+        (click)="onItemIncrease()"
+      >
+        +
+      </button>
+    </div>
   </div>
   <div class="button-container">
     <button
       class="large-button secondary-button-style"
-      (click)="onGoToScryfall()"
+      (click)="onItemRemove()"
     >
-      View on Scryfall
+      Remove
     </button>
   </div>
   }

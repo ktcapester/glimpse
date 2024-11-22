@@ -20,6 +20,6 @@
   </form>
   <button class="list-button" (click)="navigateToList()">
     <img src="../../assets/icon-list.svg" alt="List Icon" class="list-icon" />
-    $0.00
+    {{ displayTotal | currency }}
   </button>
 </div>

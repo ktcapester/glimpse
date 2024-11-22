@@ -1,3 +1,18 @@
+.scrollable-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.empty-list {
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%;
+  padding: 4px 24px;
+  text-align: center;
+}
+
 .card-list-item {
   display: flex;
   max-width: 100%;
@@ -16,7 +31,16 @@
   font-size: 18px;
   font-style: normal;
   font-weight: 400;
-  line-height: 150%;
+  line-height: 110%;
+}
+
+.card-name-special {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  flex: 1;
+  min-width: 0;
 }
 
 .total-container {
@@ -69,4 +93,14 @@
 
 .clear-button:hover {
   background-color: var(--Sand);
+}
+
+.confirm-button-style {
+  border: 1px solid var(--Shadow);
+  background-color: var(--Island);
+  color: var(--White);
+}
+
+.confirm-button-style:hover {
+  background-color: var(--IslandDark);
 }

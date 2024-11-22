@@ -3,9 +3,10 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
 import { HeaderComponent } from '../header/header.component';
 import { BackendGlueService } from '../services/backend-glue.service';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, tap } from 'rxjs/operators';
 import { CardListItem } from '../interfaces/backend.interface';
 import { Router } from '@angular/router';
+import { GlimpseStateService } from '../services/glimpse-state.service';
 
 @Component({
   selector: 'app-card-list',
@@ -17,10 +18,15 @@ import { Router } from '@angular/router';
 export class CardListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  constructor(private glue: BackendGlueService, private router: Router) {}
+  constructor(
+    private glue: BackendGlueService,
+    private state: GlimpseStateService,
+    private router: Router
+  ) {}
 
-  dummylist: CardListItem[] = [];
+  displayList: CardListItem[] = [];
   totalPrice = 0.0;
+  isModalActive = false;
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -30,21 +36,43 @@ export class CardListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.glue
       .getCardList()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((list) => {
-        this.dummylist = list;
-        for (let index = 0; index < list.length; index++) {
-          const element = list[index];
-          this.totalPrice += element.price;
-        }
-      });
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((response) => {
+          this.displayList = response.list;
+          this.totalPrice = response.currentTotal;
+          this.state.pushNewTotal(response.currentTotal);
+        })
+      )
+      .subscribe();
   }
 
   onItemClick(item: CardListItem) {
-    this.router.navigate(['/result', item.name]);
+    this.router.navigate(['/detail', item.id, item.name]);
   }
 
   onClearList() {
-    alert('Are you sure?');
+    if (this.displayList.length) {
+      this.isModalActive = true;
+    }
+  }
+
+  onCancel() {
+    this.isModalActive = false;
+  }
+
+  onConfirm() {
+    this.glue
+      .deleteCardList()
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((response) => {
+          this.displayList = response.list;
+          this.totalPrice = response.currentTotal;
+          this.state.pushNewTotal(response.currentTotal);
+          this.isModalActive = false;
+        })
+      )
+      .subscribe();
   }
 }

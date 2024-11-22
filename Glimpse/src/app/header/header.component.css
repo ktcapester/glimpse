@@ -6,4 +6,11 @@
   background-color: var(--Sand);
   box-sizing: border-box;
   margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.special {
+  flex-grow: 1;
 }

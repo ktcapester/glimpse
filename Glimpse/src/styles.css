@@ -31,6 +31,55 @@ body {
   letter-spacing: -0.2px;
 }
 
+.component-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: 100vh;
+}
+
+.button-container {
+  display: flex;
+  max-width: 100%;
+  justify-content: center;
+}
+
+.large-button {
+  margin: auto 24px 18px 24px;
+  max-width: 100%;
+  border-radius: 8px;
+  display: flex;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  flex-grow: 1;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.primary-button-style {
+  border: 1px solid var(--Island);
+  background-color: var(--Island);
+  color: var(--White);
+}
+
+.primary-button-style:hover {
+  background-color: var(--IslandDark);
+}
+
+.secondary-button-style {
+  border: 1px solid var(--Shadow);
+  background-color: var(--White);
+}
+
+.secondary-button-style:hover {
+  background-color: var(--Sand);
+}
+
 /* w3schools suggested breakpoints */
 /* Extra small devices (phones, 600px and down) */
 @media only screen and (max-width: 600px) {

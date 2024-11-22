@@ -1,0 +1,16 @@
+.no-results-content {
+  display: flex;
+  padding: 0px 40px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex: 1 0 0;
+  align-self: stretch;
+}
+
+.no-results-typography {
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+}
