@@ -1,13 +1,57 @@
-function cardCompareFn(card0, card1, price_name) {
-  const p0 = extractPrice(card0, price_name);
-  const p1 = extractPrice(card1, price_name);
-  if (Number.isNaN(p0)) {
-    return 1;
+var lastAPICall = Date.now();
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function calculatePriceFromName(cardName) {
+  try {
+    const apiNamedurl = new URL("https://api.scryfall.com/cards/named");
+    apiNamedurl.searchParams.append("fuzzy", cardName);
+
+    const thisAPICall = Date.now();
+    if (thisAPICall - lastAPICall < 100) {
+      // scryfall asks for 50-100ms between API calls, so wait for 100ms
+      await delay(100);
+    }
+
+    lastAPICall = Date.now();
+
+    const scryfallResponse = await fetch(apiNamedurl);
+    const scryfallData = await scryfallResponse.json();
+    const result = await processAllPrints(scryfallData.prints_search_uri);
+    return { status: 200, data: result };
+  } catch (error) {
+    console.error(error);
+    return {
+      status: 500,
+      error: "An error occurred while fetching data from Scryfall.",
+      errorCode: "SERVER_ERROR",
+    };
   }
-  if (Number.isNaN(p1)) {
-    return -1;
+}
+
+async function processAllPrints(prints_search_uri) {
+  // eg: "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Ab9cd714b-2ad8-4fdb-a8aa-82b17730e071&unique=prints"
+  // I don't like that this sometimes gives me a digital version (Vintage Masters, etc)
+  // Scryfall api card has .digital = true for mtgo versions, so filter it out in the all prints request
+  const digital_filter = "+-is%3Adigital";
+  const lidx = prints_search_uri.lastIndexOf("&unique=prints");
+  const beginning_uri = prints_search_uri.slice(0, lidx);
+  const end_uri = prints_search_uri.slice(lidx);
+  const prints_no_digital = `${beginning_uri}${digital_filter}${end_uri}`;
+
+  const thisAPICall = Date.now();
+  if (thisAPICall - lastAPICall < 100) {
+    // scryfall asks for 50-100ms between API calls, so wait for 100ms
+    await delay(100);
   }
-  return p0 - p1;
+  lastAPICall = Date.now();
+
+  const all_response = await fetch(prints_no_digital);
+  const all_data = await all_response.json();
+
+  return calculateAllPrices(all_data.data);
 }
 
 function calculateAllPrices(cards) {
@@ -125,4 +169,16 @@ function extractPrice(card, price_name) {
   }
 }
 
-module.exports = { calculateAllPrices };
+function cardCompareFn(card0, card1, price_name) {
+  const p0 = extractPrice(card0, price_name);
+  const p1 = extractPrice(card1, price_name);
+  if (Number.isNaN(p0)) {
+    return 1;
+  }
+  if (Number.isNaN(p1)) {
+    return -1;
+  }
+  return p0 - p1;
+}
+
+module.exports = { calculatePriceFromName };

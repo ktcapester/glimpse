@@ -12,7 +12,7 @@ const getCardSearch = async (req, res) => {
 
   const result = await searcher.searchScryfall(searchTerm);
   // possible formats of result:
-  // { status: 200, data: [obj] }
+  // { status: 200, data: {name,imgsrc,scryfallLink} }
   // { status: 404 or 500, error:str, errorCode:str }
   if (result.status === 200) {
     return res.status(200).json(result.data);
