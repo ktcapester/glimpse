@@ -54,11 +54,13 @@ async function searchScryfall(searchTerm) {
     } else {
       return {
         status: 200,
-        data: {
-          name: scryfallData.name,
-          imgsrc: scryfallData.image_uris.small,
-          scryfallLink: scryfallData.scryfall_uri,
-        },
+        data: [
+          {
+            name: scryfallData.name,
+            imgsrc: scryfallData.image_uris.small,
+            scryfallLink: scryfallData.scryfall_uri,
+          },
+        ],
       };
     }
   } catch (error) {
