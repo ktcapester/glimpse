@@ -21,7 +21,6 @@ export class SearchDataService {
     switchMap((term) => {
       return this.glue.getCardSearch(term).pipe(
         map((results) => {
-          console.log('search-data-service:', results);
           if (typeof results === 'string') {
             // error response
             if (results === ErrorCode.CARD_NOT_FOUND) {
@@ -43,7 +42,6 @@ export class SearchDataService {
               return stringResult;
             }
           } else {
-            console.log('success response:', results);
             // successful response
             // aka response is CardSearch[]
             if (results.length > 1) {
