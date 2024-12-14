@@ -38,7 +38,7 @@ async function searchScryfall(searchTerm) {
           const manipd = cardsList.map((item) => {
             return {
               name: item.name,
-              imgsrc: item.image_uris.small,
+              imgsrc: item.image_uris.normal,
               scryfallLink: item.scryfall_uri,
             };
           });
@@ -57,7 +57,7 @@ async function searchScryfall(searchTerm) {
         data: [
           {
             name: scryfallData.name,
-            imgsrc: scryfallData.image_uris.small,
+            imgsrc: scryfallData.image_uris.large,
             scryfallLink: scryfallData.scryfall_uri,
           },
         ],
