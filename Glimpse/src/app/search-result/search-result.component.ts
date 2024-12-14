@@ -1,14 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
 import { DisplayCard } from '../interfaces/display-card.interface';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { GlimpseStateService } from '../services/glimpse-state.service';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Subject } from 'rxjs';
+import { combineLatest, Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
-import { SearchDataService } from '../services/search-data.service';
 import { BackendGlueService } from '../services/backend-glue.service';
-import { CardSuggestionService } from '../services/card-suggestion.service';
+import { SearchDataService } from '../services/search-data.service';
 
 @Component({
   selector: 'app-search-result',
@@ -21,19 +20,17 @@ export class SearchResultComponent implements OnInit, OnDestroy {
   displayCard!: DisplayCard;
   private destroy$ = new Subject<void>();
   listButtonText = '+ Add to List';
+  private myCardName = '';
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private state: GlimpseStateService,
-    private searchdata: SearchDataService,
     private glue: BackendGlueService,
-    private suggests: CardSuggestionService
+    private search: SearchDataService
   ) {}
 
   ngOnDestroy(): void {
     console.log('SearchResult ngOnDestroy called!', Date.now());
-    this.searchdata.clearSearchResults(); // turned on due to leaving the page i guess?
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -46,42 +43,34 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         tap((params) => {
           const name = params.get('cardName') || '';
-          this.searchdata.updateSearchTerm(name);
+          this.myCardName = name;
+
+          combineLatest([
+            this.search.searchResults$,
+            this.glue.getPrices(this.myCardName),
+          ])
+            .pipe(
+              takeUntil(this.destroy$),
+              tap(([searchResult, prices]) => {
+                if (typeof prices !== 'string') {
+                  const display: DisplayCard = {
+                    name: searchResult.cards[0].name,
+                    imgsrc: searchResult.cards[0].imgsrc,
+                    normalprice: prices.usd,
+                    foilprice: prices.usd_foil,
+                    etchedprice: prices.usd_etched,
+                    scryfallLink: searchResult.cards[0].scryfall,
+                  };
+                  this.displayCard = display;
+                } else {
+                  console.log('There was an error in prices but who cares');
+                }
+              })
+            )
+            .subscribe();
         })
       )
       .subscribe();
-
-    this.searchdata.searchResults$
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((card) => {
-          if (card) {
-            if (Array.isArray(card)) {
-              this.suggests.updateSuggestions(card);
-              this.router.navigate(['/suggestions']);
-            } else {
-              this.setDisplayCard(card);
-              this.router.navigate(['/result', card.name]);
-            }
-          } else {
-            // card was null
-            this.state.setErrorMessage('Trouble with searchResults$');
-            this.router.navigate(['/404']);
-          }
-        })
-      )
-      .subscribe();
-  }
-
-  private setDisplayCard(card: any): void {
-    this.displayCard = {
-      name: card.name,
-      imgsrc: card.imgsrc,
-      foilprice: card.usd_foil,
-      normalprice: card.usd,
-      etchedprice: card.usd_etched,
-      scryfallLink: card.scryfallLink,
-    };
   }
 
   onAddToList() {
