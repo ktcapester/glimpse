@@ -8,6 +8,7 @@ import { combineLatest, Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
 import { BackendGlueService } from '../services/backend-glue.service';
 import { SearchDataService } from '../services/search-data.service';
+import { ResultPricesService } from '../services/result-prices.service';
 
 @Component({
   selector: 'app-search-result',
@@ -26,7 +27,8 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private state: GlimpseStateService,
     private glue: BackendGlueService,
-    private search: SearchDataService
+    private search: SearchDataService,
+    private prices: ResultPricesService
   ) {}
 
   ngOnDestroy(): void {
@@ -45,14 +47,25 @@ export class SearchResultComponent implements OnInit, OnDestroy {
           const name = params.get('cardName') || '';
           this.myCardName = name;
 
-          combineLatest([
-            this.search.searchResults$,
-            this.glue.getPrices(this.myCardName),
-          ])
+          console.log(Date.now(), 'tap(params):params=', params);
+          console.log(Date.now(), 'tap(params):myCardName=', this.myCardName);
+
+          combineLatest([this.search.searchResults$, this.prices.priceResults$])
             .pipe(
               takeUntil(this.destroy$),
               tap(([searchResult, prices]) => {
-                if (typeof prices !== 'string') {
+                console.log(
+                  Date.now(),
+                  'tap([searchResult, prices]):searchResult=',
+                  searchResult
+                );
+                console.log(
+                  Date.now(),
+                  'tap([searchResult, prices]):prices=',
+                  prices
+                );
+
+                if (!Number.isNaN(prices.usd)) {
                   const display: DisplayCard = {
                     name: searchResult.cards[0].name,
                     imgsrc: searchResult.cards[0].imgsrc,
@@ -68,6 +81,8 @@ export class SearchResultComponent implements OnInit, OnDestroy {
               })
             )
             .subscribe();
+          this.search.updateSearchTerm(this.myCardName);
+          this.prices.updatePricesTerm(this.myCardName);
         })
       )
       .subscribe();
