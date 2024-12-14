@@ -1,14 +1,12 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { CardSearch } from '../interfaces/backend.interface';
-import { catchError, map } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { CardDisplayOnly } from '../interfaces/backend.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CardSuggestionService {
-  private suggestionSubject = new BehaviorSubject<CardSearch[]>([]);
+  private suggestionSubject = new BehaviorSubject<CardDisplayOnly[]>([]);
 
   constructor() {}
 
@@ -16,7 +14,7 @@ export class CardSuggestionService {
     return this.suggestionSubject.asObservable();
   }
 
-  updateSuggestions(cards: CardSearch[]) {
+  updateSuggestions(cards: CardDisplayOnly[]) {
     this.suggestionSubject.next(cards);
   }
 

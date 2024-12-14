@@ -4,7 +4,7 @@ import { BackendGlueService } from '../services/backend-glue.service';
 import { Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
 import { CardSuggestionService } from '../services/card-suggestion.service';
-import { CardSearch } from '../interfaces/backend.interface';
+import { CardDisplayOnly } from '../interfaces/backend.interface';
 import { HeaderComponent } from '../header/header.component';
 
 @Component({
@@ -16,7 +16,7 @@ import { HeaderComponent } from '../header/header.component';
 })
 export class SuggestionsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  displayList: CardSearch[] = [];
+  displayList: CardDisplayOnly[] = [];
   card_height = 204;
   card_width = 146;
 
@@ -57,7 +57,7 @@ export class SuggestionsComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
-  cardOnClick(card: CardSearch) {
+  cardOnClick(card: CardDisplayOnly) {
     console.log('you clicked on a card!', card);
   }
 }
