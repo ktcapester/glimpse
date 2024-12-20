@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiURL: 'http://localhost:3000/api',
+  apiURL: 'http://glimpse-0.us-west-2.elasticbeanstalk.com/api',
 };
 
 /*
