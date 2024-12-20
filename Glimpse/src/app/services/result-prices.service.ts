@@ -53,4 +53,8 @@ export class ResultPricesService {
   updatePricesTerm(cardName: string) {
     this.priceTermSubject.next(cardName);
   }
+
+  clearPrices() {
+    this.priceTermSubject.next('');
+  }
 }

@@ -33,6 +33,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     console.log('SearchResult ngOnDestroy called!', Date.now());
+    this.prices.clearPrices();
     this.destroy$.next();
     this.destroy$.complete();
   }
