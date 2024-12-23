@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiURL: 'http://glimpse-0.us-west-2.elasticbeanstalk.com/api',
+  apiURL: 'https://glimpsecard.com/api',
 };
 
 /*
