@@ -7,9 +7,9 @@ import { GlimpseStateService } from '../services/glimpse-state.service';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { combineLatest, Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
-import { SearchDataService } from '../services/search-data.service';
 import { BackendGlueService } from '../services/backend-glue.service';
 import { CardDetailService } from '../services/card-detail.service';
+import { ResultPricesService } from '../services/result-prices.service';
 
 @Component({
   selector: 'app-card-detail',
@@ -30,8 +30,8 @@ export class CardDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private state: GlimpseStateService,
-    private searchdata: SearchDataService,
     private glue: BackendGlueService,
+    private prices: ResultPricesService,
     private details: CardDetailService
   ) {}
 
@@ -54,7 +54,8 @@ export class CardDetailComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         tap((params) => {
           const name = params.get('cardName') || '';
-          this.searchdata.updateSearchTerm(name);
+          this.details.updateSearchFromName(name);
+          this.prices.updatePricesTerm(name);
           const id = parseInt(params.get('cardID') || '');
           this.myID = id;
           this.details.updateDetailFromID(id);
@@ -63,12 +64,16 @@ export class CardDetailComponent implements OnInit, OnDestroy {
       .subscribe();
 
     // wait for both API calls to return before presenting data
-    combineLatest([this.searchdata.searchResults$, this.details.cardFromID$])
+    combineLatest([
+      this.details.detailSearchResults$,
+      this.details.cardFromID$,
+      this.prices.priceResults$,
+    ])
       .pipe(
         takeUntil(this.destroy$),
-        tap(([searchResult, cardDetails]) => {
+        tap(([searchResult, cardDetails, cardPrices]) => {
           if (!searchResult) {
-            this.state.setErrorMessage('Trouble with searchResults$');
+            this.state.setErrorMessage('Trouble with detailSearchResults$');
             this.router.navigate(['/404']);
             return;
           }
@@ -77,8 +82,28 @@ export class CardDetailComponent implements OnInit, OnDestroy {
             this.router.navigate(['/404']);
             return;
           }
+          if (!cardPrices) {
+            this.state.setErrorMessage('Trouble with priceResults$');
+            this.router.navigate(['/404']);
+            return;
+          }
           this.myCard = cardDetails;
-          this.setDisplayCard(searchResult);
+
+          const cardDisp = searchResult.cards[0];
+
+          this.displayCard = {
+            name: cardDisp.name,
+            imgsrc: cardDisp.imgsrc,
+            foilprice: cardPrices.usd_foil,
+            normalprice: cardPrices.usd,
+            etchedprice: cardPrices.usd_etched,
+            scryfallLink: cardDisp.scryfall,
+          };
+
+          // update the price with latest from scryfall
+
+          this.myCard.price = cardPrices.usd;
+
           this.loadingDone = true;
         })
       )
@@ -98,12 +123,12 @@ export class CardDetailComponent implements OnInit, OnDestroy {
     this.displayCard = {
       name: card.name,
       imgsrc: card.imgsrc,
-      foilprice: card.usd_foil,
-      normalprice: card.usd,
-      etchedprice: card.usd_etched,
+      foilprice: card.usd_foil, // ???
+      normalprice: card.usd, // ???
+      etchedprice: card.usd_etched, // ???
       scryfallLink: card.scryfallLink,
     };
-    // update the price with latest from scryfall
+    // update the price with latest from scryfall ???
     this.myCard.price = card.usd;
   }
 
