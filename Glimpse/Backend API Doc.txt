@@ -1,39 +1,41 @@
 Backend API Doc
 
-The base url for the API is 'http://glimpse-0.us-west-2.elasticbeanstalk.com/api'
+The base url for the API is 'https://glimpsecard.com/api'
 
 Then we have these routes:
 
-.../temp
-GET = Returns a JSON array of objects of the form { id: Number, name: String }.
-POST = Accepts a string, adds it to the array, and returns the new object with its ID and name.
-
 .../search
-GET = Uses query parameter "name" to search for a card by name. Returns JSON with three options:
-    { status: 200, data: [{ name: String, imgsrc: String, scryfallLink: String }] }
-    { status: 404, error: String, errorCode: String }
-    { status: 500, error: String, errorCode: String }
+GET = Uses query parameter "name" to search for a card by name.
+    Returns JSON with three options:
+        { status: 200, data: [{ name: String, imgsrc: String, scryfallLink: String }] }
+        { status: 500, error: String, errorCode: String }
     
     Example: ".../search?name=ponder" --> { status: 200, data: [{name: "Ponder", imgsrc: "...", scryfallLink: "..."}]}
 
 .../price
-GET = Uses query parameter "name" to calculate the prices for a card by name. Returns JSON with two options:
-    { status: 200, data: {usd: number, usd_etched: number, usd_foil: number, eur: number, eur_etched: number, eur_foil: number} }
-    { status: 500, error: String, errorCode: String }
+GET = Uses query parameter "name" to calculate the prices for a card by name.
+    Returns JSON with two options:
+        { status: 200, data: {usd: number, usd_etched: number, usd_foil: number, eur: number, eur_etched: number, eur_foil: number} }
+        { status: 500, error: String, errorCode: String }
     
     Example: ".../price?name=Ponder" --> { status: 200, data: [{usd: 2.55, usd_foil: 17.64, usd_etched: null, ...}]}
 
 .../list
-GET = Gets the current list and total price of the everything in it. Returns a JSON object: { list: cardObject[], currentTotal: number }.
-        cardObject = { id: number, count: number, name: string, price: number }
-DELETE = Deletes the current list, returns an emptied list with 0 price. Returns a JSON object: { list: [], currentTotal: 0 }.
+GET = Gets the current list and total price of the everything in it.
+    Returns a JSON object: { list: cardObject[], currentTotal: number }.
+        cardObject = { id: number, count: number, name: string, price: number, imgsrc: string }
+DELETE = Deletes the current list, returns an emptied list with 0 price.
+    Returns a JSON object: { list: [], currentTotal: 0 }.
 POST = Uses the HTTP request body to add a card to the list, returns the updated list.
         If the card already is in the list, it increments the count of it.
-        Body is expected to be JSON objecct: { name: string, price: number }.
-        Returns a JSON object: { list: cardObject[], currentTotal: number }.
-            cardObject = { id: number, count: number, name: string, price: number }
+        Body is expected to be JSON object: { name: string, price: number, imgsrc: string }.
+        Returns a JSON object: { data: cardObject, currentTotal: number }.
+            cardObject = { id: number, count: number, name: string, price: number, imgsrc: string }
 
 .../list/:id
-GET = Use a cardObject.id to get the whole object. Returns JSON cardObject = { id: number, count: number, name: string, price: number }
-DELETE = Use a cardObject.id to remove the card from the list.  Returns a JSON object: { list: cardObject[], currentTotal: number }.
-PATCH = Use a cardObject.id to update the details of a card in the list. Returns a JSON object: { currentTotal: number }.
+GET = Use a cardObject.id to get the whole object.
+    Returns JSON cardObject = { id: number, count: number, name: string, price: number, imgsrc: string }
+DELETE = Use a cardObject.id to remove the card from the list.
+    Returns a JSON object: { list: cardObject[], currentTotal: number }.
+PATCH = Use a cardObject.id to update the details of a card in the list.
+    Returns a JSON object: { currentTotal: number }.
