@@ -1,6 +1,13 @@
 let tempStore = [];
 let currentTotal = 0.0;
 
+function updateTotal(oldCard, newCard) {
+  const oldSubtotal = oldCard.count * oldCard.price;
+  const newSubtotal = newCard.count * newCard.price;
+  currentTotal -= oldSubtotal;
+  currentTotal += newSubtotal;
+}
+
 const getAllCards = () => {
   return { list: tempStore, currentTotal: currentTotal };
 };
@@ -16,9 +23,13 @@ const addCard = (newData) => {
     currentTotal += data.price;
   } else {
     console.log("already in list, incrementing count");
-    const foo = tempStore[itemidx];
-    foo.count += 1;
-    currentTotal += foo.price;
+    const existingCard = tempStore[itemidx];
+    updateTotal(existingCard, {
+      count: existingCard.count + 1,
+      price: newData.price,
+    });
+    existingCard.count += 1;
+    existingCard.price = newData.price;
     data = tempStore[itemidx];
   }
   console.log("stored data:", data);
@@ -68,10 +79,8 @@ const updateItem = (cardItem) => {
   if (target.count !== cardItem.count) {
     console.log("target=", target);
     console.log("cardItem=", cardItem);
-
-    currentTotal -= target.count * target.price;
+    updateTotal(target, cardItem);
     tempStore[itemidx] = cardItem;
-    currentTotal += cardItem.count * cardItem.price;
   }
   return { currentTotal: currentTotal };
 };
