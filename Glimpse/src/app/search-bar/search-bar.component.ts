@@ -94,12 +94,12 @@ export class SearchBarComponent implements OnInit, OnDestroy {
           }
           // Returned no cards, meaning either an error, or just no results
           if (result.cards.length === 0) {
-            if (result.code === ErrorCode.CARD_NOT_FOUND) {
-              this.router.navigate(['/none', result.term]);
-              return;
-            } else {
+            if (result.code === 'ERROR') {
               this.state.setErrorMessage(`${result.code}: ${result.details}`);
               this.router.navigate(['/404']);
+              return;
+            } else {
+              this.router.navigate(['/none', result.term]);
               return;
             }
           }

@@ -3,7 +3,6 @@ import { BehaviorSubject, of } from 'rxjs';
 import { BackendGlueService } from './backend-glue.service';
 import { GlimpseStateService } from './glimpse-state.service';
 import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
-import { ErrorCode } from '../enums/error-code';
 import { CardSuggestionService } from './card-suggestion.service';
 import { SearchDataResults } from '../interfaces/search-data-results.interface';
 
@@ -23,28 +22,26 @@ export class SearchDataService {
         map((results) => {
           if (typeof results === 'string') {
             // error response
-            if (results === ErrorCode.CARD_NOT_FOUND) {
-              const noneResult: SearchDataResults = {
-                cards: [],
-                term: term,
-                code: ErrorCode.CARD_NOT_FOUND,
-                details: 'No cards found with that search term.',
-              };
-              return noneResult;
-            } else {
-              const stringResult: SearchDataResults = {
-                cards: [],
-                term: term,
-                code: 'UNKNOWN_STRING',
-                details:
-                  'searchResults$ got an unknown string back from the glue.',
-              };
-              return stringResult;
-            }
+            const stringResult: SearchDataResults = {
+              cards: [],
+              term: term,
+              code: 'ERROR',
+              details:
+                'searchResults$ got an unknown string back from the glue.',
+            };
+            return stringResult;
           } else {
             // successful response
             // aka response is CardSearch[]
-            if (results.length > 1) {
+            if (results.length === 0) {
+              const noneResult: SearchDataResults = {
+                cards: [],
+                term: term,
+                code: 'ZERO',
+                details: 'No cards found with that search term.',
+              };
+              return noneResult;
+            } else if (results.length > 1) {
               // go to suggestions component
               this.suggests.updateSuggestions(results);
               const suggestResult: SearchDataResults = {
@@ -70,7 +67,7 @@ export class SearchDataService {
           const errorResult: SearchDataResults = {
             cards: [],
             term: term,
-            code: 'UNEXPECTED',
+            code: 'ERROR',
             details: 'catchError in searchResults$ caught an unexpected error.',
           };
           return of(errorResult);

@@ -12,7 +12,6 @@ import {
   CardListItem,
   CardPrices,
 } from '../interfaces/backend.interface';
-import { ErrorCode } from '../enums/error-code';
 
 @Injectable({
   providedIn: 'root',
@@ -34,13 +33,7 @@ export class BackendGlueService {
       .get<CardDisplayOnly[]>(this.apiUrl + '/search', { params })
       .pipe(
         catchError((error: HttpErrorResponse) => {
-          if (error.status === 404) {
-            if (error.error?.errorCode === ErrorCode.CARD_NOT_FOUND) {
-              return of(ErrorCode.CARD_NOT_FOUND);
-            } else {
-              return of('Unknown 404 error');
-            }
-          } else if (error.status === 400) {
+          if (error.status === 400) {
             return of('No search term provided!');
           } else if (error.status === 500) {
             return of('A server error occurred. Try again later.');
