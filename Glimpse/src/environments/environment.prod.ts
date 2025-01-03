@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiURL: 'FIX THIS LOL',
+  apiURL: 'https://glimpsecard.com/api',
 };

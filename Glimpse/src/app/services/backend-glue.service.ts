@@ -7,7 +7,11 @@ import { Injectable } from '@angular/core';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { CardListItem, CardSearch } from '../interfaces/backend.interface';
+import {
+  CardDisplayOnly,
+  CardListItem,
+  CardPrices,
+} from '../interfaces/backend.interface';
 import { ErrorCode } from '../enums/error-code';
 
 @Injectable({
@@ -27,7 +31,7 @@ export class BackendGlueService {
     let params = new HttpParams().set('name', cardName);
 
     return this.http
-      .get<CardSearch[]>(this.apiUrl + '/search', { params })
+      .get<CardDisplayOnly[]>(this.apiUrl + '/search', { params })
       .pipe(
         catchError((error: HttpErrorResponse) => {
           if (error.status === 404) {
@@ -45,6 +49,20 @@ export class BackendGlueService {
           }
         })
       );
+  }
+
+  getPrices(cardName: string) {
+    let params = new HttpParams().set('name', cardName);
+
+    return this.http.get<CardPrices>(this.apiUrl + '/price', { params }).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 500) {
+          return of('A server error occurred. Try again later.');
+        } else {
+          return of('An unknown error occured.');
+        }
+      })
+    );
   }
 
   getCardList() {

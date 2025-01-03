@@ -13,6 +13,7 @@ import { Subject } from 'rxjs';
 import { SearchDataService } from '../services/search-data.service';
 import { takeUntil, tap } from 'rxjs/operators';
 import { GlimpseStateService } from '../services/glimpse-state.service';
+import { ErrorCode } from '../enums/error-code';
 
 @Component({
   selector: 'app-search-bar',
@@ -34,38 +35,26 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   });
   @ViewChild('inputField') inputElement!: ElementRef;
   private destroy$ = new Subject<void>();
-  private useParam = false;
   displayTotal = 0;
 
   ngOnInit(): void {
+    // Populate the search input with the term found in the URL
     this.route.paramMap
       .pipe(
         takeUntil(this.destroy$),
         tap((params) => {
           if (params.has('term')) {
             const term = params.get('term') || '';
-            this.useParam = true;
             this.searchForm.patchValue({ search: term });
-          } else {
-            this.useParam = false;
           }
         })
       )
       .subscribe();
-    this.searchdata.searchResults$
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((card) => {
-          if (card && !this.useParam) {
-            if (Array.isArray(card)) {
-              this.searchForm.patchValue({ search: card[0].name });
-            } else {
-              this.searchForm.patchValue({ search: card.name });
-            }
-          }
-        })
-      )
-      .subscribe();
+
+    // Create pipeline and subscribe to when a new search term is encountered
+    this.setupSearchCallback();
+
+    // Keep the list total price up-to-date
     this.state
       .getCurrentTotalListener()
       .pipe(
@@ -75,6 +64,8 @@ export class SearchBarComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe();
+
+    // Initialize the list total with the list data from the backend.
     this.searchdata.initTotal();
   }
 
@@ -85,12 +76,48 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  setupSearchCallback() {
+    // This will run every time the searchdata.updateSearchTerm() is triggered.
+    this.searchdata.searchResults$
+      .pipe(
+        takeUntil(this.destroy$), // Memory management
+        tap((result) => {
+          // Returned multiple cards, go to suggestions
+          if (result.cards.length > 1) {
+            this.router.navigate(['/suggestions', result.term]);
+            return;
+          }
+          // Returned a single card, go to the results page.
+          if (result.cards.length === 1) {
+            this.router.navigate(['/result', result.cards[0].name]);
+            return;
+          }
+          // Returned no cards, meaning either an error, or just no results
+          if (result.cards.length === 0) {
+            if (result.code === ErrorCode.CARD_NOT_FOUND) {
+              this.router.navigate(['/none', result.term]);
+              return;
+            } else {
+              this.state.setErrorMessage(`${result.code}: ${result.details}`);
+              this.router.navigate(['/404']);
+              return;
+            }
+          }
+        })
+      )
+      .subscribe();
+  }
+
   navigateToList() {
     this.router.navigate(['/list']);
   }
 
   clearInput() {
-    this.searchForm.patchValue({ search: '' });
+    // TODO: scryfall does it this way:
+    // card result -> search bar is cleared on load
+    // ambiguous/none -> search bar keeps the entered term
+    // never clears on clicking into the bar
+    // this.searchForm.patchValue({ search: '' });
   }
 
   handleSubmit() {
@@ -107,11 +134,9 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     if (word === '') {
       return;
     }
-
+    // Use the input to search for a card.
+    // This kicks off the pipeline in search-data on line 16.
+    console.log(word);
     this.searchdata.updateSearchTerm(word);
-    if (!this.router.url.includes('/result')) {
-      // only need to navigate if not already on a results page
-      this.router.navigate(['/result', word]);
-    }
   }
 }
