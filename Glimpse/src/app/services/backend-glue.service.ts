@@ -71,11 +71,13 @@ export class BackendGlueService {
     );
   }
 
-  postCardList(card: { name: string; price: number }) {
+  postCardList(name: string, imgsrc: string, price: number) {
     return this.http.post<{ data: CardListItem; currentTotal: number }>(
       this.apiUrl + '/list',
       {
-        card,
+        name,
+        imgsrc,
+        price,
       }
     );
   }
