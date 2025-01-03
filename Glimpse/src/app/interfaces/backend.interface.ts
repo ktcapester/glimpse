@@ -27,6 +27,7 @@ export interface CardPrices {
 export interface CardListItem {
   id: number;
   name: string;
+  imgsrc: string;
   price: number;
   count: number;
 }
