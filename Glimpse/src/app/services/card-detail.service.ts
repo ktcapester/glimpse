@@ -5,7 +5,6 @@ import { BehaviorSubject, of } from 'rxjs';
 import { catchError, filter, map, switchMap } from 'rxjs/operators';
 import { CardListItem } from '../interfaces/backend.interface';
 import { SearchDataResults } from '../interfaces/search-data-results.interface';
-import { ErrorCode } from '../enums/error-code';
 
 @Injectable({
   providedIn: 'root',
@@ -24,28 +23,26 @@ export class CardDetailService {
         map((results) => {
           if (typeof results === 'string') {
             // error response
-            if (results === ErrorCode.CARD_NOT_FOUND) {
-              const noneResult: SearchDataResults = {
-                cards: [],
-                term: term,
-                code: ErrorCode.CARD_NOT_FOUND,
-                details: 'No cards found with that search term.',
-              };
-              return noneResult;
-            } else {
-              const stringResult: SearchDataResults = {
-                cards: [],
-                term: term,
-                code: 'UNKNOWN_STRING',
-                details:
-                  'detailSearchResults$ got an unknown string back from the glue.',
-              };
-              return stringResult;
-            }
+            const stringResult: SearchDataResults = {
+              cards: [],
+              term: term,
+              code: 'ERROR',
+              details:
+                'detailSearchResults$ got an unknown string back from the glue.',
+            };
+            return stringResult;
           } else {
             // successful response
             // aka response is CardSearch[]
-            if (results.length > 1) {
+            if (results.length === 0) {
+              const noneResult: SearchDataResults = {
+                cards: [],
+                term: term,
+                code: 'ZERO',
+                details: 'No cards found with that search term.',
+              };
+              return noneResult;
+            } else if (results.length > 1) {
               // go to suggestions component
               const suggestResult: SearchDataResults = {
                 cards: results,
@@ -70,7 +67,7 @@ export class CardDetailService {
           const errorResult: SearchDataResults = {
             cards: [],
             term: term,
-            code: 'UNEXPECTED',
+            code: 'ERROR',
             details:
               'catchError in detailSearchResults$ caught an unexpected error.',
           };
