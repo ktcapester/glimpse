@@ -9,7 +9,7 @@ const getList = (req, res) => {
 // Controller function for POST requests
 const postList = (req, res) => {
   const newData = req.body;
-  const createdData = CardListModel.addCard(newData.card);
+  const createdData = CardListModel.addCard(newData);
   res.status(201).json(createdData);
 };
 
