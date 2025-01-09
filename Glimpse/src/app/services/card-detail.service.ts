@@ -106,25 +106,27 @@ export class CardDetailService {
       (card_list_item): card_list_item is CardListItem => !!card_list_item
     ),
     switchMap((cardLI) => {
-      return this.glue.patchCardDetails(cardLI).pipe(
-        map((results) => {
-          if (typeof results === 'string') {
-            // error response
+      return this.glue
+        .patchCardDetails(cardLI.id, cardLI.price, cardLI.count)
+        .pipe(
+          map((results) => {
+            if (typeof results === 'string') {
+              // error response
+              this.router.navigate(['/404']);
+              throw new Error('Error response handled');
+            } else {
+              // successful response
+              // response is a { currentTotal:number } obj
+              // extract the number out of it and pass it along
+              return results.currentTotal;
+            }
+          }),
+          catchError((error) => {
+            console.error('An unexpected error occurred in patchCard$:', error);
             this.router.navigate(['/404']);
-            throw new Error('Error response handled');
-          } else {
-            // successful response
-            // response is a { currentTotal:number } obj
-            // extract the number out of it and pass it along
-            return results.currentTotal;
-          }
-        }),
-        catchError((error) => {
-          console.error('An unexpected error occurred in patchCard$:', error);
-          this.router.navigate(['/404']);
-          return [];
-        })
-      );
+            return [];
+          })
+        );
     })
   );
 

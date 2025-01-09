@@ -117,11 +117,12 @@ export class BackendGlueService {
     );
   }
 
-  patchCardDetails(card: CardListItem) {
+  patchCardDetails(id: number, price: number, count: number) {
     // let params = new HttpParams().set('id', card.id);
     return this.http
-      .patch<{ currentTotal: number }>(`${this.apiUrl}/list/${card.id}`, {
-        card,
+      .patch<{ currentTotal: number }>(`${this.apiUrl}/list/${id}`, {
+        price,
+        count,
       })
       .pipe(
         catchError((error: HttpErrorResponse) => {

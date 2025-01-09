@@ -38,4 +38,8 @@ GET = Use a cardObject.id to get the whole object.
 DELETE = Use a cardObject.id to remove the card from the list.
     Returns a JSON object: { list: cardObject[], currentTotal: number }.
 PATCH = Use a cardObject.id to update the details of a card in the list.
-    Returns a JSON object: { currentTotal: number }.
+        Body is expected to be JSON object with properties that match the names of the properties of a cardObject.
+        Returns a JSON object: { currentTotal: number }.
+
+        Example: If the body is { count: number, price: number }, then the card with the ID given will have those updated.
+            If the body is { count: number, foo: string }, then only count will be updated. foo will be ignored.

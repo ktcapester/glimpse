@@ -68,20 +68,23 @@ const getItem = (id) => {
   return tempStore[itemidx];
 };
 
-const updateItem = (cardItem) => {
-  console.log("updating an item with ID:", cardItem.id);
-  const itemID = parseInt(cardItem.id);
-  const itemidx = tempStore.findIndex((item) => item.id === itemID);
+const updateItem = (cardIDstr, cardUpdates) => {
+  console.log("updating an item with ID:", cardIDstr);
+  const cardID = parseInt(cardIDstr);
+  const itemidx = tempStore.findIndex((item) => item.id === cardID);
   if (itemidx === -1) {
     return { message: "Item not found!" };
   }
   const target = tempStore[itemidx];
-  if (target.count !== cardItem.count) {
-    console.log("target=", target);
-    console.log("cardItem=", cardItem);
-    updateTotal(target, cardItem);
-    tempStore[itemidx] = cardItem;
-  }
+  const filtered = Object.keys(cardUpdates)
+    .filter((key) => key in target)
+    .reduce((acc, key) => {
+      acc[key] = cardUpdates[key];
+      return acc;
+    }, {});
+  const updatedCard = { ...target, ...filtered };
+  updateTotal(target, cardUpdates);
+  tempStore[itemidx] = updatedCard;
   return { currentTotal: currentTotal };
 };
 

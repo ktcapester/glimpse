@@ -29,8 +29,9 @@ const getCard = (req, res) => {
 };
 
 const patchCard = (req, res) => {
+  const cardID = parseInt(req.params.id);
   const newData = req.body;
-  const updatedResponse = CardListModel.updateItem(newData.card);
+  const updatedResponse = CardListModel.updateItem(cardID, newData);
   if (updatedResponse.message) {
     res.status(404).json(updatedResponse);
   } else {
