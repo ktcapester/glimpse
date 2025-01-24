@@ -5,6 +5,7 @@ const userSchema = new Schema({
   email: { type: String, required: true },
   username: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
+  lists: [{ type: Schema.Types.ObjectId, ref: "List" }],
 });
 
 const User = mongoose.model("User", userSchema);
