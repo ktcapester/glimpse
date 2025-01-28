@@ -4,27 +4,11 @@ const { List } = require("./list.model");
 // Utility: Create consistent errors
 const createError = (status, message) => ({ status, message });
 
-// Utility: Find list with optional population
-const findListById = async (listId, populate = false) => {
-  const query = populate
-    ? List.findById(listId).populate("cards.card")
-    : List.findById(listId);
-  const list = await query;
-  if (!list) throw createError(404, "List not found");
-  return list;
-};
-
-// Utility: Find card index in list
-const findCardIndex = (list, cardId) => {
-  const cardIndex = list.cards.findIndex((c) => c.card._id.equals(cardId));
-  if (cardIndex === -1) throw createError(404, "Card not found in list");
-  return cardIndex;
-};
-
 // Fetch all cards and the total price
 const getAllCards = async (listId) => {
   try {
-    const list = await findListById(listId, true);
+    const list = await List.findById(listId).populate("cards.card");
+    if (!list) throw createError(404, "List not found");
     return { list: list.cards, currentTotal: list.totalPrice };
   } catch (error) {
     throw {
@@ -37,26 +21,35 @@ const getAllCards = async (listId) => {
 // Add a card to a list
 const addCard = async (listId, cardData) => {
   try {
-    const list = await findListById(listId);
     const card = await Card.findById(cardData.cardId);
     if (!card) throw createError(404, "Card not found");
 
     const cardPrice = card.prices.calc.usd || 0;
     const quantity = cardData.quantity || 1;
 
-    const existingCardIndex = list.cards.findIndex((c) =>
-      c.card.equals(card._id)
+    const list = await List.findOneAndUpdate(
+      { _id: listId, "cards.card": { $ne: card._id } },
+      {
+        $push: { cards: { card: card._id, quantity } },
+        $inc: { totalPrice: cardPrice * quantity },
+      },
+      { new: true }
     );
-    if (existingCardIndex === -1) {
-      list.cards.push({ card: card._id, quantity });
-      list.totalPrice += cardPrice * quantity;
-    } else {
-      const existingCard = list.cards[existingCardIndex];
-      list.totalPrice += cardPrice * (quantity - existingCard.quantity);
-      existingCard.quantity = quantity;
+
+    if (!list) {
+      const updatedList = await List.findOneAndUpdate(
+        { _id: listId, "cards.card": card._id },
+        {
+          $inc: {
+            "cards.$.quantity": quantity,
+            totalPrice: cardPrice * quantity,
+          },
+        },
+        { new: true }
+      );
+      return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
     }
 
-    await list.save();
     return { list: list.cards, currentTotal: list.totalPrice };
   } catch (error) {
     throw {
@@ -69,12 +62,13 @@ const addCard = async (listId, cardData) => {
 // Clear all cards in a list
 const clearList = async (listId) => {
   try {
-    const list = await findListById(listId);
-    list.cards = [];
-    list.totalPrice = 0; // Reset the total price
-    await list.save();
-
-    return { list: list.cards, currentTotal: list.totalPrice };
+    const updatedList = await List.findByIdAndUpdate(
+      listId,
+      { $set: { cards: [], totalPrice: 0 } },
+      { new: true }
+    );
+    if (!updatedList) throw createError(404, "List not found");
+    return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
   } catch (error) {
     throw {
       status: error.status || 500,
@@ -86,9 +80,13 @@ const clearList = async (listId) => {
 // Fetch a specific card from a list
 const getItem = async (listId, cardId) => {
   try {
-    const list = await findListById(listId, true);
-    const cardIndex = findCardIndex(list, cardId);
-    return list.cards[cardIndex];
+    const list = await List.findById(listId).populate("cards.card");
+    if (!list) throw createError(404, "List not found");
+
+    const card = list.cards.find((c) => c.card._id.equals(cardId));
+    if (!card) throw createError(404, "Card not found in list");
+
+    return card;
   } catch (error) {
     throw {
       status: error.status || 500,
@@ -100,45 +98,30 @@ const getItem = async (listId, cardId) => {
 // Update a specific card's details in a list
 const updateItem = async (listId, cardId, updates) => {
   try {
-    const list = await findListById(listId, true);
-    const cardIndex = findCardIndex(list, cardId);
+    const card = await Card.findById(cardId);
+    if (!card) throw createError(404, "Card not found");
 
-    const card = list.cards[cardIndex];
-    const cardPrice = card.card.prices.calc.usd || 0;
-
-    // Validate and handle critical fields
+    const updatesToApply = {};
     if (updates.quantity !== undefined) {
       if (updates.quantity <= 0)
         throw createError(400, "Quantity must be greater than 0");
-      list.totalPrice += cardPrice * (updates.quantity - card.quantity);
-      card.quantity = updates.quantity;
+      updatesToApply["cards.$.quantity"] = updates.quantity;
     }
-
     if (updates.prices?.calc?.usd !== undefined) {
       if (updates.prices.calc.usd < 0)
-        throw createError(400, "Price must be a non-negative number");
-      list.totalPrice += (updates.prices.calc.usd - cardPrice) * card.quantity;
-      card.card.prices.calc.usd = updates.prices.calc.usd;
+        throw createError(400, "Price must be non-negative");
+      const priceDifference =
+        updates.prices.calc.usd - (card.prices.calc.usd || 0);
+      updatesToApply.totalPrice = { $inc: priceDifference * updates.quantity };
     }
 
-    // Use Object.assign for non-critical fields
-    const allowedUpdates = Object.keys(card.toObject()); // Ensure only valid fields are updated
-    Object.assign(
-      card,
-      Object.keys(updates).reduce((validUpdates, key) => {
-        if (
-          allowedUpdates.includes(key) &&
-          key !== "quantity" &&
-          key !== "prices"
-        ) {
-          validUpdates[key] = updates[key];
-        }
-        return validUpdates;
-      }, {})
+    const updatedList = await List.findOneAndUpdate(
+      { _id: listId, "cards.card": cardId },
+      { $set: updatesToApply },
+      { new: true }
     );
-
-    await list.save();
-    return { list: list.cards, currentTotal: list.totalPrice };
+    if (!updatedList) throw createError(404, "List or card not found");
+    return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
   } catch (error) {
     throw {
       status: error.status || 500,
@@ -150,17 +133,24 @@ const updateItem = async (listId, cardId, updates) => {
 // Remove a specific card from a list
 const removeItem = async (listId, cardId) => {
   try {
-    const list = await findListById(listId, true);
-    const cardIndex = findCardIndex(list, cardId);
+    const list = await List.findById(listId).populate("cards.card");
+    if (!list) throw createError(404, "List not found");
 
-    const card = list.cards[cardIndex];
+    const card = list.cards.find((c) => c.card._id.equals(cardId));
+    if (!card) throw createError(404, "Card not found in list");
+
     const cardPrice = card.card.prices.calc.usd || 0;
-    list.totalPrice -= cardPrice * card.quantity;
 
-    list.cards.splice(cardIndex, 1);
-    await list.save();
-
-    return { list: list.cards, currentTotal: list.totalPrice };
+    const updatedList = await List.findByIdAndUpdate(
+      listId,
+      {
+        $pull: { cards: { card: cardId } },
+        $inc: { totalPrice: -(card.quantity * cardPrice) },
+      },
+      { new: true }
+    );
+    if (!updatedList) throw createError(404, "List or card not found");
+    return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
   } catch (error) {
     throw {
       status: error.status || 500,
