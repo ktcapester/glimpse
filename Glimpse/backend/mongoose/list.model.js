@@ -3,10 +3,10 @@ const { Schema } = mongoose;
 
 const listSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  name: { type: String, required: true },
-  description: { type: String, required: true },
+  name: { type: String, required: true, maxlength: 100 },
+  description: { type: String, required: true, maxlength: 500 },
   totalPrice: { type: Number, default: 0 },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now, immutable: true },
   updatedAt: { type: Date, default: Date.now },
   cards: [
     {
@@ -16,22 +16,10 @@ const listSchema = new Schema({
   ],
 });
 
+// Hook for logic that happens every time the List is saved
 listSchema.pre("save", async function (next) {
-  try {
-    this.totalPrice = 0;
-    await this.populate("cards.card");
-    for (const item of this.cards) {
-      const card = item.card;
-      const price = card?.prices?.calc?.usd;
-      if (price) {
-        this.totalPrice += price * item.quantity;
-      }
-    }
-    this.updatedAt = Date.now();
-    next();
-  } catch (err) {
-    next(err);
-  }
+  this.updatedAt = Date.now();
+  next();
 });
 
 const List = mongoose.model("List", listSchema);
