@@ -23,102 +23,100 @@ const findCardIndex = (list, cardId) => {
 
 // Fetch all cards and the total price
 const getAllCards = async (listId) => {
-  const list = await findListById(listId, true);
-  return { list: list.cards, currentTotal: list.totalPrice };
+  try {
+    const list = await findListById(listId, true);
+    return { list: list.cards, currentTotal: list.totalPrice };
+  } catch (error) {
+    throw {
+      status: error.status || 500,
+      message: error.message || "Server error",
+    };
+  }
 };
 
 // Add a card to a list
 const addCard = async (listId, cardData) => {
-  const list = await findListById(listId);
-  const card = await Card.findById(cardData.cardId);
-  if (!card) throw createError(404, "Card not found");
+  try {
+    const list = await findListById(listId);
+    const card = await Card.findById(cardData.cardId);
+    if (!card) throw createError(404, "Card not found");
 
-  const cardPrice = card.prices.calc.usd || 0;
-  const quantity = cardData.quantity || 1;
+    const cardPrice = card.prices.calc.usd || 0;
+    const quantity = cardData.quantity || 1;
 
-  const existingCardIndex = list.cards.findIndex((c) =>
-    c.card.equals(card._id)
-  );
-  if (existingCardIndex === -1) {
-    list.cards.push({ card: card._id, quantity });
-    list.totalPrice += cardPrice * quantity;
-  } else {
-    const existingCard = list.cards[existingCardIndex];
-    list.totalPrice += cardPrice * (quantity - existingCard.quantity);
-    existingCard.quantity = quantity;
+    const existingCardIndex = list.cards.findIndex((c) =>
+      c.card.equals(card._id)
+    );
+    if (existingCardIndex === -1) {
+      list.cards.push({ card: card._id, quantity });
+      list.totalPrice += cardPrice * quantity;
+    } else {
+      const existingCard = list.cards[existingCardIndex];
+      list.totalPrice += cardPrice * (quantity - existingCard.quantity);
+      existingCard.quantity = quantity;
+    }
+
+    await list.save();
+    return { list: list.cards, currentTotal: list.totalPrice };
+  } catch (error) {
+    throw {
+      status: error.status || 500,
+      message: error.message || "Server error",
+    };
   }
-
-  await list.save();
-  return { list: list.cards, currentTotal: list.totalPrice };
 };
 
 // Clear all cards in a list
 const clearList = async (listId) => {
   try {
-    const list = await List.findById(listId);
-    if (!list) {
-      throw new Error("List not found");
-    }
-
+    const list = await findListById(listId);
     list.cards = [];
+    list.totalPrice = 0; // Reset the total price
     await list.save();
 
     return { list: list.cards, currentTotal: list.totalPrice };
   } catch (error) {
-    throw new Error(error.message);
+    throw {
+      status: error.status || 500,
+      message: error.message || "Server error",
+    };
   }
 };
 
 // Fetch a specific card from a list
 const getItem = async (listId, cardId) => {
   try {
-    const list = await List.findById(listId).populate("cards.card");
-    if (!list) {
-      throw new Error("List not found");
-    }
-
-    const card = list.cards.find((c) => c.card._id.equals(cardId));
-    if (!card) {
-      throw new Error("Card not found in list");
-    }
-
-    return card;
+    const list = await findListById(listId, true);
+    const cardIndex = findCardIndex(list, cardId);
+    return list.cards[cardIndex];
   } catch (error) {
-    throw new Error(error.message);
+    throw {
+      status: error.status || 500,
+      message: error.message || "Server error",
+    };
   }
 };
 
 // Update a specific card's details in a list
 const updateItem = async (listId, cardId, updates) => {
   try {
-    const list = await List.findById(listId).populate("cards.card");
-    if (!list) {
-      throw new Error("List not found");
-    }
-
-    const cardIndex = list.cards.findIndex((c) => c.card._id.equals(cardId));
-    if (cardIndex === -1) {
-      throw new Error("Card not found in list");
-    }
+    const list = await findListById(listId, true);
+    const cardIndex = findCardIndex(list, cardId);
 
     const card = list.cards[cardIndex];
     const cardPrice = card.card.prices.calc.usd || 0;
 
     // Validate and handle critical fields
     if (updates.quantity !== undefined) {
-      if (updates.quantity <= 0) {
-        throw new Error("Quantity must be greater than 0");
-      }
-      // Update totalPrice based on quantity change
+      if (updates.quantity <= 0)
+        throw createError(400, "Quantity must be greater than 0");
       list.totalPrice += cardPrice * (updates.quantity - card.quantity);
       card.quantity = updates.quantity;
     }
 
     if (updates.prices?.calc?.usd !== undefined) {
-      if (updates.prices.calc.usd < 0) {
-        throw new Error("Price must be a non-negative number");
-      }
-      // Update totalPrice based on price change
+      if (updates.prices.calc.usd < 0)
+        throw createError(400, "Price must be a non-negative number");
       list.totalPrice += (updates.prices.calc.usd - cardPrice) * card.quantity;
       card.card.prices.calc.usd = updates.prices.calc.usd;
     }
@@ -142,22 +140,18 @@ const updateItem = async (listId, cardId, updates) => {
     await list.save();
     return { list: list.cards, currentTotal: list.totalPrice };
   } catch (error) {
-    throw new Error(error.message);
+    throw {
+      status: error.status || 500,
+      message: error.message || "Server error",
+    };
   }
 };
 
 // Remove a specific card from a list
 const removeItem = async (listId, cardId) => {
   try {
-    const list = await List.findById(listId).populate("cards.card");
-    if (!list) {
-      throw new Error("List not found");
-    }
-
-    const cardIndex = list.cards.findIndex((c) => c.card._id.equals(cardId));
-    if (cardIndex === -1) {
-      throw new Error("Card not found in list");
-    }
+    const list = await findListById(listId, true);
+    const cardIndex = findCardIndex(list, cardId);
 
     const card = list.cards[cardIndex];
     const cardPrice = card.card.prices.calc.usd || 0;
@@ -168,7 +162,10 @@ const removeItem = async (listId, cardId) => {
 
     return { list: list.cards, currentTotal: list.totalPrice };
   } catch (error) {
-    throw new Error(error.message);
+    throw {
+      status: error.status || 500,
+      message: error.message || "Server error",
+    };
   }
 };
 
