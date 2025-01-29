@@ -1,38 +1,44 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const cardSchema = new Schema({
-  name: { type: String, required: true },
-  scryfallLink: { type: String, required: true },
-  imgsrcFull: { type: String, required: true },
-  imgsrcSmall: { type: String, required: true },
-  updatedAt: { type: Date, default: Date.now },
-  prices: {
-    raw: {
-      usd: { type: Number },
-      usd_etched: { type: Number },
-      usd_foil: { type: Number },
-      eur: { type: Number },
-      eur_etched: { type: Number },
-      eur_foil: { type: Number },
-    },
-    calc: {
-      usd: { type: Number },
-      usd_etched: { type: Number },
-      usd_foil: { type: Number },
-      eur: { type: Number },
-      eur_etched: { type: Number },
-      eur_foil: { type: Number },
+const cardSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    scryfallLink: { type: String, required: true, match: /^https?:\/\/.+/ },
+    imgsrcFull: { type: String, required: true, match: /^https?:\/\/.+/ },
+    imgsrcSmall: { type: String, required: true, match: /^https?:\/\/.+/ },
+    prices: {
+      raw: {
+        usd: { type: Number, min: 0 },
+        usd_etched: { type: Number, min: 0 },
+        usd_foil: { type: Number, min: 0 },
+        eur: { type: Number, min: 0 },
+        eur_etched: { type: Number, min: 0 },
+        eur_foil: { type: Number, min: 0 },
+      },
+      calc: {
+        usd: { type: Number, min: 0 },
+        usd_etched: { type: Number, min: 0 },
+        usd_foil: { type: Number, min: 0 },
+        eur: { type: Number, min: 0 },
+        eur_etched: { type: Number, min: 0 },
+        eur_foil: { type: Number, min: 0 },
+      },
     },
   },
-});
+  { timestamps: true }
+);
 
-cardSchema.pre("save", function (next) {
-  if (this.isModified("prices")) {
-    this.updatedAt = Date.now();
-  }
-  next();
-});
+// timestamps: true --> handles covering updatedAt on save.
+
+// cardSchema.pre("save", function (next) {
+//   if (this.isModified("prices")) {
+//     this.updatedAt = Date.now();
+//   }
+//   next();
+// });
+
+cardSchema.index({ name: 1 });
 
 const Card = mongoose.model("Card", cardSchema);
 
