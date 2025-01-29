@@ -22,6 +22,10 @@ listSchema.pre("save", async function (next) {
   next();
 });
 
+// Add indexing for efficient querying
+listSchema.index({ user: 1 }); // used when querying for all lists belonging to a certain user
+// listSchema.index({ "cards.card": 1 }); // used when querying for all lists containing a certain card
+
 const List = mongoose.model("List", listSchema);
 
 module.exports = { List };
