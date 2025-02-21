@@ -6,6 +6,7 @@ import { FourOhFourComponent } from './four-oh-four/four-oh-four.component';
 import { SuggestionsComponent } from './suggestions/suggestions.component';
 import { NoResultsComponent } from './no-results/no-results.component';
 import { CardDetailComponent } from './card-detail/card-detail.component';
+import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
   {
@@ -37,6 +38,11 @@ export const routes: Routes = [
     path: 'none/:term',
     title: 'Glimpse',
     component: NoResultsComponent,
+  },
+  {
+    path: 'login',
+    title: 'Glimpse',
+    component: LoginComponent,
   },
   {
     path: '**',
