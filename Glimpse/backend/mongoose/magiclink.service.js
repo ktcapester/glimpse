@@ -30,7 +30,7 @@ async function sendMagicLink(email) {
     // Construct the magic link
     const magicLink = `${
       process.env.BASE_URL
-    }/login?token=${token}&email=${encodeURIComponent(email)}`;
+    }/verify?token=${token}&email=${encodeURIComponent(email)}`;
 
     // Configure email transport
     const transporter = nodemailer.createTransport({
@@ -82,6 +82,7 @@ const verifyToken = async (token, email) => {
       throw createError(404, "User not found.");
     }
     // then issue JWT or create session
+    // handled in controller file
 
     // Delete token after successful login
     await Token.findByIdAndDelete(record._id);
