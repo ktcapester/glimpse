@@ -7,6 +7,7 @@ import { SuggestionsComponent } from './suggestions/suggestions.component';
 import { NoResultsComponent } from './no-results/no-results.component';
 import { CardDetailComponent } from './card-detail/card-detail.component';
 import { LoginComponent } from './login/login.component';
+import { VerifyComponent } from './verify/verify.component';
 
 export const routes: Routes = [
   {
@@ -43,6 +44,11 @@ export const routes: Routes = [
     path: 'login',
     title: 'Glimpse',
     component: LoginComponent,
+  },
+  {
+    path: 'verify',
+    title: 'Glimpse',
+    component: VerifyComponent,
   },
   {
     path: '**',
