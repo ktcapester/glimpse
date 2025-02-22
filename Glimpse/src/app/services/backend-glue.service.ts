@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import {
   CardDisplayOnly,
@@ -34,6 +34,32 @@ export class BackendGlueService {
       : {};
   }
 
+  // This requests a magic link to be sent to the provided email.
+  // It returns TRUE if the email is sent, FALSE if any error occurs.
+  postMagicLink(email: string) {
+    return this.http
+      .post<{ message: string; success: boolean }>(
+        `${this.apiUrl}/auth/magic-link`,
+        { email }
+      )
+      .pipe(
+        map((result) => {
+          if (result.success) {
+            return true;
+          } else {
+            return false;
+          }
+        }),
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 500) {
+            return of(false);
+          } else {
+            return of(false);
+          }
+        })
+      );
+  }
+
   loginMagic(email: string, token: string) {
     return this.http
       .get<{ token: string }>(`${this.apiUrl}/auth/verify`, {
@@ -48,7 +74,6 @@ export class BackendGlueService {
 
   getCardSearch(cardName: string) {
     let params = new HttpParams().set('name', cardName);
-
     return this.http
       .get<CardDisplayOnly[]>(this.apiUrl + '/search', { params })
       .pipe(
@@ -66,7 +91,6 @@ export class BackendGlueService {
 
   getPrices(cardName: string) {
     let params = new HttpParams().set('name', cardName);
-
     return this.http.get<CardPrices>(this.apiUrl + '/price', { params }).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 500) {

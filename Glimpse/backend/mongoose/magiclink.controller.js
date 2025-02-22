@@ -8,7 +8,7 @@ const postMagicLink = async (req, res) => {
     if (!email) return res.status(400).json({ error: "Email is required." });
 
     await sendMagicLink(email);
-    res.json({ message: "Magic link sent successfully." });
+    res.json({ message: "Magic link sent successfully.", success: true });
   } catch (error) {
     res.status(error.status || 500).json({ error: error.message });
   }
