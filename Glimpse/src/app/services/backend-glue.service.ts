@@ -60,14 +60,23 @@ export class BackendGlueService {
       );
   }
 
-  loginMagic(email: string, token: string) {
+  getVerifyToken(email: string, token: string) {
     return this.http
       .get<{ token: string }>(`${this.apiUrl}/auth/verify`, {
         params: { email, token },
       })
       .pipe(
-        tap((response) => {
-          localStorage.setItem('jwtToken', response.token);
+        map((response) => {
+          return { success: true, jwtToken: response.token };
+        }),
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 400) {
+            return of({ success: false, jwtToken: 'invalid' }); // token and/or email missing/invalid
+          }
+          if (error.status === 500) {
+            return of({ success: false, jwtToken: 'server error' }); // server error
+          }
+          return of({ success: false, jwtToken: 'unknown error' });
         })
       );
   }
