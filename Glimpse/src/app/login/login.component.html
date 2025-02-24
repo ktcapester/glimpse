@@ -2,6 +2,7 @@
   <div class="title-container">
     <h1 class="app-title">Glimpse</h1>
   </div>
+  @if(!emailSent){
   <div class="user-input-container">
     <form
       class="input-wrapper"
@@ -23,4 +24,7 @@
       </div>
     </form>
   </div>
+  } @else {
+  <div>Email successfully sent, please follow the link in it.</div>
+  }
 </div>

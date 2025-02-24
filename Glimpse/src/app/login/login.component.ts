@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -19,6 +18,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   });
 
   private destroy$ = new Subject<void>();
+  emailSent = false;
 
   constructor(private magiclinkService: MagicLinkService) {}
 
@@ -27,12 +27,13 @@ export class LoginComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$), // Memory management
         tap((response) => {
-          if (response.result) {
+          if (response.result === true) {
             console.log('yeehaw successfully sent email');
             // replace page content with a message saying to check email & follow the link there
             // new component maybe?
+            this.emailSent = true;
           } else {
-            console.log('oh no problem:', response.message);
+            console.log('oh no, problem:', response.message);
           }
         })
       )
