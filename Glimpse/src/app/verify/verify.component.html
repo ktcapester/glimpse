@@ -1,1 +1,11 @@
-<p>verify works!</p>
+<div class="verify-container">
+  <app-header></app-header>
+  <div class="message-content">
+    <h5>{{ displayMessage }}</h5>
+  </div>
+  @if (showSuccess){
+  <div>Redirect? Button? Search bar?</div>
+  } @if (showFail){
+  <div>Send a new email button?</div>
+  }
+</div>

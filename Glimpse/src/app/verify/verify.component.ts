@@ -3,11 +3,12 @@ import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
 import { BackendGlueService } from '../services/backend-glue.service';
+import { HeaderComponent } from '../header/header.component';
 
 @Component({
   selector: 'app-verify',
   standalone: true,
-  imports: [],
+  imports: [HeaderComponent],
   templateUrl: './verify.component.html',
   styleUrl: './verify.component.css',
 })
@@ -18,6 +19,9 @@ export class VerifyComponent implements OnInit, OnDestroy {
   ) {}
 
   private destroy$ = new Subject<void>();
+  displayMessage = 'Verifying your login. . .';
+  showSuccess = false;
+  showFail = false;
 
   ngOnInit(): void {
     // /verify?token={token}&email={email}
@@ -26,10 +30,19 @@ export class VerifyComponent implements OnInit, OnDestroy {
       tap((params) => {
         const userToken = params.get('token') || '';
         const userEmail = params.get('email') || '';
-        this.glue.loginMagic(userEmail, userToken).pipe(
+        this.glue.getVerifyToken(userEmail, userToken).pipe(
           takeUntil(this.destroy$),
           tap((response) => {
-            localStorage.setItem('jwtToken', response.token);
+            if (response.success === true) {
+              localStorage.setItem('jwtToken', response.data);
+              this.displayMessage = 'Login successful!';
+              this.showSuccess = true;
+            } else {
+              // encountered an error!
+              console.log('verify onInit got:', response.data);
+              this.displayMessage = 'Login failed, please try again.';
+              this.showFail = true;
+            }
           })
         );
       })
