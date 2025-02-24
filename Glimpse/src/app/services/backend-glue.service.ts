@@ -67,16 +67,16 @@ export class BackendGlueService {
       })
       .pipe(
         map((response) => {
-          return { success: true, jwtToken: response.token };
+          return { success: true, data: response.token };
         }),
         catchError((error: HttpErrorResponse) => {
           if (error.status === 400) {
-            return of({ success: false, jwtToken: 'invalid' }); // token and/or email missing/invalid
+            return of({ success: false, data: 'invalid' }); // token and/or email missing/invalid
           }
           if (error.status === 500) {
-            return of({ success: false, jwtToken: 'server error' }); // server error
+            return of({ success: false, data: 'server error' }); // server error
           }
-          return of({ success: false, jwtToken: 'unknown error' });
+          return of({ success: false, data: 'unknown error' });
         })
       );
   }
