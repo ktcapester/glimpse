@@ -57,3 +57,11 @@ div {
 .ng-touched.ng-invalid:not(form) {
   border: 1px dashed rgb(170, 0, 0);
 }
+
+.email-sent {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--Sand);
+}
