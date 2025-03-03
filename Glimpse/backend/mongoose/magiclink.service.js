@@ -42,6 +42,7 @@ async function sendMagicLink(email) {
     });
 
     // Send the email
+    // I tested this locally and it at least works here.
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,

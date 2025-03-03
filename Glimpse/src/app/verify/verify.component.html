@@ -3,9 +3,15 @@
   <div class="message-content">
     <h5>{{ displayMessage }}</h5>
   </div>
-  @if (showSuccess){
-  <div>Redirect? Button? Search bar?</div>
-  } @if (showFail){
-  <div>Send a new email button?</div>
+  @if (showResponse) {
+  <div class="response-container">
+    <div class="response-message">{{ responseMessage }}</div>
+    <button
+      class="redirect-button large-button primary-button-style"
+      (click)="onClick()"
+    >
+      {{ redirectMessage }}
+    </button>
+  </div>
   }
 </div>

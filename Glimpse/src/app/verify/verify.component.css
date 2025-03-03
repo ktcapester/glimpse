@@ -18,3 +18,9 @@ div {
   align-items: center;
   background-color: var(--Sand);
 }
+
+.response-container {
+  display: flex;
+  max-width: 100%;
+  justify-content: center;
+}
