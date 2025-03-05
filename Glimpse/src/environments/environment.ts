@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiURL: 'https://glimpsecard.com/api',
+  apiURL: 'https://api.glimpsecard.com/api',
   // apiURL: 'http://localhost:3000/api',
 };
 
