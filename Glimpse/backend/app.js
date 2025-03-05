@@ -6,7 +6,19 @@ const listRoute = require("./routes/cardlist");
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = [
+  "https://glimpsecard.com",
+  "https://www.glimpsecard.com",
+  "https://api.glimpsecard.com",
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
 app.get("/", (req, res) => {
