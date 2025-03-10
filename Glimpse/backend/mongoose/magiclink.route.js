@@ -1,6 +1,5 @@
 const express = require("express");
 const { postMagicLink, getMagicToken } = require("./magiclink.controller");
-const authenticateJWT = require("../middleware/authJWT.middle");
 
 const router = express.Router();
 
