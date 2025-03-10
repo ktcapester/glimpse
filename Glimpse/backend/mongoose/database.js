@@ -23,7 +23,6 @@ async function connectToDatabase() {
     console.log("Connected to Amazon DocumentDB!");
   } catch (err) {
     console.error("Error connecting to Amazon DocumentDB", err);
-    process.exit(1);
   }
 }
 
