@@ -1,6 +1,8 @@
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const Token = require("./token.model");
+const User = require("./user.model");
+const List = require("./list.model");
 
 // Utility: Create consistent errors
 const createError = (status, message) => ({ status, message });
@@ -77,17 +79,40 @@ const verifyToken = async (token, email) => {
     record.used = true;
     await record.save();
 
-    // successfully verified i suppose
+    // Token successfully verified, so find the User connected to it
     const user = await User.findOne({ email });
     if (!user) {
-      throw createError(404, "User not found.");
+      // Create a new User
+      const usernamenew = email.split("@")[0];
+      const newUser = new User({
+        email: email,
+        username: usernamenew,
+      });
+      await newUser.save();
+
+      // Create a default list
+      const defaultList = new List({
+        user: newUser._id, // connects the User into the List
+        name: `${usernamenew} Default List`,
+        description: `${usernamenew}'s auto generated first list.`,
+      });
+      await defaultList.save();
+
+      // Connect the List into the User
+      newUser.lists.push(defaultList._id);
+      await newUser.save();
+
+      // Delete token after successful signup
+      await Token.findByIdAndDelete(record._id);
+
+      // Return the new User
+      return newUser;
     }
-    // then issue JWT or create session
-    // handled in controller file
 
     // Delete token after successful login
     await Token.findByIdAndDelete(record._id);
 
+    // Return the existing User
     return user;
   } catch (err) {
     console.error(err);
