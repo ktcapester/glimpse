@@ -8,6 +8,7 @@ import { NoResultsComponent } from './no-results/no-results.component';
 import { CardDetailComponent } from './card-detail/card-detail.component';
 import { LoginComponent } from './login/login.component';
 import { VerifyComponent } from './verify/verify.component';
+import { userAuthGuard } from './user-auth.guard';
 
 export const routes: Routes = [
   {
@@ -19,11 +20,13 @@ export const routes: Routes = [
     path: 'list',
     title: 'Glimpse',
     component: CardListComponent,
+    canActivate: [userAuthGuard],
   },
   {
     path: 'detail/:cardID/:cardName',
     title: 'Glimpse',
     component: CardDetailComponent,
+    canActivate: [userAuthGuard],
   },
   {
     path: 'result/:cardName',
