@@ -3,6 +3,7 @@ const cors = require("cors");
 const searchRoute = require("./routes/search.route");
 const priceRoute = require("./routes/price.route");
 const listRoute = require("./routes/list.route");
+const userRoute = require("./routes/user.route");
 const connectToDatabase = require("./database");
 
 const app = express();
@@ -32,5 +33,6 @@ app.get("/", (req, res) => {
 app.use("/api/search", searchRoute);
 app.use("/api/price", priceRoute);
 app.use("/api/list", listRoute);
+app.use("/api/user", userRoute);
 
 module.exports = app;
