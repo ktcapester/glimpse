@@ -6,7 +6,7 @@ const {
   deleteCard,
   getCard,
   patchCard,
-} = require("./list.controller");
+} = require("../controllers/list.controller");
 const authenticateJWT = require("../middleware/authJWT.middle");
 
 const router = express.Router();
