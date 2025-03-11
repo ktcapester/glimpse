@@ -1,5 +1,5 @@
-const { Card } = require("./card.model");
-const { List } = require("./list.model");
+const { Card } = require("../models/card.model");
+const { List } = require("../models/list.model");
 
 // Utility: Create consistent errors
 const createError = (status, message) => ({ status, message });

@@ -1,4 +1,4 @@
-const { Card } = require("./card.model");
+const { Card } = require("../models/card.model");
 
 var lastAPICall = Date.now();
 

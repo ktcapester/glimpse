@@ -1,5 +1,8 @@
 const express = require("express");
-const { postMagicLink, getMagicToken } = require("./magiclink.controller");
+const {
+  postMagicLink,
+  getMagicToken,
+} = require("../controllers/magiclink.controller");
 
 const router = express.Router();
 

@@ -1,4 +1,4 @@
-const listService = require("./list.service");
+const listService = require("../services/list.service");
 
 // GET all cards in a list
 // Route example: GET /api/lists/:listId

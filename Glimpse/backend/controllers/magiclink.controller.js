@@ -1,4 +1,4 @@
-const { sendMagicLink, verifyToken } = require("./magiclink.service");
+const { sendMagicLink, verifyToken } = require("../services/magiclink.service");
 const jwt = require("jsonwebtoken");
 
 // Endpoint to request a magic link
