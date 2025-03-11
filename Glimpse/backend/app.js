@@ -2,8 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const searchRoute = require("./routes/search.route");
 const priceRoute = require("./routes/price.route");
-const listRoute = require("./routes/cardlist");
-const connectToDatabase = require("./database"); // fix path
+const listRoute = require("./routes/list.route");
+const connectToDatabase = require("./database");
 
 const app = express();
 

@@ -1,4 +1,3 @@
-// database.js
 const mongoose = require("mongoose");
 const fs = require("fs");
 
@@ -27,17 +26,3 @@ async function connectToDatabase() {
 }
 
 module.exports = connectToDatabase;
-
-// TODO in app.js
-/*
-const connectToDatabase = require('./database'); // fix path
-...
-const app = express();
-
-connectToDatabase()
-
-...
-
-app.use(express.json()); // etc ...
-
-*/
