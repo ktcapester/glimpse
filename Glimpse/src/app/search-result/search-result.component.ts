@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
 import { DisplayCard } from '../interfaces/display-card.interface';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GlimpseStateService } from '../services/glimpse-state.service';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { combineLatest, Subject } from 'rxjs';
@@ -9,6 +9,7 @@ import { takeUntil, tap } from 'rxjs/operators';
 import { BackendGlueService } from '../services/backend-glue.service';
 import { SearchDataService } from '../services/search-data.service';
 import { ResultPricesService } from '../services/result-prices.service';
+import { jwtDecode } from 'jwt-decode';
 
 @Component({
   selector: 'app-search-result',
@@ -25,6 +26,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private state: GlimpseStateService,
     private glue: BackendGlueService,
     private search: SearchDataService,
@@ -91,7 +93,13 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
   onAddToList() {
     // use backend to add to the list
-    // Note: the observable from http.post must be subscribed to in order to actually run!
+    // check if user is logged in & redirect if needed
+    const token = localStorage.getItem('jwtToken');
+    if (!token || this.isTokenExpired(token)) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    // user is logged in, so we can use the DB
     this.glue
       .postCardList(
         this.displayCard.name,
@@ -111,6 +119,16 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe();
+  }
+
+  isTokenExpired(token: string): boolean {
+    try {
+      const decoded = jwtDecode(token);
+      return !decoded.exp || Date.now() / 1000 >= decoded.exp;
+    } catch (error) {
+      console.log('isTokenExpired() got an error:', error);
+      return true;
+    }
   }
 
   async listFeedback() {
