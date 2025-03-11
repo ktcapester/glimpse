@@ -1,8 +1,8 @@
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-const Token = require("./token.model");
-const User = require("./user.model");
-const List = require("./list.model");
+const { Token } = require("../models/token.model");
+const { User } = require("../models/user.model");
+const { List } = require("../models/list.model");
 
 // Utility: Create consistent errors
 const createError = (status, message) => ({ status, message });

@@ -1,11 +1,13 @@
-// models/Token.js
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
-const tokenSchema = new mongoose.Schema({
+const tokenSchema = new Schema({
   email: { type: String, required: true },
   token: { type: String, required: true },
   expiresAt: { type: Date, required: true },
   used: { type: Boolean, default: false },
 });
 
-module.exports = mongoose.model("Token", tokenSchema);
+const Token = mongoose.model("Token", tokenSchema);
+
+module.exports = { Token };
