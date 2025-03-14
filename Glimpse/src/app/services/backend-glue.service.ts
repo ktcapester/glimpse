@@ -84,7 +84,7 @@ export class BackendGlueService {
   getCardSearch(cardName: string) {
     let params = new HttpParams().set('name', cardName);
     return this.http
-      .get<CardDisplayOnly[]>(this.apiUrl + '/search', { params })
+      .get<CardDisplayOnly[]>(`${this.apiUrl}/search`, { params })
       .pipe(
         catchError((error: HttpErrorResponse) => {
           if (error.status === 400) {
@@ -100,7 +100,7 @@ export class BackendGlueService {
 
   getPrices(cardName: string) {
     let params = new HttpParams().set('name', cardName);
-    return this.http.get<CardPrices>(this.apiUrl + '/price', { params }).pipe(
+    return this.http.get<CardPrices>(`${this.apiUrl}/price`, { params }).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 500) {
           return of('A server error occurred. Try again later.');
@@ -111,16 +111,23 @@ export class BackendGlueService {
     );
   }
 
-  getCardList() {
-    return this.http.get<{ list: CardListItem[]; currentTotal: number }>(
-      this.apiUrl + '/list',
+  getUser() {
+    return this.http.get<{ email: string; username: string; lists: string[] }>(
+      `${this.apiUrl}/user`,
       this.getAuthHeaders()
     );
   }
 
-  postCardList(name: string, imgsrc: string, price: number) {
+  getCardList(list_id: string) {
+    return this.http.get<{ list: CardListItem[]; currentTotal: number }>(
+      `${this.apiUrl}/list/${list_id}`,
+      this.getAuthHeaders()
+    );
+  }
+
+  postCardList(list_id: string, name: string, imgsrc: string, price: number) {
     return this.http.post<{ data: CardListItem; currentTotal: number }>(
-      this.apiUrl + '/list',
+      `${this.apiUrl}/list/${list_id}`,
       {
         name,
         imgsrc,
@@ -130,18 +137,17 @@ export class BackendGlueService {
     );
   }
 
-  deleteCardList() {
+  deleteCardList(list_id: string) {
     return this.http.delete<{ list: CardListItem[]; currentTotal: number }>(
-      this.apiUrl + '/list',
+      `${this.apiUrl}/list/${list_id}`,
       this.getAuthHeaders()
     );
   }
 
-  deleteSingleCard(card_id: number) {
-    // let params = new HttpParams().set('id', card_id);
+  deleteSingleCard(list_id: string, card_id: string) {
     return this.http
       .delete<{ list: CardListItem[]; currentTotal: number }>(
-        `${this.apiUrl}/list/${card_id}`,
+        `${this.apiUrl}/list/${list_id}/cards/${card_id}`,
         this.getAuthHeaders()
       )
       .pipe(
@@ -158,11 +164,10 @@ export class BackendGlueService {
       );
   }
 
-  getCardDetails(card_id: number) {
-    // let params = new HttpParams().set('id', card_id);
+  getCardDetails(list_id: string, card_id: string) {
     return this.http
       .get<CardListItem>(
-        `${this.apiUrl}/list/${card_id}`,
+        `${this.apiUrl}/list/${list_id}/cards/${card_id}`,
         this.getAuthHeaders()
       )
       .pipe(
@@ -179,11 +184,15 @@ export class BackendGlueService {
       );
   }
 
-  patchCardDetails(id: number, price: number, count: number) {
-    // let params = new HttpParams().set('id', card.id);
+  patchCardDetails(
+    list_id: string,
+    card_id: string,
+    price: number,
+    count: number
+  ) {
     return this.http
       .patch<{ currentTotal: number }>(
-        `${this.apiUrl}/list/${id}`,
+        `${this.apiUrl}/list/${list_id}/cards/${card_id}`,
         {
           price,
           count,
