@@ -10,6 +10,8 @@ import { BackendGlueService } from '../services/backend-glue.service';
 import { SearchDataService } from '../services/search-data.service';
 import { ResultPricesService } from '../services/result-prices.service';
 import { jwtDecode } from 'jwt-decode';
+import { UserService } from '../services/user.service';
+import { UserSchema } from '../interfaces/schemas.interface';
 
 @Component({
   selector: 'app-search-result',
@@ -23,6 +25,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   listButtonText = '+ Add to List';
   private myCardName = '';
+  myUser!: UserSchema;
 
   constructor(
     private route: ActivatedRoute,
@@ -30,7 +33,8 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     private state: GlimpseStateService,
     private glue: BackendGlueService,
     private search: SearchDataService,
-    private prices: ResultPricesService
+    private prices: ResultPricesService,
+    private userService: UserService
   ) {}
 
   ngOnDestroy(): void {
@@ -42,6 +46,18 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     console.log('SearchResult ngOnInit called!', Date.now());
+
+    this.userService.user$
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((data) => {
+          if (data) {
+            this.myUser = data;
+          }
+        })
+      )
+      .subscribe();
+
     // Set up getting names out of the URL
     this.route.paramMap
       .pipe(
@@ -102,6 +118,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     // user is logged in, so we can use the DB
     this.glue
       .postCardList(
+        this.myUser.activeList,
         this.displayCard.name,
         this.displayCard.imgsrc,
         this.displayCard.normalprice
