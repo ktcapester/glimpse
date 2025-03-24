@@ -94,12 +94,13 @@ const verifyToken = async (token, email) => {
       const defaultList = new List({
         user: newUser._id, // connects the User into the List
         name: `${usernamenew} Default List`,
-        description: `${usernamenew}'s auto generated first list.`,
+        description: `${usernamenew}'s auto generated list.`,
       });
       await defaultList.save();
 
       // Connect the List into the User
       newUser.lists.push(defaultList._id);
+      newUser.activeList = defaultList._id;
       await newUser.save();
 
       // Delete token after successful signup

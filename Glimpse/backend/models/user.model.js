@@ -12,6 +12,7 @@ const userSchema = new Schema({
   username: { type: String, required: true },
   createdAt: { type: Date, default: Date.now, immutable: true },
   lists: [{ type: Schema.Types.ObjectId, ref: "List" }],
+  activeList: { type: Schema.Types.ObjectId, ref: "List" },
 });
 
 // Add indexes
