@@ -19,6 +19,7 @@ export class UserService {
 
   private loadUserFromStorage() {
     const storedUser = localStorage.getItem('user');
+    console.log('got stored user:', storedUser);
     if (storedUser) {
       this.userSubject.next(JSON.parse(storedUser));
       return true;
@@ -33,6 +34,7 @@ export class UserService {
         switchMap(() => {
           return this.glue.getUser().pipe(
             tap((user) => {
+              console.log('storing user:', user);
               localStorage.setItem('user', JSON.stringify(user));
               this.userSubject.next(user);
             }),
@@ -50,6 +52,7 @@ export class UserService {
     const success = this.loadUserFromStorage();
     if (!success) {
       // not in localStorage, so trigger the backend request
+      console.log('trigger user fetch');
       this.fetchUser();
     }
     // if no user or JWT found, just do nothing...probably?

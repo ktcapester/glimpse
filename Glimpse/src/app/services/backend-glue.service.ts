@@ -62,6 +62,8 @@ export class BackendGlueService {
   }
 
   getVerifyToken(email: string, token: string) {
+    console.log(`getVerifyToken with: ${email} and ${token}`);
+
     return this.http
       .get<{ token: string }>(`${this.apiUrl}/auth/verify`, {
         params: { email, token },
@@ -113,6 +115,8 @@ export class BackendGlueService {
   }
 
   getUser() {
+    console.log('glue.getUser called');
+
     return this.http.get<UserSchema>(
       `${this.apiUrl}/user`,
       this.getAuthHeaders()
