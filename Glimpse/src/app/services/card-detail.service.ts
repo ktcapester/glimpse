@@ -10,13 +10,19 @@ import { SearchDataResults } from '../interfaces/search-data-results.interface';
   providedIn: 'root',
 })
 export class CardDetailService {
-  private cardFromIDSubject = new BehaviorSubject<number>(0);
-  private patchCardSubject = new BehaviorSubject<CardListItem | null>(null);
+  private cardFromIDSubject = new BehaviorSubject<{
+    listID: string;
+    cardID: string;
+  } | null>(null);
+  private patchCardSubject = new BehaviorSubject<{
+    listID: string;
+    cli: CardListItem;
+  } | null>(null);
 
-  private deatilSearchTermSubject = new BehaviorSubject<string>('');
+  private detailSearchTermSubject = new BehaviorSubject<string>('');
 
   // duplicated from search-data-service, but we "know" we should get a single card result
-  detailSearchResults$ = this.deatilSearchTermSubject.pipe(
+  detailSearchResults$ = this.detailSearchTermSubject.pipe(
     filter((term) => !!term), // only query backend if there is a search term
     switchMap((term) => {
       return this.glue.getCardSearch(term).pipe(
@@ -78,9 +84,9 @@ export class CardDetailService {
   );
 
   cardFromID$ = this.cardFromIDSubject.pipe(
-    filter((id) => !!id),
-    switchMap((id) => {
-      return this.glue.getCardDetails(id).pipe(
+    filter((deets) => !!deets),
+    switchMap((deets) => {
+      return this.glue.getCardDetails(deets.listID, deets.cardID).pipe(
         map((results) => {
           if (typeof results === 'string') {
             // error response
@@ -103,11 +109,16 @@ export class CardDetailService {
 
   patchCard$ = this.patchCardSubject.pipe(
     filter(
-      (card_list_item): card_list_item is CardListItem => !!card_list_item
+      (deets): deets is { listID: string; cli: CardListItem } => deets !== null
     ),
-    switchMap((cardLI) => {
+    switchMap((deets) => {
       return this.glue
-        .patchCardDetails(cardLI.id, cardLI.price, cardLI.count)
+        .patchCardDetails(
+          deets.listID,
+          deets.cli.id,
+          deets.cli.price,
+          deets.cli.count
+        )
         .pipe(
           map((results) => {
             if (typeof results === 'string') {
@@ -133,23 +144,23 @@ export class CardDetailService {
   constructor(private glue: BackendGlueService, private router: Router) {}
 
   updateSearchFromName(name: string) {
-    this.deatilSearchTermSubject.next(name);
+    this.detailSearchTermSubject.next(name);
   }
 
   clearSearchName() {
-    this.deatilSearchTermSubject.next('');
+    this.detailSearchTermSubject.next('');
   }
 
-  updateDetailFromID(id: number): void {
-    this.cardFromIDSubject.next(id);
+  updateDetailFromID(listId: string, cardId: string): void {
+    this.cardFromIDSubject.next({ listID: listId, cardID: cardId });
   }
 
   clearCardDetails() {
-    this.cardFromIDSubject.next(0);
+    this.cardFromIDSubject.next(null);
   }
 
-  updatePatchCard(card: CardListItem) {
-    this.patchCardSubject.next(card);
+  updatePatchCard(activeListID: string, card: CardListItem) {
+    this.patchCardSubject.next({ listID: activeListID, cli: card });
   }
 
   clearPatchCard() {
