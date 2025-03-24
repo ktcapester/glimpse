@@ -5,11 +5,8 @@ const priceRoute = require("./routes/price.route");
 const listRoute = require("./routes/list.route");
 const userRoute = require("./routes/user.route");
 const magicLinkRoute = require("./routes/magiclink.route");
-const connectToDatabase = require("./database");
 
 const app = express();
-
-await connectToDatabase();
 
 // const allowedOrigins = [
 //   "https://glimpsecard.com",

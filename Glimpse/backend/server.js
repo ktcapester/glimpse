@@ -1,5 +1,18 @@
 const app = require("./app");
 const http = require("http");
+const connectToDatabase = require("./database");
+
+async function startServer() {
+  await connectToDatabase();
+
+  const port = normalizePort(process.env.PORT || "3000");
+  app.set("port", port);
+
+  const server = http.createServer(app);
+  server.on("error", onError);
+  server.on("listening", onListening);
+  server.listen(port);
+}
 
 const normalizePort = (val) => {
   var port = parseInt(val, 10);
@@ -39,10 +52,4 @@ const onListening = () => {
   console.log("Listening on " + bind);
 };
 
-const port = normalizePort(process.env.PORT || "3000");
-app.set("port", port);
-
-const server = http.createServer(app);
-server.on("error", onError);
-server.on("listening", onListening);
-server.listen(port);
+startServer();
