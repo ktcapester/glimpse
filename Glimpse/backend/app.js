@@ -9,7 +9,7 @@ const connectToDatabase = require("./database");
 
 const app = express();
 
-connectToDatabase();
+await connectToDatabase();
 
 // const allowedOrigins = [
 //   "https://glimpsecard.com",
