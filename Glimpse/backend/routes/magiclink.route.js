@@ -7,9 +7,9 @@ const {
 const router = express.Router();
 
 // Endpoint to request a magic link
-router.post("/auth/magic-link", postMagicLink);
+router.post("/magic-link", postMagicLink);
 
 // Endpoint to verify the token
-router.get("/auth/verify", getMagicToken);
+router.get("/verify", getMagicToken);
 
 module.exports = router;
