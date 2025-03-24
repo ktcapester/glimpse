@@ -10,6 +10,8 @@ import { takeUntil, tap } from 'rxjs/operators';
 import { BackendGlueService } from '../services/backend-glue.service';
 import { CardDetailService } from '../services/card-detail.service';
 import { ResultPricesService } from '../services/result-prices.service';
+import { UserService } from '../services/user.service';
+import { UserSchema } from '../interfaces/schemas.interface';
 
 @Component({
   selector: 'app-card-detail',
@@ -21,7 +23,8 @@ import { ResultPricesService } from '../services/result-prices.service';
 export class CardDetailComponent implements OnInit, OnDestroy {
   displayCard!: DisplayCard;
   myCard!: CardListItem;
-  myID = 0;
+  myUser!: UserSchema;
+  myID = '';
   loadingDone = false;
 
   private destroy$ = new Subject<void>();
@@ -32,7 +35,8 @@ export class CardDetailComponent implements OnInit, OnDestroy {
     private state: GlimpseStateService,
     private glue: BackendGlueService,
     private prices: ResultPricesService,
-    private details: CardDetailService
+    private details: CardDetailService,
+    private userService: UserService
   ) {}
 
   ngOnDestroy(): void {
@@ -48,6 +52,18 @@ export class CardDetailComponent implements OnInit, OnDestroy {
       `${this.constructor.name} ngOnInit called!`,
       new Date().toISOString().split('T')[1].slice(0, 12)
     );
+
+    this.userService.user$
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((data) => {
+          if (data) {
+            this.myUser = data;
+          }
+        })
+      )
+      .subscribe();
+
     // Set up getting names out of the URL
     this.route.paramMap
       .pipe(
@@ -56,9 +72,9 @@ export class CardDetailComponent implements OnInit, OnDestroy {
           const name = params.get('cardName') || '';
           this.details.updateSearchFromName(name);
           this.prices.updatePricesTerm(name);
-          const id = parseInt(params.get('cardID') || '');
+          const id = params.get('cardID') || '';
           this.myID = id;
-          this.details.updateDetailFromID(id);
+          this.details.updateDetailFromID(this.myUser.activeList, id);
         })
       )
       .subscribe();
@@ -135,14 +151,14 @@ export class CardDetailComponent implements OnInit, OnDestroy {
   onItemIncrease() {
     if (this.myCard.count < 99) {
       this.myCard.count += 1;
-      this.details.updatePatchCard(this.myCard);
+      this.details.updatePatchCard(this.myUser.activeList, this.myCard);
     }
   }
 
   onItemDecrease() {
     if (this.myCard.count > 0) {
       this.myCard.count -= 1;
-      this.details.updatePatchCard(this.myCard);
+      this.details.updatePatchCard(this.myUser.activeList, this.myCard);
     }
   }
 
@@ -150,7 +166,7 @@ export class CardDetailComponent implements OnInit, OnDestroy {
     console.log('onItemRemove');
     console.log(this.myCard);
     this.glue
-      .deleteSingleCard(this.myCard.id)
+      .deleteSingleCard(this.myUser.activeList, this.myCard.id)
       .pipe(
         takeUntil(this.destroy$),
         tap((result) => {
