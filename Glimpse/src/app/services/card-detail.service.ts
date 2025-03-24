@@ -84,7 +84,14 @@ export class CardDetailService {
   );
 
   cardFromID$ = this.cardFromIDSubject.pipe(
-    filter((deets) => !!deets),
+    filter(
+      (
+        deets
+      ): deets is {
+        listID: string;
+        cardID: string;
+      } => deets !== null
+    ),
     switchMap((deets) => {
       return this.glue.getCardDetails(deets.listID, deets.cardID).pipe(
         map((results) => {
