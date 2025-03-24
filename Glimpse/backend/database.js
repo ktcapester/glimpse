@@ -10,14 +10,15 @@ async function connectToDatabase() {
   // Read the CA certificate from file
   const ca = [fs.readFileSync("./config/certs/global-bundle.pem")];
 
-  const uri = `mongodb://${username}:${password}@${host}:${port}/?tls=true&tlsCAFile=global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`;
+  // removed `tls=true&tlsCAFile=global-bundle.pem&` from start of URI cuz in the connection options now
+  const uri = `mongodb://${username}:${password}@${host}:${port}/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`;
 
   try {
     await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      sslValidate: true,
-      sslCA: ca,
+      tls: true,
+      tlsCAFile: ca,
     });
     console.log("Connected to Amazon DocumentDB!");
   } catch (err) {
