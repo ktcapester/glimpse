@@ -153,7 +153,7 @@ function calculateAllPrices(cards) {
 
 function processList(cards, price_name) {
   if (cards.length == 0) {
-    return NaN;
+    return 0;
   }
   if (cards.length == 1) {
     return extractPrice(cards[0], price_name);
