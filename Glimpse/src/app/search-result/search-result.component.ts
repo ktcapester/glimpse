@@ -9,7 +9,6 @@ import { takeUntil, tap } from 'rxjs/operators';
 import { BackendGlueService } from '../services/backend-glue.service';
 import { SearchDataService } from '../services/search-data.service';
 import { ResultPricesService } from '../services/result-prices.service';
-import { jwtDecode } from 'jwt-decode';
 import { UserService } from '../services/user.service';
 import { UserSchema } from '../interfaces/schemas.interface';
 
@@ -110,8 +109,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
   onAddToList() {
     // use backend to add to the list
     // check if user is logged in & redirect if needed
-    const token = localStorage.getItem('jwtToken');
-    if (!token || this.isTokenExpired(token)) {
+    if (!this.myUser || !this.userService.isTokenValid()) {
       this.router.navigate(['/login']);
       return;
     }
@@ -136,16 +134,6 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe();
-  }
-
-  isTokenExpired(token: string): boolean {
-    try {
-      const decoded = jwtDecode(token);
-      return !decoded.exp || Date.now() / 1000 >= decoded.exp;
-    } catch (error) {
-      console.log('isTokenExpired() got an error:', error);
-      return true;
-    }
   }
 
   async listFeedback() {
