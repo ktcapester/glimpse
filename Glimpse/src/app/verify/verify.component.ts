@@ -28,34 +28,40 @@ export class VerifyComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // /verify?token={token}&email={email}
-    this.route.queryParamMap.pipe(
-      takeUntil(this.destroy$),
-      tap((params) => {
-        const userToken = params.get('token') || '';
-        const userEmail = params.get('email') || '';
-        this.glue.getVerifyToken(userEmail, userToken).pipe(
-          takeUntil(this.destroy$),
-          tap((response) => {
-            this.showResponse = true;
-            if (response.success === true) {
-              localStorage.setItem('jwtToken', response.data);
-              this.displayMessage = 'Login successful!';
-              this.responseMessage = 'You can now view your saved cards.';
-              this.redirectMessage = 'Go to list';
-              this.responseResult = true;
-            } else {
-              // encountered an error!
-              console.log('verify onInit got:', response.data);
-              this.displayMessage = 'Login failed, please try again.';
-              this.responseMessage =
-                'Try the link in your email again. If this problem persists, please request a new email.';
-              this.redirectMessage = 'Back to sign in';
-              this.responseResult = false;
-            }
-          })
-        );
-      })
-    );
+    this.route.queryParamMap
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((params) => {
+          const userToken = params.get('token') || '';
+          const userEmail = params.get('email') || '';
+
+          this.glue
+            .getVerifyToken(userEmail, userToken)
+            .pipe(
+              takeUntil(this.destroy$),
+              tap((response) => {
+                this.showResponse = true;
+                if (response.success === true) {
+                  localStorage.setItem('jwtToken', response.data);
+                  this.displayMessage = 'Login successful!';
+                  this.responseMessage = 'You can now view your saved cards.';
+                  this.redirectMessage = 'Go to list';
+                  this.responseResult = true;
+                } else {
+                  // encountered an error!
+                  console.log('verify onInit got:', response.data);
+                  this.displayMessage = 'Login failed, please try again.';
+                  this.responseMessage =
+                    'Try the link in your email again. If this problem persists, please request a new email.';
+                  this.redirectMessage = 'Back to sign in';
+                  this.responseResult = false;
+                }
+              })
+            )
+            .subscribe();
+        })
+      )
+      .subscribe();
   }
 
   ngOnDestroy(): void {
