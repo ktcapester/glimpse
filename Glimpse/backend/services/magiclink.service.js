@@ -15,19 +15,21 @@ function generateToken() {
 // Send magic link to user's email
 async function sendMagicLink(email) {
   try {
+    console.log("sending magic link to:", email);
     // Check for old unused tokens for the email
     const record = await Token.findOne({ email, used: false });
     // Delete if found
     if (record) {
       await Token.findByIdAndDelete(record._id);
     }
-
+    console.log("old token deleted or not present");
     // Create new token
     const token = generateToken();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
 
     // Save the token to the database
     await Token.create({ email, token, expiresAt });
+    console.log("new token saved to DB");
 
     // Construct the magic link
     const magicLink = `${
@@ -63,9 +65,10 @@ async function sendMagicLink(email) {
 
 const verifyToken = async (token, email) => {
   try {
+    console.log("verifying token+email:", token, email);
     // Find the token in the database
     const record = await Token.findOne({ email, token, used: false });
-
+    console.log("found record:", record);
     if (!record) {
       throw createError(400, "Invalid or expired token.");
     }
@@ -79,9 +82,11 @@ const verifyToken = async (token, email) => {
     record.used = true;
     await record.save();
 
+    console.log("looking for user with email:", email);
     // Token successfully verified, so find the User connected to it
     const user = await User.findOne({ email });
     if (!user) {
+      console.log("no user found, creating new User");
       // Create a new User
       const usernamenew = email.split("@")[0];
       const newUser = new User({
@@ -90,6 +95,7 @@ const verifyToken = async (token, email) => {
       });
       await newUser.save();
 
+      console.log("creating default list for new user");
       // Create a default list
       const defaultList = new List({
         user: newUser._id, // connects the User into the List
@@ -98,21 +104,23 @@ const verifyToken = async (token, email) => {
       });
       await defaultList.save();
 
+      console.log("connecting list to user");
       // Connect the List into the User
       newUser.lists.push(defaultList._id);
       newUser.activeList = defaultList._id;
       await newUser.save();
 
+      console.log("new User created & saved:", newUser);
       // Delete token after successful signup
       await Token.findByIdAndDelete(record._id);
-
+      console.log("user token deleted");
       // Return the new User
       return newUser;
     }
 
     // Delete token after successful login
     await Token.findByIdAndDelete(record._id);
-
+    console.log("user token deleted for User:", user);
     // Return the existing User
     return user;
   } catch (err) {
