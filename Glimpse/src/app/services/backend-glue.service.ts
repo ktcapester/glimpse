@@ -13,6 +13,7 @@ import {
   CardListItem,
   CardPrices,
 } from '../interfaces/backend.interface';
+import { UserSchema } from '../interfaces/schemas.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -112,7 +113,7 @@ export class BackendGlueService {
   }
 
   getUser() {
-    return this.http.get<{ email: string; username: string; lists: string[] }>(
+    return this.http.get<UserSchema>(
       `${this.apiUrl}/user`,
       this.getAuthHeaders()
     );
