@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, of } from 'rxjs';
 import { BackendGlueService } from './backend-glue.service';
-import { GlimpseStateService } from './glimpse-state.service';
-import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
+import { catchError, filter, map, switchMap } from 'rxjs/operators';
 import { CardSuggestionService } from './card-suggestion.service';
 import { SearchDataResults } from '../interfaces/search-data-results.interface';
 
@@ -78,7 +77,6 @@ export class SearchDataService {
 
   constructor(
     private glue: BackendGlueService,
-    private state: GlimpseStateService,
     private suggests: CardSuggestionService
   ) {}
 
@@ -88,17 +86,5 @@ export class SearchDataService {
 
   clearSearchResults() {
     this.searchTermSubject.next('');
-  }
-
-  initTotal() {
-    this.glue
-      .getCardList()
-      .pipe(
-        take(1), // only need to get value once, then complete please.
-        tap((results) => {
-          this.state.pushNewTotal(results.currentTotal);
-        })
-      )
-      .subscribe();
   }
 }
