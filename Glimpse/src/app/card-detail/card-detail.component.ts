@@ -113,7 +113,7 @@ export class CardDetailComponent implements OnInit, OnDestroy {
             foilprice: cardPrices.usd_foil,
             normalprice: cardPrices.usd,
             etchedprice: cardPrices.usd_etched,
-            scryfallLink: cardDisp.scryfall,
+            scryfallLink: cardDisp.scryfallLink,
           };
 
           // update the price with latest from scryfall
