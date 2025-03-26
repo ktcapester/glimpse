@@ -113,11 +113,16 @@ export class BackendGlueService {
 
   getUser() {
     console.log('glue.getUser called');
-
-    return this.http.get<UserSchema>(
-      `${this.apiUrl}/user`,
-      this.getAuthHeaders()
-    );
+    return this.http
+      .get<UserSchema>(`${this.apiUrl}/user`, this.getAuthHeaders())
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 401 || error.status === 403) {
+            return of('Not logged in nerd');
+          }
+          return of('Unknown error occured...');
+        })
+      );
   }
 
   getCardList(list_id: string) {
