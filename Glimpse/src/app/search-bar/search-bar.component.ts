@@ -32,7 +32,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     private userService: UserService
   ) {}
 
-  myUser!: UserSchema;
+  myUser: UserSchema | null = null;
   searchForm = new FormGroup({
     search: new FormControl('', [Validators.required, Validators.minLength(3)]),
   });
@@ -80,7 +80,11 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       .subscribe();
 
     // Initialize the list total with the list data from the backend.
-    this.state.initTotal(this.myUser.activeList);
+    if (this.myUser) {
+      this.state.initTotal(this.myUser.activeList);
+    } else {
+      this.state.pushNewTotal(0);
+    }
   }
 
   ngOnDestroy(): void {
