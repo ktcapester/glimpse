@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, of } from 'rxjs';
 import { BackendGlueService } from './backend-glue.service';
 import { catchError, filter, map, switchMap } from 'rxjs/operators';
-import { CardPrices } from '../interfaces/backend.interface';
+import { Prices } from '../interfaces/prices.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +17,7 @@ export class ResultPricesService {
         map((results) => {
           if (typeof results === 'string') {
             // got an error
-            const retVal: CardPrices = {
+            const retVal: Prices = {
               usd: NaN,
               usd_etched: NaN,
               usd_foil: NaN,
@@ -36,7 +36,7 @@ export class ResultPricesService {
     }),
     catchError((error) => {
       console.error('An unexpected error occurered:', error);
-      const retVal: CardPrices = {
+      const retVal: Prices = {
         usd: NaN,
         usd_etched: NaN,
         usd_foil: NaN,

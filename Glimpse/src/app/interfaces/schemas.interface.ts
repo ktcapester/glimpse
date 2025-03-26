@@ -1,4 +1,4 @@
-import { CardPrices } from './backend.interface';
+import { Prices } from './prices.interface';
 
 export interface UserSchema {
   _id: string;
@@ -30,8 +30,8 @@ export interface CardSchema {
   updateAt: Date;
   prices:
     | {
-        raw: CardPrices | undefined;
-        calc: CardPrices | undefined;
+        raw: Prices | undefined;
+        calc: Prices | undefined;
       }
     | undefined;
 }
