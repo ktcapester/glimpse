@@ -34,9 +34,13 @@ export class UserService {
         switchMap(() => {
           return this.glue.getUser().pipe(
             tap((user) => {
-              console.log('storing user:', user);
-              localStorage.setItem('user', JSON.stringify(user));
-              this.userSubject.next(user);
+              if (typeof user == 'string') {
+                console.log('not logged in:', user);
+              } else {
+                console.log('storing user:', user);
+                localStorage.setItem('user', JSON.stringify(user));
+                this.userSubject.next(user);
+              }
             }),
             catchError((error) => {
               console.error('Error fetching user:', error);
