@@ -6,13 +6,10 @@ import {
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import {
-  CardDisplayOnly,
-  CardListItem,
-  CardPrices,
-} from '../interfaces/backend.interface';
+import { CardDisplayOnly, CardListItem } from '../interfaces/backend.interface';
+import { Prices } from '../interfaces/prices.interface';
 import { UserSchema } from '../interfaces/schemas.interface';
 
 @Injectable({
@@ -103,7 +100,7 @@ export class BackendGlueService {
 
   getPrices(cardName: string) {
     let params = new HttpParams().set('name', cardName);
-    return this.http.get<CardPrices>(`${this.apiUrl}/price`, { params }).pipe(
+    return this.http.get<Prices>(`${this.apiUrl}/price`, { params }).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 500) {
           return of('A server error occurred. Try again later.');
