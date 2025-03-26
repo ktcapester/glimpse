@@ -65,40 +65,27 @@ export class SearchResultComponent implements OnInit, OnDestroy {
           const name = params.get('cardName') || '';
           this.myCardName = name;
 
-          console.log(Date.now(), 'tap(params):params=', params);
-          console.log(Date.now(), 'tap(params):myCardName=', this.myCardName);
-
           combineLatest([this.search.searchResults$, this.prices.priceResults$])
             .pipe(
               takeUntil(this.destroy$),
               tap(([searchResult, prices]) => {
-                console.log(
-                  Date.now(),
-                  'tap([searchResult, prices]):searchResult=',
-                  searchResult
-                );
-                console.log(
-                  Date.now(),
-                  'tap([searchResult, prices]):prices=',
-                  prices
-                );
-
-                if (!Number.isNaN(prices.usd)) {
+                if (prices.usd) {
                   const display: DisplayCard = {
                     name: searchResult.cards[0].name,
                     imgsrc: searchResult.cards[0].imgsrc,
                     normalprice: prices.usd,
                     foilprice: prices.usd_foil,
                     etchedprice: prices.usd_etched,
-                    scryfallLink: searchResult.cards[0].scryfall,
+                    scryfallLink: searchResult.cards[0].scryfallLink,
                   };
-                  this.displayCard = display;
+                  this.displayCard = { ...display };
                 } else {
                   console.log('There was an error in prices but who cares');
                 }
               })
             )
             .subscribe();
+          // Now that the pipeline is set up, kick it off
           this.search.updateSearchTerm(this.myCardName);
           this.prices.updatePricesTerm(this.myCardName);
         })
