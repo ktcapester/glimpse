@@ -5,8 +5,10 @@ import { BackendGlueService } from '../services/backend-glue.service';
 import { Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
 import { CardListItem } from '../interfaces/backend.interface';
+import { UserSchema } from '../interfaces/schemas.interface';
 import { Router } from '@angular/router';
 import { GlimpseStateService } from '../services/glimpse-state.service';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-card-list',
@@ -17,11 +19,13 @@ import { GlimpseStateService } from '../services/glimpse-state.service';
 })
 export class CardListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  myUser!: UserSchema;
 
   constructor(
     private glue: BackendGlueService,
     private state: GlimpseStateService,
-    private router: Router
+    private router: Router,
+    private userService: UserService
   ) {}
 
   displayList: CardListItem[] = [];
@@ -34,8 +38,19 @@ export class CardListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.userService.user$
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((data) => {
+          if (data) {
+            this.myUser = data;
+          }
+        })
+      )
+      .subscribe();
+
     this.glue
-      .getCardList()
+      .getCardList(this.myUser.activeList)
       .pipe(
         takeUntil(this.destroy$),
         tap((response) => {
@@ -63,7 +78,7 @@ export class CardListComponent implements OnInit, OnDestroy {
 
   onConfirm() {
     this.glue
-      .deleteCardList()
+      .deleteCardList(this.myUser.activeList)
       .pipe(
         takeUntil(this.destroy$),
         tap((response) => {

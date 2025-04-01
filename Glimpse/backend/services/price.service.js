@@ -1,3 +1,5 @@
+const { Card } = require("../models/card.model");
+
 var lastAPICall = Date.now();
 
 function delay(ms) {
@@ -14,13 +16,61 @@ async function calculatePriceFromName(cardName) {
       // scryfall asks for 50-100ms between API calls, so wait for 100ms
       await delay(100);
     }
-
     lastAPICall = Date.now();
 
     const scryfallResponse = await fetch(apiNamedurl);
     const scryfallData = await scryfallResponse.json();
-    const result = await processAllPrints(scryfallData.prints_search_uri);
-    return { status: 200, data: result };
+
+    // if scryfall returns a valid single card
+    if (scryfallResponse.status === 200) {
+      // compute the calculated prices from all prints
+      const allPrices = await processAllPrints(scryfallData.prints_search_uri);
+
+      // build the raw prices object
+      const rawPrices = {
+        usd: parseFloat(scryfallData.prices.usd) || 0,
+        usd_etched: parseFloat(scryfallData.prices.usd_etched) || 0,
+        usd_foil: parseFloat(scryfallData.prices.usd_foil) || 0,
+        eur: parseFloat(scryfallData.prices.eur) || 0,
+        eur_etched: parseFloat(scryfallData.prices.eur_etched) || 0,
+        eur_foil: parseFloat(scryfallData.prices.eur_foil) || 0,
+      };
+
+      // add to my DB, or update if already in it. aka "upsert" the card
+      const found = await Card.findOne({ name: scryfallData.name });
+
+      if (!found) {
+        // Card.create both creates and saves in one step
+        await Card.create({
+          name: scryfallData.name,
+          scryfallLink: scryfallData.scryfall_uri,
+          imgsrcFull: scryfallData.image_uris.large,
+          imgsrcSmall: scryfallData.image_uris.normal,
+          prices: {
+            raw: rawPrices,
+            calc: allPrices,
+          },
+        });
+      } else {
+        // update existing Card
+        found.scryfallLink = scryfallData.scryfall_uri;
+        found.imgsrcFull = scryfallData.image_uris.large;
+        found.imgsrcSmall = scryfallData.image_uris.small;
+        found.prices.raw = rawPrices;
+        found.prices.calc = allPrices;
+        await found.save();
+      }
+
+      // Return the calc price data
+      return { status: 200, data: allPrices };
+    }
+
+    // if we got 404 from scryfall
+    return {
+      status: 500,
+      error: "Got a 404 from Scryfall, check the card name you searched.",
+      errorCode: "SERVER_ERROR",
+    };
   } catch (error) {
     console.error(error);
     return {
@@ -50,7 +100,6 @@ async function processAllPrints(prints_search_uri) {
 
   const all_response = await fetch(prints_no_digital);
   const all_data = await all_response.json();
-
   return calculateAllPrices(all_data.data);
 }
 
@@ -104,7 +153,7 @@ function calculateAllPrices(cards) {
 
 function processList(cards, price_name) {
   if (cards.length == 0) {
-    return NaN;
+    return 0;
   }
   if (cards.length == 1) {
     return extractPrice(cards[0], price_name);

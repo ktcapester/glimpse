@@ -1,4 +1,4 @@
-const searcher = require("../services/search");
+const searcher = require("../services/search.service");
 
 // Controller function for GET requests
 const getCardSearch = async (req, res) => {

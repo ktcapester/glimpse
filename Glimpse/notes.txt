@@ -46,3 +46,5 @@ oh geez got a bunch done on suggestions page. feels like a mess but my head is a
 
 suggestion related cards / frequently used together
 
+clicking on list takes to sign in
+adding card takes to sign in

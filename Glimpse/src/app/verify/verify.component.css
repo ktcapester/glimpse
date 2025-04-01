@@ -1,0 +1,26 @@
+.verify-container {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  height: 100vh;
+  box-sizing: border-box;
+  background-color: var(--Sand);
+}
+
+div {
+  background-color: var(--Sand);
+}
+
+.message-content {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--Sand);
+}
+
+.response-container {
+  display: flex;
+  max-width: 100%;
+  justify-content: center;
+}

@@ -1,4 +1,4 @@
-const pricer = require("../services/price");
+const pricer = require("../services/price.service");
 
 // Controller function for GET requests
 const getPrices = async (req, res) => {

@@ -13,7 +13,8 @@ import { Subject } from 'rxjs';
 import { SearchDataService } from '../services/search-data.service';
 import { takeUntil, tap } from 'rxjs/operators';
 import { GlimpseStateService } from '../services/glimpse-state.service';
-import { ErrorCode } from '../enums/error-code';
+import { UserService } from '../services/user.service';
+import { UserSchema } from '../interfaces/schemas.interface';
 
 @Component({
   selector: 'app-search-bar',
@@ -27,9 +28,11 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private searchdata: SearchDataService,
-    private state: GlimpseStateService
+    private state: GlimpseStateService,
+    private userService: UserService
   ) {}
 
+  myUser: UserSchema | null = null;
   searchForm = new FormGroup({
     search: new FormControl('', [Validators.required, Validators.minLength(3)]),
   });
@@ -51,6 +54,17 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       )
       .subscribe();
 
+    this.userService.user$
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((data) => {
+          if (data) {
+            this.myUser = data;
+          }
+        })
+      )
+      .subscribe();
+
     // Create pipeline and subscribe to when a new search term is encountered
     this.setupSearchCallback();
 
@@ -66,7 +80,11 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       .subscribe();
 
     // Initialize the list total with the list data from the backend.
-    this.searchdata.initTotal();
+    if (this.myUser) {
+      this.state.initTotal(this.myUser.activeList);
+    } else {
+      this.state.pushNewTotal(0);
+    }
   }
 
   ngOnDestroy(): void {

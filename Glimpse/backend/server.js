@@ -1,5 +1,18 @@
 const app = require("./app");
 const http = require("http");
+const connectToDatabase = require("./database");
+
+async function startServer() {
+  await connectToDatabase();
+
+  const port = normalizePort(process.env.PORT || "3000");
+  app.set("port", port);
+
+  const server = http.createServer(app);
+  server.on("error", (error) => onError(error, server, port));
+  server.on("listening", () => onListening(server, port));
+  server.listen(port);
+}
 
 const normalizePort = (val) => {
   var port = parseInt(val, 10);
@@ -16,10 +29,11 @@ const normalizePort = (val) => {
   return false;
 };
 
-const onError = (error) => {
+const onError = (error, server, port) => {
   if (error.syscall !== "listen") {
     throw error;
   }
+  const addr = server.address();
   const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;
   switch (error.code) {
     case "EACCES":
@@ -33,16 +47,10 @@ const onError = (error) => {
   }
 };
 
-const onListening = () => {
+const onListening = (server, port) => {
   const addr = server.address();
   const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;
   console.log("Listening on " + bind);
 };
 
-const port = normalizePort(process.env.PORT || "3000");
-app.set("port", port);
-
-const server = http.createServer(app);
-server.on("error", onError);
-server.on("listening", onListening);
-server.listen(port);
+startServer();
