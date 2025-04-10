@@ -2,8 +2,24 @@ const app = require("./app");
 const http = require("http");
 const connectToDatabase = require("./database");
 
-async function startServer() {
-  await connectToDatabase();
+async function startServer(retries = 5, delayMs = 5000) {
+  while (retries > 0) {
+    try {
+      await connectToDatabase();
+      break;
+    } catch (err) {
+      retries--;
+      console.log("DB connection failed, retrying in", delayMs, "ms.");
+      console.log("Retries remaining:", retries);
+      console.log("Error:", err);
+      await new Promise((res) => setTimeout(res, delayMs));
+    }
+  }
+
+  if (retries === 0) {
+    console.log("Failed to connect to DB after multiple retries.");
+    return;
+  }
 
   const port = normalizePort(process.env.PORT || "3000");
   app.set("port", port);
