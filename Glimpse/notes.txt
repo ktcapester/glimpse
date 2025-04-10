@@ -48,3 +48,27 @@ suggestion related cards / frequently used together
 
 clicking on list takes to sign in
 adding card takes to sign in
+
+
+Updating backend:
+1. copy updated files into backend_deploy
+2. move previous zip into archive folder
+3. zip everything except the archive folder
+4. rename zip with date and version for the day
+5. upload to elasticbeanstalk
+6. wait for it to complete (takes some time)
+7. enjoy!
+
+Updating frontend:
+1. run "ng build" in terminal
+2. go to glimpse/dist
+3. upload "3rdpartylicenses.txt" to S3 bucket
+4. go to dist/browser
+5. upload everything to S3 bucket
+6. go to CloudFront
+7. go to the distribution
+8. go to Invalidations
+9. create new Invalidation
+10. use "/*" to force update EVERYTHING EVERYWHERE
+11. wait for it to complete (takes some time)
+12. enjoy!
