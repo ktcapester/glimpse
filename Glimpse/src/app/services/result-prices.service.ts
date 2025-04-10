@@ -25,6 +25,8 @@ export class ResultPricesService {
               eur_etched: NaN,
               eur_foil: NaN,
             };
+            console.log(`got string from glue:`);
+            console.log(results);
             return retVal;
           } else {
             // successful response

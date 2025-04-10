@@ -80,7 +80,18 @@ export class SearchResultComponent implements OnInit, OnDestroy {
                   };
                   this.displayCard = { ...display };
                 } else {
-                  console.log('There was an error in prices but who cares');
+                  console.log(
+                    'There was an error in prices so setting prices to 0'
+                  );
+                  const display: DisplayCard = {
+                    name: searchResult.cards[0].name,
+                    imgsrc: searchResult.cards[0].imgsrc,
+                    normalprice: 0,
+                    foilprice: 0,
+                    etchedprice: 0,
+                    scryfallLink: searchResult.cards[0].scryfallLink,
+                  };
+                  this.displayCard = { ...display };
                 }
               })
             )
