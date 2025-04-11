@@ -8,20 +8,22 @@ const magicLinkRoute = require("./routes/magiclink.route");
 
 const app = express();
 
-// const allowedOrigins = [
-//   "https://glimpsecard.com",
-//   "https://www.glimpsecard.com",
-//   "https://api.glimpsecard.com",
-// ];
+app.options("*", cors());
+
+const allowedOrigins = [
+  "https://glimpsecard.com",
+  "https://www.glimpsecard.com",
+  "https://api.glimpsecard.com",
+];
 
 app.use(
-  cors()
-  //   {
-  //   origin: allowedOrigins,
-  //   methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-  //   allowedHeaders: ["Content-Type", "Authorization"],
-  // }
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
 );
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
