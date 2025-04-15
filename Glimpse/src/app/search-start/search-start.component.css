@@ -4,20 +4,26 @@
   padding: 24px;
   box-sizing: border-box;
   background-color: var(--Sand);
+  height: calc(100vh - 110px);
 }
 
 .title-container {
   flex-shrink: 0;
+  background-color: var(--Sand);
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 }
 
 .app-title {
   background-color: var(--Sand);
   text-align: center;
   margin: 0;
-  font-size: 24px;
+  font-size: 40px;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 150%;
+  font-family: cursive;
 }
 
 .search-container {
