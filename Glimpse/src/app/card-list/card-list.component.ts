@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { HeaderComponent } from '../header/header.component';
 import { BackendGlueService } from '../services/backend-glue.service';
 import { Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
@@ -15,7 +14,7 @@ import { UserService } from '../services/user.service';
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.css'],
   standalone: true,
-  imports: [HeaderComponent, CurrencyPipe, CommonModule],
+  imports: [CurrencyPipe, CommonModule],
 })
 export class CardListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();

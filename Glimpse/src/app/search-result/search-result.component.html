@@ -1,51 +1,48 @@
-<div class="component-container">
-  <app-header></app-header>
-  @if (displayCard){
-  <div class="card-image-container">
-    <img
-      [src]="displayCard.imgsrc"
-      [alt]="displayCard.name"
-      class="card-image"
-      width="336"
-      height="468"
-    />
-  </div>
-  <div class="prices-super">
-    <div
-      class="prices-container"
-      [ngStyle]="{
-        'grid-template': displayCard.etchedprice
-          ? 'auto auto / auto auto auto'
-          : 'auto auto / auto auto'
-      }"
-    >
-      <div class="text label">Normal</div>
-      <div class="text label">Foil</div>
-      @if (displayCard.etchedprice) {
-      <div class="text label">Etched</div>
-      }
-      <div class="text value">{{ displayCard.normalprice | currency }}</div>
-      <div class="text value">{{ displayCard.foilprice | currency }}</div>
-      @if (displayCard.etchedprice) {
-      <div class="text value">
-        {{ displayCard.etchedprice | currency }}
-      </div>
-      }
-    </div>
-  </div>
-
-  <div class="button-container">
-    <button class="large-button primary-button-style" (click)="onAddToList()">
-      {{ listButtonText }}
-    </button>
-  </div>
-  <div class="button-container">
-    <button
-      class="large-button secondary-button-style"
-      (click)="onGoToScryfall()"
-    >
-      View on Scryfall
-    </button>
-  </div>
-  }
+@if (displayCard){
+<div class="card-image-container">
+  <img
+    [src]="displayCard.imgsrc"
+    [alt]="displayCard.name"
+    class="card-image"
+    width="336"
+    height="468"
+  />
 </div>
+<div class="prices-super">
+  <div
+    class="prices-container"
+    [ngStyle]="{
+      'grid-template': displayCard.etchedprice
+        ? 'auto auto / auto auto auto'
+        : 'auto auto / auto auto'
+    }"
+  >
+    <div class="text label">Normal</div>
+    <div class="text label">Foil</div>
+    @if (displayCard.etchedprice) {
+    <div class="text label">Etched</div>
+    }
+    <div class="text value">{{ displayCard.normalprice | currency }}</div>
+    <div class="text value">{{ displayCard.foilprice | currency }}</div>
+    @if (displayCard.etchedprice) {
+    <div class="text value">
+      {{ displayCard.etchedprice | currency }}
+    </div>
+    }
+  </div>
+</div>
+
+<div class="button-container">
+  <button class="large-button primary-button-style" (click)="onAddToList()">
+    {{ listButtonText }}
+  </button>
+</div>
+<div class="button-container">
+  <button
+    class="large-button secondary-button-style"
+    (click)="onGoToScryfall()"
+  >
+    View on Scryfall
+  </button>
+</div>
+}

@@ -1,64 +1,58 @@
-<div class="component-container">
-  <app-header></app-header>
-  @if (loadingDone){
-  <div class="card-image-container">
-    <img
-      [src]="displayCard.imgsrc"
-      [alt]="displayCard.name"
-      class="card-image"
-      width="336"
-      height="468"
-    />
-  </div>
-  <div class="prices-super">
-    <div
-      class="prices-container"
-      [ngStyle]="{
-        'grid-template': displayCard.etchedprice
-          ? 'auto auto / auto auto auto'
-          : 'auto auto / auto auto'
-      }"
-    >
-      <div class="text label">Normal</div>
-      <div class="text label">Foil</div>
-      @if (displayCard.etchedprice) {
-      <div class="text label">Etched</div>
-      }
-      <div class="text value">{{ displayCard.normalprice | currency }}</div>
-      <div class="text value">{{ displayCard.foilprice | currency }}</div>
-      @if (displayCard.etchedprice) {
-      <div class="text value">
-        {{ displayCard.etchedprice | currency }}
-      </div>
-      }
+@if (loadingDone){
+<div class="card-image-container">
+  <img
+    [src]="displayCard.imgsrc"
+    [alt]="displayCard.name"
+    class="card-image"
+    width="336"
+    height="468"
+  />
+</div>
+<div class="prices-super">
+  <div
+    class="prices-container"
+    [ngStyle]="{
+      'grid-template': displayCard.etchedprice
+        ? 'auto auto / auto auto auto'
+        : 'auto auto / auto auto'
+    }"
+  >
+    <div class="text label">Normal</div>
+    <div class="text label">Foil</div>
+    @if (displayCard.etchedprice) {
+    <div class="text label">Etched</div>
+    }
+    <div class="text value">{{ displayCard.normalprice | currency }}</div>
+    <div class="text value">{{ displayCard.foilprice | currency }}</div>
+    @if (displayCard.etchedprice) {
+    <div class="text value">
+      {{ displayCard.etchedprice | currency }}
     </div>
+    }
   </div>
-  <div class="count-container">
-    <div class="button-container small-button">
-      <button
-        class="secondary-button-style count-button text label"
-        (click)="onItemDecrease()"
-      >
-        -
-      </button>
-    </div>
-    <div class="text label">{{ myCard.count }}</div>
-    <div class="button-container small-button">
-      <button
-        class="secondary-button-style count-button text label"
-        (click)="onItemIncrease()"
-      >
-        +
-      </button>
-    </div>
-  </div>
-  <div class="button-container">
+</div>
+<div class="count-container">
+  <div class="button-container small-button">
     <button
-      class="large-button secondary-button-style"
-      (click)="onItemRemove()"
+      class="secondary-button-style count-button text label"
+      (click)="onItemDecrease()"
     >
-      Remove
+      -
     </button>
   </div>
-  }
+  <div class="text label">{{ myCard.count }}</div>
+  <div class="button-container small-button">
+    <button
+      class="secondary-button-style count-button text label"
+      (click)="onItemIncrease()"
+    >
+      +
+    </button>
+  </div>
 </div>
+<div class="button-container">
+  <button class="large-button secondary-button-style" (click)="onItemRemove()">
+    Remove
+  </button>
+</div>
+}

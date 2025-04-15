@@ -3,12 +3,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
 import { BackendGlueService } from '../services/backend-glue.service';
-import { HeaderComponent } from '../header/header.component';
 
 @Component({
   selector: 'app-verify',
   standalone: true,
-  imports: [HeaderComponent],
   templateUrl: './verify.component.html',
   styleUrl: './verify.component.css',
 })

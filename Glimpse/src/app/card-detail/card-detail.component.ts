@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CardListItem } from '../interfaces/backend.interface';
-import { HeaderComponent } from '../header/header.component';
 import { DisplayCard } from '../interfaces/display-card.interface';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GlimpseStateService } from '../services/glimpse-state.service';
@@ -16,7 +15,7 @@ import { UserSchema } from '../interfaces/schemas.interface';
 @Component({
   selector: 'app-card-detail',
   standalone: true,
-  imports: [HeaderComponent, CurrencyPipe, CommonModule],
+  imports: [CurrencyPipe, CommonModule],
   templateUrl: './card-detail.component.html',
   styleUrl: './card-detail.component.css',
 })

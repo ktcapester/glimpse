@@ -5,12 +5,10 @@ import { Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
 import { CardSuggestionService } from '../services/card-suggestion.service';
 import { CardDisplayOnly } from '../interfaces/backend.interface';
-import { HeaderComponent } from '../header/header.component';
 
 @Component({
   selector: 'app-suggestions',
   standalone: true,
-  imports: [HeaderComponent],
   templateUrl: './suggestions.component.html',
   styleUrl: './suggestions.component.css',
 })

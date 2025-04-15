@@ -1,19 +1,16 @@
-<div class="component-container">
-  <div>
-    <app-header></app-header>
-    <div class="suggestion-question">Is this the card you're looking for?</div>
+<div>
+  <div class="suggestion-question">Is this the card you're looking for?</div>
+</div>
+<div class="scrollable-list">
+  @for (item of displayList; track item.name; let i = $index) {
+  <div class="suggestion-item" (click)="cardOnClick(item)">
+    <img
+      [src]="item.imgsrc"
+      [alt]="item.name"
+      class="card-image"
+      [width]="card_width"
+      [height]="card_height"
+    />
   </div>
-  <div class="scrollable-list">
-    @for (item of displayList; track item.name; let i = $index) {
-    <div class="suggestion-item" (click)="cardOnClick(item)">
-      <img
-        [src]="item.imgsrc"
-        [alt]="item.name"
-        class="card-image"
-        [width]="card_width"
-        [height]="card_height"
-      />
-    </div>
-    }
-  </div>
+  }
 </div>
