@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
   imports: [],
   templateUrl: './four-oh-four.component.html',
   styleUrl: './four-oh-four.component.css',
+  host: { class: 'component-container' },
 })
 export class FourOhFourComponent implements OnInit, OnDestroy {
   private stateService = inject(GlimpseStateService);

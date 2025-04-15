@@ -18,6 +18,7 @@ import { UserSchema } from '../interfaces/schemas.interface';
   imports: [CurrencyPipe, CommonModule],
   templateUrl: './card-detail.component.html',
   styleUrl: './card-detail.component.css',
+  host: { class: 'component-container' },
 })
 export class CardDetailComponent implements OnInit, OnDestroy {
   displayCard!: DisplayCard;

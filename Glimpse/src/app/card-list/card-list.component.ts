@@ -15,6 +15,7 @@ import { UserService } from '../services/user.service';
   styleUrls: ['./card-list.component.css'],
   standalone: true,
   imports: [CurrencyPipe, CommonModule],
+  host: { class: 'component-container' },
 })
 export class CardListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();

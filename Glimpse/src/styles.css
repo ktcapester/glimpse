@@ -24,6 +24,14 @@ body {
   margin: 0;
 }
 
+.component-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: calc(100vh - 110px); /* header = 110px tall */
+}
+
 * {
   color: var(--Ink);
   font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",

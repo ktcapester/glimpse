@@ -11,6 +11,7 @@ import { CardDisplayOnly } from '../interfaces/backend.interface';
   standalone: true,
   templateUrl: './suggestions.component.html',
   styleUrl: './suggestions.component.css',
+  host: { class: 'component-container' },
 })
 export class SuggestionsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();

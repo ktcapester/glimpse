@@ -6,7 +6,7 @@
 .outlet-container {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   box-sizing: border-box;
   height: calc(100vh - 110px); /* header = 110px tall */
 }

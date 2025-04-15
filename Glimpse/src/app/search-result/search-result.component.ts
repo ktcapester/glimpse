@@ -17,6 +17,7 @@ import { UserSchema } from '../interfaces/schemas.interface';
   imports: [CurrencyPipe, CommonModule],
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.css',
+  host: { class: 'component-container' },
 })
 export class SearchResultComponent implements OnInit, OnDestroy {
   displayCard!: DisplayCard;
