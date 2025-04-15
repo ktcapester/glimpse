@@ -1,0 +1,12 @@
+.disclaimers {
+  font-size: x-small;
+  background-color: var(--Sand);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.disclaimers > div {
+  background-color: var(--Sand);
+}
