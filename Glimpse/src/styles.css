@@ -24,6 +24,14 @@ body {
   margin: 0;
 }
 
+.bg-sand {
+  background-color: var(--Sand);
+}
+
+.bg-white {
+  background-color: var(--White);
+}
+
 .component-container {
   display: flex;
   flex-direction: column;

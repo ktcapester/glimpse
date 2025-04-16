@@ -1,8 +1,3 @@
-.header-container {
-  margin-bottom: 18px;
-  /* currently content+padding = 92px, so including margin = 110px */
-}
-
 .outlet-container {
   display: flex;
   flex-direction: column;

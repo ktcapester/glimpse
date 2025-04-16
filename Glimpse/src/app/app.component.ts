@@ -13,7 +13,9 @@ import { filter, tap } from 'rxjs/operators';
 })
 export class AppComponent implements OnInit {
   showHeader = false;
+  headerBG = 'bg-white';
   private noHeaderRoutes = ['/']; // only want the start page to have the header hidden
+  private sandColorRoutes = ['/login']; // defines which pages want the fake-margin to be sand color
 
   constructor(private router: Router) {}
 
@@ -27,9 +29,16 @@ export class AppComponent implements OnInit {
             event instanceof NavigationEnd
         ), // above is how to force Angular to narrow the type of event. aka a "type guard"
         tap((event: NavigationEnd) => {
+          // determine if the header should be shown
           this.showHeader = !this.noHeaderRoutes.includes(
             event.urlAfterRedirects
           );
+          // determine what color the fake-margin should be & pass into app-header
+          if (this.sandColorRoutes.includes(event.urlAfterRedirects)) {
+            this.headerBG = 'bg-sand';
+          } else {
+            this.headerBG = 'bg-white';
+          }
         })
       )
       .subscribe();

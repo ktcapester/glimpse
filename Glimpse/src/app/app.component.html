@@ -1,8 +1,6 @@
-<div class="header-container">
-  @if (showHeader){
-  <app-header></app-header>
-  }
-</div>
+@if (showHeader){
+<app-header [initBG]="headerBG"></app-header>
+}
 <div class="outlet-container">
   <router-outlet />
 </div>

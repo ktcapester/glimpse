@@ -11,3 +11,7 @@
 .special {
   flex-grow: 1;
 }
+
+.fake-margin {
+  padding-bottom: 18px;
+}
