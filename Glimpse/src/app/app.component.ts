@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
         filter(
           (event: Event): event is NavigationEnd =>
             event instanceof NavigationEnd
-        ),
+        ), // above is how to force Angular to narrow the type of event. aka a "type guard"
         tap((event: NavigationEnd) => {
           this.showHeader = !this.noHeaderRoutes.includes(
             event.urlAfterRedirects
