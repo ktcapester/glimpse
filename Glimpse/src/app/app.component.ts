@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Event, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
+import { filter, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,30 @@ import { FooterComponent } from './footer/footer.component';
   standalone: true,
   imports: [RouterOutlet, HeaderComponent, FooterComponent],
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  showHeader = false;
+  private noHeaderRoutes = ['/']; // only want the start page to have the header hidden
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    this.router.events
+      .pipe(
+        // takeUntil(this.destroy$) is not needed here
+        // because this is the root component and will automatically be cleaned up
+        filter(
+          (event: Event): event is NavigationEnd =>
+            event instanceof NavigationEnd
+        ),
+        tap((event: NavigationEnd) => {
+          this.showHeader = !this.noHeaderRoutes.includes(
+            event.urlAfterRedirects
+          );
+        })
+      )
+      .subscribe();
+  }
+}
 
 /*
 add divs to app.html    DONE
