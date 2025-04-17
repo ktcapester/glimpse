@@ -87,39 +87,3 @@ body {
 .secondary-button-style:hover {
   background-color: var(--Sand);
 }
-
-/* w3schools suggested breakpoints */
-/* Extra small devices (phones, 600px and down) */
-@media only screen and (max-width: 600px) {
-  div {
-    background-color: var(--White);
-  }
-}
-
-/* Small devices (portrait tablets and large phones, 600px and up) */
-@media only screen and (min-width: 600px) {
-  div {
-    background-color: var(--White);
-  }
-}
-
-/* Medium devices (landscape tablets, 768px and up) */
-@media only screen and (min-width: 768px) {
-  div {
-    background-color: var(--White);
-  }
-}
-
-/* Large devices (laptops/desktops, 992px and up) */
-@media only screen and (min-width: 992px) {
-  div {
-    background-color: var(--White);
-  }
-}
-
-/* Extra large devices (large laptops and desktops, 1200px and up) */
-@media only screen and (min-width: 1200px) {
-  div {
-    background-color: var(--White);
-  }
-}
