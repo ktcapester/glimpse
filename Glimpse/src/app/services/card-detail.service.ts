@@ -9,7 +9,7 @@ import { CardSchema } from '../interfaces/schemas.interface';
   providedIn: 'root',
 })
 export class CardDetailService {
-  private apiUrl = environment.apiURL;
+  private apiUrl = `${environment.apiURL}/list`;
 
   constructor(private http: HttpClient) {}
 
@@ -19,7 +19,7 @@ export class CardDetailService {
   ): Observable<{ card: CardSchema; quantity: number }> {
     return this.http
       .get<{ card: CardSchema; quantity: number }>(
-        `${this.apiUrl}/list/${listId}/cards/${cardId}`
+        `${this.apiUrl}/${listId}/cards/${cardId}`
       )
       .pipe(
         shareReplay({ bufferSize: 1, refCount: true }),
@@ -37,7 +37,7 @@ export class CardDetailService {
   ): Observable<number> {
     return this.http
       .patch<{ currentTotal: number }>(
-        `${this.apiUrl}/list/${listId}/cards/${cardId}`,
+        `${this.apiUrl}/${listId}/cards/${cardId}`,
         {
           price,
           count,
@@ -49,7 +49,7 @@ export class CardDetailService {
   deleteCard(listId: string, cardId: string): Observable<number> {
     return this.http
       .delete<{ currentTotal: number }>(
-        `${this.apiUrl}/list/${listId}/cards/${cardId}`
+        `${this.apiUrl}/${listId}/cards/${cardId}`
       )
       .pipe(map((v) => v.currentTotal));
   }
