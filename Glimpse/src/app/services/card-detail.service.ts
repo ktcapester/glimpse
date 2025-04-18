@@ -1,176 +1,56 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { BackendGlueService } from './backend-glue.service';
-import { BehaviorSubject, of } from 'rxjs';
-import { catchError, filter, map, switchMap } from 'rxjs/operators';
-import { CardListItem } from '../interfaces/backend.interface';
-import { SearchDataResults } from '../interfaces/search-data-results.interface';
+import { Observable, of } from 'rxjs';
+import { catchError, map, shareReplay } from 'rxjs/operators';
+import { environment } from 'src/environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { CardSchema } from '../interfaces/schemas.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CardDetailService {
-  private cardFromIDSubject = new BehaviorSubject<{
-    listID: string;
-    cardID: string;
-  } | null>(null);
-  private patchCardSubject = new BehaviorSubject<{
-    listID: string;
-    cli: CardListItem;
-  } | null>(null);
+  private apiUrl = environment.apiURL;
 
-  private detailSearchTermSubject = new BehaviorSubject<string>('');
+  constructor(private http: HttpClient) {}
 
-  // duplicated from search-data-service, but we "know" we should get a single card result
-  detailSearchResults$ = this.detailSearchTermSubject.pipe(
-    filter((term) => !!term), // only query backend if there is a search term
-    switchMap((term) => {
-      return this.glue.getCardSearch(term).pipe(
-        map((results) => {
-          if (typeof results === 'string') {
-            // error response
-            const stringResult: SearchDataResults = {
-              cards: [],
-              term: term,
-              code: 'ERROR',
-              details:
-                'detailSearchResults$ got an unknown string back from the glue.',
-            };
-            return stringResult;
-          } else {
-            // successful response
-            // aka response is CardSearch[]
-            if (results.length === 0) {
-              const noneResult: SearchDataResults = {
-                cards: [],
-                term: term,
-                code: 'ZERO',
-                details: 'No cards found with that search term.',
-              };
-              return noneResult;
-            } else if (results.length > 1) {
-              // go to suggestions component
-              const suggestResult: SearchDataResults = {
-                cards: results,
-                term: term,
-                code: 'SUGGESTIONS',
-                details: 'Multiple cards found with that search term.',
-              };
-              return suggestResult;
-            }
-            // only one card in list, so return that in preparation for the results page.
-            const singleResult: SearchDataResults = {
-              cards: results,
-              term: term,
-              code: 'SUCCESS',
-              details: 'Found a matching card for the search term.',
-            };
-            return singleResult;
-          }
-        }),
-        catchError((error) => {
-          console.error('An unexpected error occurered:', error);
-          const errorResult: SearchDataResults = {
-            cards: [],
-            term: term,
-            code: 'ERROR',
-            details:
-              'catchError in detailSearchResults$ caught an unexpected error.',
-          };
-          return of(errorResult);
-        })
+  getCard(
+    listId: string,
+    cardId: string
+  ): Observable<{ card: CardSchema; quantity: number }> {
+    return this.http
+      .get<{ card: CardSchema; quantity: number }>(
+        `${this.apiUrl}/list/${listId}/cards/${cardId}`
+      )
+      .pipe(
+        shareReplay({ bufferSize: 1, refCount: true }),
+        // catchError here keeps the async pipe in card-detail-component alive
+        // the global interceptor is used for global reactions like 404 redirects
+        catchError(() => of({ card: {} as CardSchema, quantity: 0 }))
       );
-    })
-  );
-
-  cardFromID$ = this.cardFromIDSubject.pipe(
-    filter(
-      (
-        deets
-      ): deets is {
-        listID: string;
-        cardID: string;
-      } => deets !== null
-    ),
-    switchMap((deets) => {
-      return this.glue.getCardDetails(deets.listID, deets.cardID).pipe(
-        map((results) => {
-          if (typeof results === 'string') {
-            // error response
-            this.router.navigate(['/404']);
-            throw new Error('Error response handled');
-          } else {
-            // successful response
-            // aka response is a CardListItem obj
-            return results;
-          }
-        }),
-        catchError((error) => {
-          console.error('An unexpected error occurred in cardFromID$:', error);
-          this.router.navigate(['/404']);
-          return [];
-        })
-      );
-    })
-  );
-
-  patchCard$ = this.patchCardSubject.pipe(
-    filter(
-      (deets): deets is { listID: string; cli: CardListItem } => deets !== null
-    ),
-    switchMap((deets) => {
-      return this.glue
-        .patchCardDetails(
-          deets.listID,
-          deets.cli.id,
-          deets.cli.price,
-          deets.cli.count
-        )
-        .pipe(
-          map((results) => {
-            if (typeof results === 'string') {
-              // error response
-              this.router.navigate(['/404']);
-              throw new Error('Error response handled');
-            } else {
-              // successful response
-              // response is a { currentTotal:number } obj
-              // extract the number out of it and pass it along
-              return results.currentTotal;
-            }
-          }),
-          catchError((error) => {
-            console.error('An unexpected error occurred in patchCard$:', error);
-            this.router.navigate(['/404']);
-            return [];
-          })
-        );
-    })
-  );
-
-  constructor(private glue: BackendGlueService, private router: Router) {}
-
-  updateSearchFromName(name: string) {
-    this.detailSearchTermSubject.next(name);
   }
 
-  clearSearchName() {
-    this.detailSearchTermSubject.next('');
+  updateCard(
+    listId: string,
+    cardId: string,
+    price: number,
+    count: number
+  ): Observable<number> {
+    return this.http
+      .patch<{ currentTotal: number }>(
+        `${this.apiUrl}/list/${listId}/cards/${cardId}`,
+        {
+          price,
+          count,
+        }
+      )
+      .pipe(map((v) => v.currentTotal));
   }
 
-  updateDetailFromID(listId: string, cardId: string): void {
-    this.cardFromIDSubject.next({ listID: listId, cardID: cardId });
-  }
-
-  clearCardDetails() {
-    this.cardFromIDSubject.next(null);
-  }
-
-  updatePatchCard(activeListID: string, card: CardListItem) {
-    this.patchCardSubject.next({ listID: activeListID, cli: card });
-  }
-
-  clearPatchCard() {
-    this.patchCardSubject.next(null);
+  deleteCard(listId: string, cardId: string): Observable<number> {
+    return this.http
+      .delete<{ currentTotal: number }>(
+        `${this.apiUrl}/list/${listId}/cards/${cardId}`
+      )
+      .pipe(map((v) => v.currentTotal));
   }
 }
