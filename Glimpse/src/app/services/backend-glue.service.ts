@@ -58,12 +58,6 @@ export class BackendGlueService {
     return this.http.get<UserSchema>(`${this.apiUrl}/user`);
   }
 
-  getCardList(list_id: string) {
-    return this.http.get<{ list: CardListItem[]; currentTotal: number }>(
-      `${this.apiUrl}/list/${list_id}`
-    );
-  }
-
   postCardList(list_id: string, name: string, imgsrc: string, price: number) {
     return this.http.post<{ data: CardListItem; currentTotal: number }>(
       `${this.apiUrl}/list/${list_id}`,
@@ -72,12 +66,6 @@ export class BackendGlueService {
         imgsrc,
         price,
       }
-    );
-  }
-
-  deleteCardList(list_id: string) {
-    return this.http.delete<{ list: CardListItem[]; currentTotal: number }>(
-      `${this.apiUrl}/list/${list_id}`
     );
   }
 }
