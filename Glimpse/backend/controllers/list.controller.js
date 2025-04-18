@@ -48,7 +48,7 @@ const getCard = async (req, res) => {
   try {
     const { listId, cardId } = req.params;
     const response = await listService.getItem(listId, cardId);
-    // response is the card object
+    // response is { card:Card, quantity:number}
     res.json(response);
   } catch (error) {
     // If our service throws a 404, use that status

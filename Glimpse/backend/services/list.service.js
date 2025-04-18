@@ -83,10 +83,10 @@ const getItem = async (listId, cardId) => {
     const list = await List.findById(listId).populate("cards.card");
     if (!list) throw createError(404, "List not found");
 
-    const card = list.cards.find((c) => c.card._id.equals(cardId));
-    if (!card) throw createError(404, "Card not found in list");
+    const entry = list.cards.find((c) => c.card._id.equals(cardId));
+    if (!entry) throw createError(404, "Card not found in list");
 
-    return card;
+    return entry;
   } catch (error) {
     throw {
       status: error.status || 500,
