@@ -1,59 +1,69 @@
-@if (loadingDone){
-<div></div>
-<div class="card-image-container">
-  <img
-    [src]="displayCard.imgsrc"
-    [alt]="displayCard.name"
-    class="card-image"
-    width="336"
-    height="468"
-  />
-</div>
-<div class="prices-super">
-  <div
-    class="prices-container"
-    [ngStyle]="{
-      'grid-template': displayCard.etchedprice
-        ? 'auto auto / auto auto auto'
-        : 'auto auto / auto auto'
-    }"
-  >
-    <div class="text label">Normal</div>
-    <div class="text label">Foil</div>
-    @if (displayCard.etchedprice) {
-    <div class="text label">Etched</div>
-    }
-    <div class="text value">{{ displayCard.normalprice | currency }}</div>
-    <div class="text value">{{ displayCard.foilprice | currency }}</div>
-    @if (displayCard.etchedprice) {
-    <div class="text value">
-      {{ displayCard.etchedprice | currency }}
+<ng-container *ngIf="cardDetail$ | async as detail; else loading">
+  <div class="my-top-div"></div>
+  <div class="card-image-container">
+    <img
+      [src]="detail.card.imgsrcFull"
+      [alt]="detail.card.name"
+      class="card-image"
+      width="336"
+      height="468"
+    />
+  </div>
+  <div class="prices-super">
+    <div
+      class="prices-container"
+      [ngClass]="{
+        'three-col': detail.card.prices?.calc?.usd_etched,
+        'two-col': !detail.card.prices?.calc?.usd_etched,
+      }"
+    >
+      <div class="text label">Normal</div>
+      <div class="text label">Foil</div>
+      <div *ngIf="detail.card.prices?.calc?.usd_etched" class="text label">
+        Etched
+      </div>
+      <div class="text value">
+        {{ detail.card.prices?.calc?.usd | currency }}
+      </div>
+      <div class="text value">
+        {{ detail.card.prices?.calc?.usd_foil | currency }}
+      </div>
+      <div *ngIf="detail.card.prices?.calc?.usd_etched" class="text value">
+        {{ detail.card.prices?.calc?.usd_etched | currency }}
+      </div>
     </div>
-    }
   </div>
-</div>
-<div class="count-container">
-  <div class="button-container small-button">
+  <div class="count-container">
+    <div class="button-container small-button">
+      <button
+        class="secondary-button-style count-button text label"
+        (click)="onItemDecrease(detail)"
+        [disabled]="detail.quantity === 1 || isPatching"
+      >
+        -
+      </button>
+    </div>
+    <div class="text label">{{ detail.quantity }}</div>
+    <div class="button-container small-button">
+      <button
+        class="secondary-button-style count-button text label"
+        (click)="onItemIncrease(detail)"
+        [disabled]="detail.quantity >= 99 || isPatching"
+      >
+        +
+      </button>
+    </div>
+  </div>
+  <div class="button-container">
     <button
-      class="secondary-button-style count-button text label"
-      (click)="onItemDecrease()"
+      class="large-button secondary-button-style"
+      (click)="onItemRemove(detail)"
+      [disabled]="isPatching"
     >
-      -
+      Remove
     </button>
   </div>
-  <div class="text label">{{ myCard.count }}</div>
-  <div class="button-container small-button">
-    <button
-      class="secondary-button-style count-button text label"
-      (click)="onItemIncrease()"
-    >
-      +
-    </button>
-  </div>
-</div>
-<div class="button-container">
-  <button class="large-button secondary-button-style" (click)="onItemRemove()">
-    Remove
-  </button>
-</div>
-}
+</ng-container>
+<ng-template #loading>
+  <div class="spinner">Loading card details...</div>
+</ng-template>
