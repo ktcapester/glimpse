@@ -1,0 +1,26 @@
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+  const router = inject(Router);
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401) {
+        // Unauthorized - send the user to the login page
+        router.navigate(['/login']);
+      } else if (error.status === 404) {
+        // Not found - go to the 404 page
+        router.navigate(['/404']);
+      } else {
+        // Other error - broadcast its contents
+        console.log('ErrorInterceptor');
+        console.log('HTTP Error: ', error);
+      }
+      // Always re-throw (or return a user-friendly fallback (?))
+      return throwError(() => error);
+    })
+  );
+};
