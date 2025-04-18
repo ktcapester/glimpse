@@ -1,12 +1,6 @@
-import {
-  HttpClient,
-  HttpErrorResponse,
-  HttpParams,
-  HttpHeaders,
-} from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { CardDisplayOnly, CardListItem } from '../interfaces/backend.interface';
 import { Prices } from '../interfaces/prices.interface';
@@ -25,37 +19,12 @@ export class BackendGlueService {
 
   constructor(private http: HttpClient) {}
 
-  private getAuthHeaders() {
-    const token = localStorage.getItem('jwtToken');
-    return token
-      ? { headers: new HttpHeaders().set('Authorization', `Bearer ${token}`) }
-      : {};
-  }
-
   // This requests a magic link to be sent to the provided email.
   // It returns TRUE if the email is sent, FALSE if any error occurs.
   postMagicLink(email: string) {
     return this.http
-      .post<{ message: string; success: boolean }>(
-        `${this.apiUrl}/auth/magic-link`,
-        { email }
-      )
-      .pipe(
-        map((result) => {
-          if (result.success) {
-            return true;
-          } else {
-            return false;
-          }
-        }),
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 500) {
-            return of(false);
-          } else {
-            return of(false);
-          }
-        })
-      );
+      .post<{ success: boolean }>(`${this.apiUrl}/auth/magic-link`, { email })
+      .pipe(map((result) => result.success));
   }
 
   getVerifyToken(email: string, token: string) {
@@ -68,67 +37,30 @@ export class BackendGlueService {
       .pipe(
         map((response) => {
           return { success: true, data: response.token };
-        }),
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 400) {
-            return of({ success: false, data: 'invalid' }); // token and/or email missing/invalid
-          }
-          if (error.status === 500) {
-            return of({ success: false, data: 'server error' }); // server error
-          }
-          return of({ success: false, data: 'unknown error' });
         })
       );
   }
 
   getCardSearch(cardName: string) {
     let params = new HttpParams().set('name', cardName);
-    return this.http
-      .get<CardDisplayOnly[]>(`${this.apiUrl}/search`, { params })
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 400) {
-            return of('No search term provided!');
-          } else if (error.status === 500) {
-            return of('A server error occurred. Try again later.');
-          } else {
-            return of('An unknown error occured.');
-          }
-        })
-      );
+    return this.http.get<CardDisplayOnly[]>(`${this.apiUrl}/search`, {
+      params,
+    });
   }
 
   getPrices(cardName: string) {
     let params = new HttpParams().set('name', cardName);
-    return this.http.get<Prices>(`${this.apiUrl}/price`, { params }).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 500) {
-          return of('A server error occurred. Try again later.');
-        } else {
-          return of('An unknown error occured.');
-        }
-      })
-    );
+    return this.http.get<Prices>(`${this.apiUrl}/price`, { params });
   }
 
   getUser() {
     console.log('glue.getUser called');
-    return this.http
-      .get<UserSchema>(`${this.apiUrl}/user`, this.getAuthHeaders())
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 401 || error.status === 403) {
-            return of('Not logged in nerd');
-          }
-          return of('Unknown error occured...');
-        })
-      );
+    return this.http.get<UserSchema>(`${this.apiUrl}/user`);
   }
 
   getCardList(list_id: string) {
     return this.http.get<{ list: CardListItem[]; currentTotal: number }>(
-      `${this.apiUrl}/list/${list_id}`,
-      this.getAuthHeaders()
+      `${this.apiUrl}/list/${list_id}`
     );
   }
 
@@ -139,84 +71,13 @@ export class BackendGlueService {
         name,
         imgsrc,
         price,
-      },
-      this.getAuthHeaders()
+      }
     );
   }
 
   deleteCardList(list_id: string) {
     return this.http.delete<{ list: CardListItem[]; currentTotal: number }>(
-      `${this.apiUrl}/list/${list_id}`,
-      this.getAuthHeaders()
+      `${this.apiUrl}/list/${list_id}`
     );
-  }
-
-  deleteSingleCard(list_id: string, card_id: string) {
-    return this.http
-      .delete<{ list: CardListItem[]; currentTotal: number }>(
-        `${this.apiUrl}/list/${list_id}/cards/${card_id}`,
-        this.getAuthHeaders()
-      )
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 404) {
-            console.log('removing a card from list failed');
-            return of(error.message);
-          } else if (error.status === 500) {
-            return of('A server error occurred. Try again later.');
-          } else {
-            return of('An unknown error occured.');
-          }
-        })
-      );
-  }
-
-  getCardDetails(list_id: string, card_id: string) {
-    return this.http
-      .get<CardListItem>(
-        `${this.apiUrl}/list/${list_id}/cards/${card_id}`,
-        this.getAuthHeaders()
-      )
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 404) {
-            console.log('getting a card from list failed');
-            return of(error.message);
-          } else if (error.status === 500) {
-            return of('A server error occurred. Try again later.');
-          } else {
-            return of('An unknown error occured.');
-          }
-        })
-      );
-  }
-
-  patchCardDetails(
-    list_id: string,
-    card_id: string,
-    price: number,
-    count: number
-  ) {
-    return this.http
-      .patch<{ currentTotal: number }>(
-        `${this.apiUrl}/list/${list_id}/cards/${card_id}`,
-        {
-          price,
-          count,
-        },
-        this.getAuthHeaders()
-      )
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 404) {
-            console.log('updating card in list failed');
-            return of(error.message);
-          } else if (error.status === 500) {
-            return of('A server error occurred. Try again later.');
-          } else {
-            return of('An unknown error occured.');
-          }
-        })
-      );
   }
 }
