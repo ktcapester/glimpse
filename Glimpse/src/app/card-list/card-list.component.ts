@@ -1,13 +1,13 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { BackendGlueService } from '../services/backend-glue.service';
-import { Subject } from 'rxjs';
-import { takeUntil, tap } from 'rxjs/operators';
-import { CardListItem } from '../interfaces/backend.interface';
+import { EMPTY, Observable } from 'rxjs';
+import { catchError, first, switchMap, tap } from 'rxjs/operators';
 import { UserSchema } from '../interfaces/schemas.interface';
+import { ListData } from '../interfaces/list-data';
 import { Router } from '@angular/router';
 import { GlimpseStateService } from '../services/glimpse-state.service';
 import { UserService } from '../services/user.service';
+import { CardListService } from '../services/card-list.service';
 
 @Component({
   selector: 'app-card-list',
@@ -17,59 +17,36 @@ import { UserService } from '../services/user.service';
   imports: [CurrencyPipe, CommonModule],
   host: { class: 'component-container' },
 })
-export class CardListComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-  myUser!: UserSchema;
+export class CardListComponent implements OnInit {
+  listData$!: Observable<ListData>;
+  isModalActive = false;
+  isDeleting = false;
 
   constructor(
-    private glue: BackendGlueService,
     private state: GlimpseStateService,
     private router: Router,
+    private listService: CardListService,
     private userService: UserService
   ) {}
 
-  displayList: CardListItem[] = [];
-  totalPrice = 0.0;
-  isModalActive = false;
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   ngOnInit(): void {
-    this.userService.user$
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((data) => {
-          if (data) {
-            this.myUser = data;
-          }
-        })
-      )
-      .subscribe();
-
-    this.glue
-      .getCardList(this.myUser.activeList)
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((response) => {
-          this.displayList = response.list;
-          this.totalPrice = response.currentTotal;
-          this.state.pushNewTotal(response.currentTotal);
-        })
-      )
-      .subscribe();
+    this.loadList();
   }
 
-  onItemClick(item: CardListItem) {
-    this.router.navigate(['/detail', item.id, item.name]);
+  private loadList() {
+    // Use the current User to get the active list.
+    this.listData$ = this.userService.user$.pipe(
+      first((u): u is UserSchema => u !== null),
+      switchMap((user) => this.listService.getList(user.activeList))
+    );
+  }
+
+  onItemClick(id: string, name: string) {
+    this.router.navigate(['/detail', id, name]);
   }
 
   onClearList() {
-    if (this.displayList.length) {
-      this.isModalActive = true;
-    }
+    this.isModalActive = true;
   }
 
   onCancel() {
@@ -77,17 +54,24 @@ export class CardListComponent implements OnInit, OnDestroy {
   }
 
   onConfirm() {
-    this.glue
-      .deleteCardList(this.myUser.activeList)
+    this.isDeleting = true;
+    this.userService.user$
       .pipe(
-        takeUntil(this.destroy$),
-        tap((response) => {
-          this.displayList = response.list;
-          this.totalPrice = response.currentTotal;
-          this.state.pushNewTotal(response.currentTotal);
-          this.isModalActive = false;
-        })
+        first((u): u is UserSchema => u !== null),
+        switchMap((user) =>
+          this.listService.deleteList(user.activeList).pipe(
+            tap((foo) => {
+              this.isModalActive = false;
+              this.loadList();
+              this.state.pushNewTotal(foo);
+            }),
+            catchError((err) => {
+              console.log('Delete failed', err);
+              return EMPTY;
+            })
+          )
+        )
       )
-      .subscribe();
+      .subscribe({ complete: () => (this.isDeleting = false) });
   }
 }
