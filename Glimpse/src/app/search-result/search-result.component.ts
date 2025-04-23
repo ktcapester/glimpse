@@ -10,12 +10,12 @@ import { SearchResultService } from '../services/search-result.service';
 import { AuthService } from '../services/auth.service';
 
 @Component({
-    selector: 'app-search-result',
-    imports: [CurrencyPipe, CommonModule],
-    templateUrl: './search-result.component.html',
-    styleUrls: ['./search-result.component.css'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'component-container' }
+  selector: 'app-search-result',
+  imports: [CurrencyPipe, CommonModule],
+  templateUrl: './search-result.component.html',
+  styleUrls: ['./search-result.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'component-container' },
 })
 export class SearchResultComponent {
   private route = inject(ActivatedRoute);
@@ -34,11 +34,11 @@ export class SearchResultComponent {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  // Get the user from the service
-  readonly user$ = this.userService.user$;
-
   // Combine the card & user streams to set the viewModel via async pipe
-  readonly viewModel$ = combineLatest([this.card$, this.user$]).pipe(
+  readonly viewModel$ = combineLatest([
+    this.card$,
+    this.userService.user$, // get user observable from the service
+  ]).pipe(
     map(([card, user]) => {
       return { card, user };
     })
