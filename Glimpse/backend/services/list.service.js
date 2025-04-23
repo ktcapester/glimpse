@@ -19,6 +19,7 @@ const getAllCards = async (listId) => {
 };
 
 // Add a card to a list
+// TODO: why quantity? just adding should to list should be always 1 probably
 const addCard = async (listId, cardData) => {
   try {
     const card = await Card.findById(cardData.cardId);
@@ -47,10 +48,10 @@ const addCard = async (listId, cardData) => {
         },
         { new: true }
       );
-      return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
+      return { currentTotal: updatedList.totalPrice };
     }
 
-    return { list: list.cards, currentTotal: list.totalPrice };
+    return { currentTotal: list.totalPrice };
   } catch (error) {
     throw {
       status: error.status || 500,

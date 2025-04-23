@@ -6,6 +6,9 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// We know cardName is a real card, so calculate prices & add to my DB
+// returns the Card document from the DB
+// TODO: gee that "& add to my DB" sure seems like it doesn't belong here huh.
 async function calculatePriceFromName(cardName) {
   try {
     const apiNamedurl = new URL("https://api.scryfall.com/cards/named");
@@ -37,11 +40,11 @@ async function calculatePriceFromName(cardName) {
       };
 
       // add to my DB, or update if already in it. aka "upsert" the card
-      const found = await Card.findOne({ name: scryfallData.name });
+      let found = await Card.findOne({ name: scryfallData.name });
 
       if (!found) {
         // Card.create both creates and saves in one step
-        await Card.create({
+        found = await Card.create({
           name: scryfallData.name,
           scryfallLink: scryfallData.scryfall_uri,
           imgsrcFull: scryfallData.image_uris.large,
@@ -58,11 +61,11 @@ async function calculatePriceFromName(cardName) {
         found.imgsrcSmall = scryfallData.image_uris.small;
         found.prices.raw = rawPrices;
         found.prices.calc = allPrices;
-        await found.save();
+        found = await found.save();
       }
 
       // Return the calc price data
-      return { status: 200, data: allPrices };
+      return { status: 200, data: found };
     }
 
     // if we got 404 from scryfall

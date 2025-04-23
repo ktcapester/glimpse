@@ -12,7 +12,7 @@ const getPrices = async (req, res) => {
 
   const result = await pricer.calculatePriceFromName(cardName);
   // possible formats of result:
-  // { status: 200, data: obj }
+  // { status: 200, data: CardSchema }
   // { status:  500, error:str, errorCode:str }
   if (result.status === 200) {
     return res.status(200).json(result.data);

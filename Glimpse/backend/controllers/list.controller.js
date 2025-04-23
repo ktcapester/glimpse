@@ -20,9 +20,10 @@ const postList = async (req, res) => {
   try {
     const listId = req.params.listId;
     // cardId, quantity, etc. come from the request body
+    // TODO: why quantity? just adding should to list should be always 1 probably
     const { cardId, quantity } = req.body;
     const response = await listService.addCard(listId, { cardId, quantity });
-    // response contains { list: updatedList.cards, currentTotal: updatedList.totalPrice }
+    // response contains { currentTotal: updatedList.totalPrice }
     res.status(201).json(response);
   } catch (error) {
     res.status(error.status || 500).json({ error: error.message });

@@ -4,6 +4,8 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// basically we use this to filter user's search term:
+// return either 1 result, 6 suggested results, or 0 results
 async function searchScryfall(searchTerm) {
   try {
     const scryfallAPIbase = "https://api.scryfall.com/";
