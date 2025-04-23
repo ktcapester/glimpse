@@ -9,4 +9,7 @@ import { Component } from '@angular/core';
 })
 export class NoResultsComponent {
   message = 'No cards found with that name.';
+  // route is '/none/:term'
+  // search bar should have pulled :term out and show it there
+  // so what should be in here?
 }

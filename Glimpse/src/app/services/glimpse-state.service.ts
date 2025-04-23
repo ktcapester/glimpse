@@ -1,23 +1,14 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GlimpseStateService {
   // internals
-  private errorMessageSubject = new BehaviorSubject<string>(
-    'Default Error Message'
-  );
-
-  constructor() {}
-
-  // Subject for passing the backend error message into the 404 page.
-  getErrorMessageListener() {
-    return this.errorMessageSubject.asObservable();
-  }
+  private _message = signal<string>('Default Error Message');
+  readonly errorMessage = this._message.asReadonly();
 
   setErrorMessage(message: string) {
-    this.errorMessageSubject.next(message);
+    this._message.set(message);
   }
 }
