@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { MagicLinkService } from './magic-link.service';
+import { LoginService } from './login.service';
 
-describe('MagicLinkService', () => {
-  let service: MagicLinkService;
+describe('LoginService', () => {
+  let service: LoginService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(MagicLinkService);
+    service = TestBed.inject(LoginService);
   });
 
   it('should be created', () => {

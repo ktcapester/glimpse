@@ -16,14 +16,6 @@ export class BackendGlueService {
 
   constructor(private http: HttpClient) {}
 
-  // This requests a magic link to be sent to the provided email.
-  // It returns TRUE if the email is sent, FALSE if any error occurs.
-  postMagicLink(email: string) {
-    return this.http
-      .post<{ success: boolean }>(`${this.apiUrl}/auth/magic-link`, { email })
-      .pipe(map((result) => result.success));
-  }
-
   getVerifyToken(email: string, token: string) {
     console.log(`getVerifyToken with: ${email} and ${token}`);
 
