@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { CardSchema } from '../interfaces/schemas.interface';
 import { map, shareReplay } from 'rxjs/operators';
@@ -39,10 +39,8 @@ class LRUCache<K, V> {
   providedIn: 'root',
 })
 export class SearchResultService {
-  private apiUrl = `${environment.apiURL}`;
   private lru = new LRUCache<string, Observable<CardSchema>>(100); // cache 100 entries
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   getCard(cardName: string): Observable<CardSchema> {
     // given the name of a known card, calculates the prices and adds to my DB
@@ -51,7 +49,7 @@ export class SearchResultService {
     let obs = this.lru.get(cardName);
     if (!obs) {
       obs = this.http
-        .get<CardSchema>(`${this.apiUrl}/price`, {
+        .get<CardSchema>(`${environment.apiURL}/price`, {
           params: new HttpParams().set('name', cardName),
         })
         .pipe(shareReplay({ bufferSize: 1, refCount: true }));
@@ -64,7 +62,7 @@ export class SearchResultService {
     // adds the card to the user's active list
     // returns the updated total for the list
     return this.http
-      .post<{ currentTotal: number }>(`${this.apiUrl}/list/${listID}`, {
+      .post<{ currentTotal: number }>(`${environment.apiURL}/list/${listID}`, {
         cardID: card._id,
       })
       .pipe(map((res) => res.currentTotal));
