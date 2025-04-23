@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
@@ -11,8 +11,7 @@ import { ListData } from '../interfaces/list-data';
 })
 export class CardListService {
   private apiUrl = `${environment.apiURL}/list`;
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   getList(listID: string): Observable<ListData> {
     return this.http
@@ -44,12 +43,10 @@ export class CardListService {
       );
   }
 
-  deleteList(listID: string): Observable<number> {
-    return this.http
-      .delete<{
-        list: { card: CardSchema; quantity: number }[];
-        currentTotal: number;
-      }>(`${this.apiUrl}/${listID}`)
-      .pipe(map((v) => v.currentTotal));
+  deleteList(listID: string) {
+    return this.http.delete<{
+      list: { card: CardSchema; quantity: number }[];
+      currentTotal: number;
+    }>(`${this.apiUrl}/${listID}`);
   }
 }

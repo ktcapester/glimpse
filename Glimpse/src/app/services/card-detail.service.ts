@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { catchError, map, shareReplay } from 'rxjs/operators';
+import { catchError, shareReplay } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { CardSchema } from '../interfaces/schemas.interface';
@@ -10,8 +10,7 @@ import { CardSchema } from '../interfaces/schemas.interface';
 })
 export class CardDetailService {
   private apiUrl = `${environment.apiURL}/list`;
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   getCard(
     listId: string,
@@ -29,28 +28,19 @@ export class CardDetailService {
       );
   }
 
-  updateCard(
-    listId: string,
-    cardId: string,
-    price: number,
-    count: number
-  ): Observable<number> {
-    return this.http
-      .patch<{ currentTotal: number }>(
-        `${this.apiUrl}/${listId}/cards/${cardId}`,
-        {
-          price,
-          count,
-        }
-      )
-      .pipe(map((v) => v.currentTotal));
+  updateCard(listId: string, cardId: string, price: number, count: number) {
+    return this.http.patch<{ currentTotal: number }>(
+      `${this.apiUrl}/${listId}/cards/${cardId}`,
+      {
+        price,
+        count,
+      }
+    );
   }
 
-  deleteCard(listId: string, cardId: string): Observable<number> {
-    return this.http
-      .delete<{ currentTotal: number }>(
-        `${this.apiUrl}/${listId}/cards/${cardId}`
-      )
-      .pipe(map((v) => v.currentTotal));
+  deleteCard(listId: string, cardId: string) {
+    return this.http.delete<{ currentTotal: number }>(
+      `${this.apiUrl}/${listId}/cards/${cardId}`
+    );
   }
 }

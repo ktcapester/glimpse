@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { CardSchema } from '../interfaces/schemas.interface';
-import { map, shareReplay } from 'rxjs/operators';
+import { shareReplay } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 class LRUCache<K, V> {
@@ -58,13 +58,14 @@ export class SearchResultService {
     return obs;
   }
 
-  addCard(card: CardSchema, listID: string): Observable<number> {
+  addCard(card: CardSchema, listID: string) {
     // adds the card to the user's active list
     // returns the updated total for the list
-    return this.http
-      .post<{ currentTotal: number }>(`${environment.apiURL}/list/${listID}`, {
+    return this.http.post<{ currentTotal: number }>(
+      `${environment.apiURL}/list/${listID}`,
+      {
         cardID: card._id,
-      })
-      .pipe(map((res) => res.currentTotal));
+      }
+    );
   }
 }

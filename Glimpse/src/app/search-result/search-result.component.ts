@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GlimpseStateService } from '../services/glimpse-state.service';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { combineLatest } from 'rxjs';
 import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
@@ -20,7 +19,6 @@ import { AuthService } from '../services/auth.service';
 export class SearchResultComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private state = inject(GlimpseStateService);
   private userService = inject(UserService);
   private resultService = inject(SearchResultService);
   private authService = inject(AuthService);
@@ -55,9 +53,8 @@ export class SearchResultComponent {
     this.resultService
       .addCard(card, user.activeList)
       .pipe(
-        tap((res) => {
+        tap(() => {
           this.listFeedback();
-          this.state.pushNewTotal(res);
         })
       )
       .subscribe();

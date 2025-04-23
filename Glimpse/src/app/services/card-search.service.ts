@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { CardDisplayOnly } from '../interfaces/backend.interface';
@@ -9,8 +9,7 @@ import { CardDisplayOnly } from '../interfaces/backend.interface';
 })
 export class CardSearchService {
   private apiUrl = `${environment.apiURL}`;
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   searchForCard(searchTerm: string): Observable<CardDisplayOnly[]> {
     // takes the user's search term and looks for it

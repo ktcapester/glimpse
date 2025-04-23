@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GlimpseStateService } from '../services/glimpse-state.service';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { combineLatest, Observable } from 'rxjs';
 import { filter, finalize, map, switchMap, tap } from 'rxjs/operators';
@@ -9,11 +8,11 @@ import { UserService } from '../services/user.service';
 import { CardSchema, UserSchema } from '../interfaces/schemas.interface';
 
 @Component({
-    selector: 'app-card-detail',
-    imports: [CurrencyPipe, CommonModule],
-    templateUrl: './card-detail.component.html',
-    styleUrl: './card-detail.component.css',
-    host: { class: 'component-container' }
+  selector: 'app-card-detail',
+  imports: [CurrencyPipe, CommonModule],
+  templateUrl: './card-detail.component.html',
+  styleUrl: './card-detail.component.css',
+  host: { class: 'component-container' },
 })
 export class CardDetailComponent implements OnInit {
   cardDetail$!: Observable<{
@@ -26,7 +25,6 @@ export class CardDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private state: GlimpseStateService,
     private details: CardDetailService,
     private userService: UserService
   ) {}
@@ -62,10 +60,7 @@ export class CardDetailComponent implements OnInit {
           detail.card.prices?.calc?.usd || 0,
           newCount
         )
-        .pipe(
-          tap((res) => this.state.pushNewTotal(res)),
-          finalize(() => (this.isPatching = false))
-        )
+        .pipe(finalize(() => (this.isPatching = false)))
         .subscribe();
     }
   }
@@ -85,10 +80,7 @@ export class CardDetailComponent implements OnInit {
           detail.card.prices?.calc?.usd || 0,
           newCount
         )
-        .pipe(
-          tap((res) => this.state.pushNewTotal(res)),
-          finalize(() => (this.isPatching = false))
-        )
+        .pipe(finalize(() => (this.isPatching = false)))
         .subscribe();
     }
   }

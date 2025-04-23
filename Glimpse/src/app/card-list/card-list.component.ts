@@ -1,32 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { EMPTY, Observable } from 'rxjs';
 import { catchError, first, switchMap, tap } from 'rxjs/operators';
 import { UserSchema } from '../interfaces/schemas.interface';
 import { ListData } from '../interfaces/list-data';
 import { Router } from '@angular/router';
-import { GlimpseStateService } from '../services/glimpse-state.service';
 import { UserService } from '../services/user.service';
 import { CardListService } from '../services/card-list.service';
 
 @Component({
-    selector: 'app-card-list',
-    templateUrl: './card-list.component.html',
-    styleUrls: ['./card-list.component.css'],
-    imports: [CurrencyPipe, CommonModule],
-    host: { class: 'component-container' }
+  selector: 'app-card-list',
+  templateUrl: './card-list.component.html',
+  styleUrls: ['./card-list.component.css'],
+  imports: [CurrencyPipe, CommonModule],
+  host: { class: 'component-container' },
 })
 export class CardListComponent implements OnInit {
+  private router = inject(Router);
+  private listService = inject(CardListService);
+  private userService = inject(UserService);
+
   listData$!: Observable<ListData>;
   isModalActive = false;
   isDeleting = false;
-
-  constructor(
-    private state: GlimpseStateService,
-    private router: Router,
-    private listService: CardListService,
-    private userService: UserService
-  ) {}
 
   ngOnInit(): void {
     this.loadList();
@@ -59,10 +55,9 @@ export class CardListComponent implements OnInit {
         first((u): u is UserSchema => u !== null),
         switchMap((user) =>
           this.listService.deleteList(user.activeList).pipe(
-            tap((foo) => {
+            tap(() => {
               this.isModalActive = false;
               this.loadList();
-              this.state.pushNewTotal(foo);
             }),
             catchError((err) => {
               console.log('Delete failed', err);
