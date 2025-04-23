@@ -10,12 +10,11 @@ import { UserService } from '../services/user.service';
 import { CardListService } from '../services/card-list.service';
 
 @Component({
-  selector: 'app-card-list',
-  templateUrl: './card-list.component.html',
-  styleUrls: ['./card-list.component.css'],
-  standalone: true,
-  imports: [CurrencyPipe, CommonModule],
-  host: { class: 'component-container' },
+    selector: 'app-card-list',
+    templateUrl: './card-list.component.html',
+    styleUrls: ['./card-list.component.css'],
+    imports: [CurrencyPipe, CommonModule],
+    host: { class: 'component-container' }
 })
 export class CardListComponent implements OnInit {
   listData$!: Observable<ListData>;

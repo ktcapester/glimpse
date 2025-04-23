@@ -5,11 +5,10 @@ import { filter, tap, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 @Component({
-  selector: 'app-header',
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css'],
-  standalone: true,
-  imports: [SearchBarComponent],
+    selector: 'app-header',
+    templateUrl: './header.component.html',
+    styleUrls: ['./header.component.css'],
+    imports: [SearchBarComponent]
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private sandColorRoutes = ['/login']; // defines which pages want the fake-margin to be sand color

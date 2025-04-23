@@ -6,11 +6,10 @@ import { takeUntil, tap } from 'rxjs/operators';
 import { MagicLinkService } from '../services/magic-link.service';
 
 @Component({
-  selector: 'app-login',
-  standalone: true,
-  imports: [ReactiveFormsModule],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css',
+    selector: 'app-login',
+    imports: [ReactiveFormsModule],
+    templateUrl: './login.component.html',
+    styleUrl: './login.component.css'
 })
 export class LoginComponent implements OnInit, OnDestroy {
   searchForm = new FormGroup({

@@ -5,11 +5,10 @@ import { FooterComponent } from './footer/footer.component';
 import { filter, tap } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
-  standalone: true,
-  imports: [RouterOutlet, HeaderComponent, FooterComponent],
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css'],
+    imports: [RouterOutlet, HeaderComponent, FooterComponent]
 })
 export class AppComponent implements OnInit {
   showHeader = false;

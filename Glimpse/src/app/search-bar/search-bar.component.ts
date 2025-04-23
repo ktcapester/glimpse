@@ -17,11 +17,10 @@ import { UserService } from '../services/user.service';
 import { UserSchema } from '../interfaces/schemas.interface';
 
 @Component({
-  selector: 'app-search-bar',
-  standalone: true,
-  imports: [ReactiveFormsModule, CurrencyPipe],
-  templateUrl: './search-bar.component.html',
-  styleUrl: './search-bar.component.css',
+    selector: 'app-search-bar',
+    imports: [ReactiveFormsModule, CurrencyPipe],
+    templateUrl: './search-bar.component.html',
+    styleUrl: './search-bar.component.css'
 })
 export class SearchBarComponent implements OnInit, OnDestroy {
   constructor(

@@ -9,12 +9,11 @@ import { UserService } from '../services/user.service';
 import { CardSchema, UserSchema } from '../interfaces/schemas.interface';
 
 @Component({
-  selector: 'app-card-detail',
-  standalone: true,
-  imports: [CurrencyPipe, CommonModule],
-  templateUrl: './card-detail.component.html',
-  styleUrl: './card-detail.component.css',
-  host: { class: 'component-container' },
+    selector: 'app-card-detail',
+    imports: [CurrencyPipe, CommonModule],
+    templateUrl: './card-detail.component.html',
+    styleUrl: './card-detail.component.css',
+    host: { class: 'component-container' }
 })
 export class CardDetailComponent implements OnInit {
   cardDetail$!: Observable<{

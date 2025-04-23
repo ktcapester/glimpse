@@ -3,12 +3,11 @@ import { GlimpseStateService } from '../services/glimpse-state.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-four-oh-four',
-  standalone: true,
-  imports: [],
-  templateUrl: './four-oh-four.component.html',
-  styleUrl: './four-oh-four.component.css',
-  host: { class: 'component-container' },
+    selector: 'app-four-oh-four',
+    imports: [],
+    templateUrl: './four-oh-four.component.html',
+    styleUrl: './four-oh-four.component.css',
+    host: { class: 'component-container' }
 })
 export class FourOhFourComponent implements OnInit, OnDestroy {
   private stateService = inject(GlimpseStateService);

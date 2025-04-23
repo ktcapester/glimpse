@@ -10,13 +10,12 @@ import { SearchResultService } from '../services/search-result.service';
 import { AuthService } from '../services/auth.service';
 
 @Component({
-  selector: 'app-search-result',
-  standalone: true,
-  imports: [CurrencyPipe, CommonModule],
-  templateUrl: './search-result.component.html',
-  styleUrls: ['./search-result.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'component-container' },
+    selector: 'app-search-result',
+    imports: [CurrencyPipe, CommonModule],
+    templateUrl: './search-result.component.html',
+    styleUrls: ['./search-result.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { class: 'component-container' }
 })
 export class SearchResultComponent {
   private route = inject(ActivatedRoute);
