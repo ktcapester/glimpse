@@ -9,7 +9,6 @@
       class="input-field"
       placeholder="Card name"
       formControlName="search"
-      (click)="clearInput()"
       #inputField
     />
     <img
@@ -20,6 +19,6 @@
   </form>
   <button class="list-button" (click)="navigateToList()">
     <img src="../../assets/icon-list.svg" alt="List Icon" class="list-icon" />
-    {{ displayTotal | currency }}
+    {{ total() | currency }}
   </button>
 </div>

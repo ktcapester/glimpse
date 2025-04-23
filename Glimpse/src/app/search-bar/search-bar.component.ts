@@ -1,144 +1,88 @@
 import {
   Component,
   ElementRef,
-  OnDestroy,
+  inject,
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { CurrencyPipe } from '@angular/common';
-import { Subject } from 'rxjs';
-import { SearchDataService } from '../services/search-data.service';
-import { takeUntil, tap } from 'rxjs/operators';
-import { GlimpseStateService } from '../services/glimpse-state.service';
+import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
-import { UserSchema } from '../interfaces/schemas.interface';
+import { CardSearchService } from '../services/card-search.service';
+import { CurrentTotalService } from '../services/current-total.service';
 
 @Component({
-    selector: 'app-search-bar',
-    imports: [ReactiveFormsModule, CurrencyPipe],
-    templateUrl: './search-bar.component.html',
-    styleUrl: './search-bar.component.css'
+  selector: 'app-search-bar',
+  imports: [ReactiveFormsModule, CurrencyPipe],
+  templateUrl: './search-bar.component.html',
+  styleUrl: './search-bar.component.css',
 })
-export class SearchBarComponent implements OnInit, OnDestroy {
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private searchdata: SearchDataService,
-    private state: GlimpseStateService,
-    private userService: UserService
-  ) {}
+export class SearchBarComponent implements OnInit {
+  private cardSearch = inject(CardSearchService);
+  private userSvc = inject(UserService);
+  private totalSvc = inject(CurrentTotalService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-  myUser: UserSchema | null = null;
-  searchForm = new FormGroup({
+  readonly user = this.userSvc.user;
+  readonly total = this.totalSvc.total;
+  readonly searchForm = new FormGroup({
     search: new FormControl('', [Validators.required, Validators.minLength(3)]),
   });
+
   @ViewChild('inputField') inputElement!: ElementRef;
-  private destroy$ = new Subject<void>();
-  displayTotal = 0;
 
   ngOnInit(): void {
-    // Populate the search input with the term found in the URL
-    this.route.paramMap
+    // Populate the search input with the term found in the URL.
+    // "canonical pattern" is to subscribe to the router events,
+    // then get the deepest active route, and look at its paramMap
+    this.router.events
       .pipe(
-        takeUntil(this.destroy$),
-        tap((params) => {
-          if (params.has('term')) {
-            const term = params.get('term') || '';
-            this.searchForm.patchValue({ search: term });
+        // whenever navigation ends:
+        filter((evt) => evt instanceof NavigationEnd),
+        // get the deepest ActivatedRoute
+        map(() => {
+          let route = this.route.root;
+          while (route.firstChild) {
+            route = route.firstChild;
           }
-        })
+          return route;
+        }),
+        // grab the paramMap from that child
+        switchMap((route) =>
+          route.paramMap.pipe(
+            map((pm) => {
+              // pull out the literal path segment (result/suggestions/none)
+              const segment = route.snapshot.url[0].path;
+              const term = pm.get('term') ?? '';
+              // only repopulate on suggestions/none; clear on result
+              return segment === 'result' ? '' : term;
+            })
+          )
+        ),
+        // only patch when the term actually changes
+        distinctUntilChanged()
       )
-      .subscribe();
-
-    this.userService.user$
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((data) => {
-          if (data) {
-            this.myUser = data;
-          }
-        })
-      )
-      .subscribe();
-
-    // Create pipeline and subscribe to when a new search term is encountered
-    this.setupSearchCallback();
-
-    // Keep the list total price up-to-date
-    this.state
-      .getCurrentTotalListener()
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((currentTotal) => {
-          this.displayTotal = currentTotal;
-        })
-      )
-      .subscribe();
-
-    // Initialize the list total with the list data from the backend.
-    if (this.myUser) {
-      this.state.initTotal(this.myUser.activeList);
-    } else {
-      this.state.pushNewTotal(0);
-    }
-  }
-
-  ngOnDestroy(): void {
-    console.log('SearchBar ngOnDestroy called!', Date.now());
-    this.searchdata.clearSearchResults();
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  setupSearchCallback() {
-    // This will run every time the searchdata.updateSearchTerm() is triggered.
-    this.searchdata.searchResults$
-      .pipe(
-        takeUntil(this.destroy$), // Memory management
-        tap((result) => {
-          // Returned multiple cards, go to suggestions
-          if (result.cards.length > 1) {
-            this.router.navigate(['/suggestions', result.term]);
-            return;
-          }
-          // Returned a single card, go to the results page.
-          if (result.cards.length === 1) {
-            this.router.navigate(['/result', result.cards[0].name]);
-            return;
-          }
-          // Returned no cards, meaning either an error, or just no results
-          if (result.cards.length === 0) {
-            if (result.code === 'ERROR') {
-              this.state.setErrorMessage(`${result.code}: ${result.details}`);
-              this.router.navigate(['/404']);
-              return;
-            } else {
-              this.router.navigate(['/none', result.term]);
-              return;
-            }
-          }
-        })
-      )
-      .subscribe();
+      .subscribe((term) => {
+        // update the value, but don't re-trigger submit logic
+        this.searchForm.patchValue({ search: term }, { emitEvent: false });
+      });
   }
 
   navigateToList() {
-    this.router.navigate(['/list']);
-  }
-
-  clearInput() {
-    // TODO: scryfall does it this way:
-    // card result -> search bar is cleared on load
-    // ambiguous/none -> search bar keeps the entered term
-    // never clears on clicking into the bar
-    // this.searchForm.patchValue({ search: '' });
+    const u = this.user();
+    if (u?.activeList) {
+      this.router.navigate(['/list']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
   handleSubmit() {
-    if (!this.searchForm.valid) {
+    if (this.searchForm.invalid) {
       // do nothing so they stay on the page
       return;
     }
@@ -147,13 +91,24 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     // make input lose focus
     this.inputElement.nativeElement.blur();
     // extract search term
-    let word = this.searchForm.value.search ? this.searchForm.value.search : '';
-    if (word === '') {
+    const word = this.searchForm.value.search?.trim();
+    if (!word) {
       return;
     }
     // Use the input to search for a card.
-    // This kicks off the pipeline in search-data on line 16.
-    console.log(word);
-    this.searchdata.updateSearchTerm(word);
+    this.cardSearch.searchForCard(word).subscribe({
+      next: (cards) => {
+        if (cards.length > 1) {
+          this.router.navigate(['/suggestions', word]);
+        } else if (cards.length === 1) {
+          this.router.navigate(['/result', cards[0].name]);
+        } else {
+          this.router.navigate(['/none', word]);
+        }
+      },
+      error: () => {
+        this.router.navigate(['/404']);
+      },
+    });
   }
 }
