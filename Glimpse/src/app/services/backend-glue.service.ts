@@ -1,8 +1,7 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { CardDisplayOnly } from '../interfaces/backend.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -37,12 +36,5 @@ export class BackendGlueService {
           return { success: true, data: response.token };
         })
       );
-  }
-
-  getCardSearch(cardName: string) {
-    let params = new HttpParams().set('name', cardName);
-    return this.http.get<CardDisplayOnly[]>(`${this.apiUrl}/search`, {
-      params,
-    });
   }
 }
