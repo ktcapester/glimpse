@@ -48,24 +48,8 @@ export class BackendGlueService {
     });
   }
 
-  getPrices(cardName: string) {
-    let params = new HttpParams().set('name', cardName);
-    return this.http.get<Prices>(`${this.apiUrl}/price`, { params });
-  }
-
   getUser() {
     console.log('glue.getUser called');
     return this.http.get<UserSchema>(`${this.apiUrl}/user`);
-  }
-
-  postCardList(list_id: string, name: string, imgsrc: string, price: number) {
-    return this.http.post<{ data: CardListItem; currentTotal: number }>(
-      `${this.apiUrl}/list/${list_id}`,
-      {
-        name,
-        imgsrc,
-        price,
-      }
-    );
   }
 }
