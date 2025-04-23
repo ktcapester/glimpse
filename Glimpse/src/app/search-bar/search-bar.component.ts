@@ -1,5 +1,6 @@
 import {
   Component,
+  DestroyRef,
   ElementRef,
   inject,
   OnInit,
@@ -13,6 +14,7 @@ import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
 import { CardSearchService } from '../services/card-search.service';
 import { CurrentTotalService } from '../services/current-total.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-search-bar',
@@ -26,6 +28,7 @@ export class SearchBarComponent implements OnInit {
   private totalSvc = inject(CurrentTotalService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
 
   readonly user = this.userSvc.user;
   readonly total = this.totalSvc.total;
@@ -64,7 +67,9 @@ export class SearchBarComponent implements OnInit {
           )
         ),
         // only patch when the term actually changes
-        distinctUntilChanged()
+        distinctUntilChanged(),
+        // new way to ensure subscription is auto-cleaned up
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((term) => {
         // update the value, but don't re-trigger submit logic
@@ -110,5 +115,7 @@ export class SearchBarComponent implements OnInit {
         this.router.navigate(['/404']);
       },
     });
+    // since this subscription is on a HttpClient Observable,
+    // it will complete and clean up on its own.
   }
 }
