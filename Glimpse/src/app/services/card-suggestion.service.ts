@@ -1,24 +1,14 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 import { CardDisplayOnly } from '../interfaces/backend.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CardSuggestionService {
-  private suggestionSubject = new BehaviorSubject<CardDisplayOnly[]>([]);
-
-  constructor() {}
-
-  getCurrentSuggestionsListener() {
-    return this.suggestionSubject.asObservable();
-  }
+  private _cards = signal<CardDisplayOnly[]>([]);
+  readonly cards = this._cards.asReadonly();
 
   updateSuggestions(cards: CardDisplayOnly[]) {
-    this.suggestionSubject.next(cards);
-  }
-
-  clearSuggestions() {
-    this.suggestionSubject.next([]);
+    this._cards.set(cards);
   }
 }
