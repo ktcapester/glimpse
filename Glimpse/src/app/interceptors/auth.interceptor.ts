@@ -1,21 +1,17 @@
 import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Get the token from storage
-  const token = localStorage.getItem('jwtToken');
+  const auth = inject(AuthService);
+  const token = auth.token();
+  // if token exists, add to the request
+  // if not, forward the request as-is
+  const authReq = token
+    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+    : req;
 
-  // If there is no token, just forward the request as-is
-  if (!token) {
-    return next(req);
-  }
-
-  // Clone the incoming request and add the auth header to it
-  const authRequest = req.clone({
-    setHeaders: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  // Send the new request
-  return next(authRequest);
+  // pass along the request now that it's got a token (or not)
+  return next(authReq);
 };
