@@ -2,9 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { CardDisplayOnly, CardListItem } from '../interfaces/backend.interface';
-import { Prices } from '../interfaces/prices.interface';
-import { UserSchema } from '../interfaces/schemas.interface';
+import { CardDisplayOnly } from '../interfaces/backend.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -46,10 +44,5 @@ export class BackendGlueService {
     return this.http.get<CardDisplayOnly[]>(`${this.apiUrl}/search`, {
       params,
     });
-  }
-
-  getUser() {
-    console.log('glue.getUser called');
-    return this.http.get<UserSchema>(`${this.apiUrl}/user`);
   }
 }
