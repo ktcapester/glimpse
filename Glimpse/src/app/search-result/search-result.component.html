@@ -1,49 +1,58 @@
-@if (displayCard){
-<div></div>
-<div class="card-image-container">
-  <img
-    [src]="displayCard.imgsrc"
-    [alt]="displayCard.name"
-    class="card-image"
-    width="336"
-    height="468"
-  />
-</div>
-<div class="prices-super">
-  <div
-    class="prices-container"
-    [ngStyle]="{
-      'grid-template': displayCard.etchedprice
-        ? 'auto auto / auto auto auto'
-        : 'auto auto / auto auto'
-    }"
-  >
-    <div class="text label">Normal</div>
-    <div class="text label">Foil</div>
-    @if (displayCard.etchedprice) {
-    <div class="text label">Etched</div>
-    }
-    <div class="text value">{{ displayCard.normalprice | currency }}</div>
-    <div class="text value">{{ displayCard.foilprice | currency }}</div>
-    @if (displayCard.etchedprice) {
-    <div class="text value">
-      {{ displayCard.etchedprice | currency }}
-    </div>
-    }
+<ng-container *ngIf="viewModel$ | async as vm; else loading">
+  <div class="my-top-div"></div>
+  <div class="card-image-container">
+    <img
+      [src]="vm.card.imgsrcFull"
+      [alt]="vm.card.name"
+      class="card-image"
+      width="336"
+      height="468"
+    />
   </div>
-</div>
+  <div class="prices-super">
+    <div
+      class="prices-container"
+      [ngClass]="{
+        'three-col': vm.card.prices?.calc?.usd_etched,
+        'two-col': !vm.card.prices?.calc?.usd_etched,
+      }"
+    >
+      <div class="text label">Normal</div>
+      <div class="text label">Foil</div>
+      <div *ngIf="vm.card.prices?.calc?.usd_etched" class="text label">
+        Etched
+      </div>
+      <div class="text value">
+        {{ vm.card.prices?.calc?.usd | currency }}
+      </div>
+      <div class="text value">
+        {{ vm.card.prices?.calc?.usd_foil | currency }}
+      </div>
+      <div *ngIf="vm.card.prices?.calc?.usd_etched" class="text value">
+        {{ vm.card.prices?.calc?.usd_etched | currency }}
+      </div>
+    </div>
+  </div>
 
-<div class="button-container">
-  <button class="large-button primary-button-style" (click)="onAddToList()">
-    {{ listButtonText }}
-  </button>
-</div>
-<div class="button-container">
-  <button
-    class="large-button secondary-button-style"
-    (click)="onGoToScryfall()"
-  >
-    View on Scryfall
-  </button>
-</div>
-}
+  <div class="button-container">
+    <button
+      class="large-button primary-button-style"
+      (click)="onAddToList(vm.card, vm.user)"
+    >
+      {{ vm.user ? listButtonText : "Log in to Add" }}
+    </button>
+  </div>
+  <div class="button-container">
+    <a
+      [href]="vm.card.scryfallLink"
+      target="_blank"
+      rel="noopener"
+      class="large-button secondary-button-style"
+    >
+      View on Scryfall
+    </a>
+  </div>
+</ng-container>
+<ng-template #loading>
+  <div class="spinner">Loading card details...</div>
+</ng-template>

@@ -15,8 +15,17 @@
 .prices-container {
   width: 50%;
   display: grid;
+  grid-template-rows: auto auto;
   column-gap: 10px;
   justify-items: center;
+}
+
+.prices-container.two-col {
+  grid-template-columns: repeat(2, auto);
+}
+
+.prices-container.three-col {
+  grid-template-columns: repeat(3, auto);
 }
 
 .text {
