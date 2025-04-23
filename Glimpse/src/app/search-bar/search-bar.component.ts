@@ -15,6 +15,7 @@ import { UserService } from '../services/user.service';
 import { CardSearchService } from '../services/card-search.service';
 import { CurrentTotalService } from '../services/current-total.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CardSuggestionService } from '../services/card-suggestion.service';
 
 @Component({
   selector: 'app-search-bar',
@@ -29,6 +30,7 @@ export class SearchBarComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
+  private suggestions = inject(CardSuggestionService);
 
   readonly user = this.userSvc.user;
   readonly total = this.totalSvc.total;
@@ -104,6 +106,7 @@ export class SearchBarComponent implements OnInit {
     this.cardSearch.searchForCard(word).subscribe({
       next: (cards) => {
         if (cards.length > 1) {
+          this.suggestions.updateSuggestions(cards);
           this.router.navigate(['/suggestions', word]);
         } else if (cards.length === 1) {
           this.router.navigate(['/result', cards[0].name]);
