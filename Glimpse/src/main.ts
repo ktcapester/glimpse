@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 import { appConfig } from './app/app.config';
 import { authInterceptor } from './app/interceptors/auth.interceptor';
 import { errorInterceptor } from './app/interceptors/error.interceptor';
+import { currentTotalInterceptor } from './app/interceptors/current-total.interceptor';
 
 if (environment.production) {
   enableProdMode();
@@ -24,7 +25,11 @@ bootstrapApplication(AppComponent, {
     importProvidersFrom(CommonModule, BrowserModule, FormsModule),
     provideHttpClient(
       withInterceptorsFromDi(),
-      withInterceptors([authInterceptor, errorInterceptor])
+      withInterceptors([
+        authInterceptor,
+        errorInterceptor,
+        currentTotalInterceptor,
+      ])
     ),
   ],
 }).catch((err) => console.error(err));
