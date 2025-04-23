@@ -1,11 +1,11 @@
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { UserSchema } from '../interfaces/schemas.interface';
-import { first } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { AuthService } from './auth.service';
 import { StorageService } from './storage.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -49,12 +49,11 @@ export class UserService {
 
   private async fetchAndCacheUser() {
     try {
-      const u = await this.http
-        .get<UserSchema>(`${environment.apiURL}/user`, {
+      const u = await firstValueFrom(
+        this.http.get<UserSchema>(`${environment.apiURL}/user`, {
           withCredentials: true,
         })
-        .pipe(first())
-        .toPromise();
+      );
       this.storage.setItem('user', JSON.stringify(u));
       this.userSignal.set(u);
     } catch {

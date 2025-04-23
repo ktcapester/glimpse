@@ -2,8 +2,8 @@ import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from 'src/environments/environment';
-import { tap } from 'rxjs/operators';
 import { StorageService } from './storage.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -51,14 +51,14 @@ export class AuthService {
   }
 
   // Optionally refresh the token from the server
-  refreshToken() {
-    this.http
-      .post<{ token: string }>(
+  async refreshToken() {
+    const resp = await firstValueFrom(
+      this.http.post<{ token: string }>(
         `${environment.apiURL}/auth/refresh`,
         {},
         { withCredentials: true }
       )
-      .pipe(tap((x) => this.setToken(x.token)))
-      .subscribe();
+    );
+    this.setToken(resp.token);
   }
 }
