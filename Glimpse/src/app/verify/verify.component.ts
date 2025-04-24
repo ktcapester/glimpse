@@ -1,8 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil, tap } from 'rxjs/operators';
-import { BackendGlueService } from '../services/backend-glue.service';
+import { VerifyService } from '../services/verify.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-verify',
@@ -10,65 +9,55 @@ import { BackendGlueService } from '../services/backend-glue.service';
   templateUrl: './verify.component.html',
   styleUrl: './verify.component.css',
 })
-export class VerifyComponent implements OnInit, OnDestroy {
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private glue: BackendGlueService
-  ) {}
+export class VerifyComponent {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private verify = inject(VerifyService);
 
-  private destroy$ = new Subject<void>();
-  displayMessage = 'Verifying your login. . .';
-  showResponse = false;
-  responseResult = false;
-  responseMessage = '';
-  redirectMessage = '';
+  readonly hasResponse = this.verify.response;
 
-  ngOnInit(): void {
-    // /verify?token={token}&email={email}
-    this.route.queryParamMap
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((params) => {
-          const userToken = params.get('token') || '';
-          const userEmail = params.get('email') || '';
+  readonly templateText = computed(() => {
+    let titleText = '';
+    let subtitleText = '';
+    let navigationText = '';
+    if (!this.verify.response()) {
+      // Waiting for response from the backend
+      titleText = 'Verifying your login. . .';
+      subtitleText = '';
+      navigationText = '';
+    } else {
+      if (this.verify.success()) {
+        // Case: Backend return successful login
+        titleText = 'Login successful!';
+        subtitleText = 'You can now view your saved cards.';
+        navigationText = 'Go to list';
+      } else {
+        // Case: Backend failed to login
+        titleText = 'Login failed, please try again.';
+        subtitleText =
+          'Try the link in your email again. If this problem persists, please request a new email.';
+        navigationText = 'Back to sign in';
+      }
+    }
+    return { titleText, subtitleText, navigationText };
+  });
 
-          this.glue
-            .getVerifyToken(userEmail, userToken)
-            .pipe(
-              takeUntil(this.destroy$),
-              tap((response) => {
-                this.showResponse = true;
-                if (response.success === true) {
-                  localStorage.setItem('jwtToken', response.data);
-                  this.displayMessage = 'Login successful!';
-                  this.responseMessage = 'You can now view your saved cards.';
-                  this.redirectMessage = 'Go to list';
-                  this.responseResult = true;
-                } else {
-                  // encountered an error!
-                  console.log('verify onInit got:', response.data);
-                  this.displayMessage = 'Login failed, please try again.';
-                  this.responseMessage =
-                    'Try the link in your email again. If this problem persists, please request a new email.';
-                  this.redirectMessage = 'Back to sign in';
-                  this.responseResult = false;
-                }
-              })
-            )
-            .subscribe();
-        })
-      )
-      .subscribe();
-  }
+  private queryMapSignal = toSignal(this.route.queryParamMap);
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  constructor() {
+    effect(() => {
+      // "/verify?token={token}&email={email}"
+      const queryParams = this.queryMapSignal();
+      if (queryParams) {
+        const userToken = queryParams.get('token') || '';
+        const userEmail = queryParams.get('email') || '';
+        this.verify.validateToken(userEmail, userToken);
+      }
+    });
   }
 
   onClick() {
-    if (this.responseResult === true) {
+    if (this.verify.success()) {
       // link to list
       this.router.navigate(['/list']);
     } else {
