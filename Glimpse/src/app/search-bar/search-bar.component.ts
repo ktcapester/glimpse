@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   DestroyRef,
   ElementRef,
@@ -21,6 +22,7 @@ import { CardSuggestionService } from '../services/card-suggestion.service';
   selector: 'app-search-bar',
   imports: [ReactiveFormsModule, CurrencyPipe],
   templateUrl: './search-bar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './search-bar.component.css',
 })
 export class SearchBarComponent implements OnInit {

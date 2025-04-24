@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { GlimpseStateService } from '../services/glimpse-state.service';
 
 @Component({
@@ -6,6 +6,7 @@ import { GlimpseStateService } from '../services/glimpse-state.service';
   imports: [],
   templateUrl: './four-oh-four.component.html',
   styleUrl: './four-oh-four.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'component-container' },
 })
 export class FourOhFourComponent {

@@ -1,14 +1,21 @@
-import { Component, input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
 import { NavigationEnd, Router, Event } from '@angular/router';
 import { filter, tap, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 @Component({
-    selector: 'app-header',
-    templateUrl: './header.component.html',
-    styleUrls: ['./header.component.css'],
-    imports: [SearchBarComponent]
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [SearchBarComponent],
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private sandColorRoutes = ['/login']; // defines which pages want the fake-margin to be sand color

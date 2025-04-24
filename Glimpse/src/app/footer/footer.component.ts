@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-    selector: 'app-footer',
-    imports: [],
-    templateUrl: './footer.component.html',
-    styleUrl: './footer.component.css'
+  selector: 'app-footer',
+  imports: [],
+  templateUrl: './footer.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrl: './footer.component.css',
 })
 export class FooterComponent {
   // this is where ads will live or something i guess

@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-no-results',
   standalone: true,
   templateUrl: './no-results.component.html',
   styleUrl: './no-results.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'component-container' },
 })
 export class NoResultsComponent {

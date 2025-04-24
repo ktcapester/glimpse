@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { combineLatest, Observable } from 'rxjs';
@@ -12,6 +12,7 @@ import { CardSchema, UserSchema } from '../interfaces/schemas.interface';
   imports: [CurrencyPipe, CommonModule],
   templateUrl: './card-detail.component.html',
   styleUrl: './card-detail.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'component-container' },
 })
 export class CardDetailComponent implements OnInit {

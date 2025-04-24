@@ -1,4 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { EMPTY, Observable } from 'rxjs';
 import { catchError, first, switchMap, tap } from 'rxjs/operators';
@@ -13,6 +18,7 @@ import { CardListService } from '../services/card-list.service';
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.css'],
   imports: [CurrencyPipe, CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'component-container' },
 })
 export class CardListComponent implements OnInit {

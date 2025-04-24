@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Event, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { filter, tap } from 'rxjs/operators';
 
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.css'],
-    imports: [RouterOutlet, HeaderComponent, FooterComponent]
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterOutlet, HeaderComponent, FooterComponent],
 })
 export class AppComponent implements OnInit {
   showHeader = false;
@@ -43,18 +44,3 @@ export class AppComponent implements OnInit {
       .subscribe();
   }
 }
-
-/*
-add divs to app.html    DONE
-add app-header        DONE
-create app-footer     DONE
-add app-footer          DONE
-remove app-header from all other components   DONE
-update all CSS >_<    ***
-fix start-search CSS
-fix 404 css
-fix login css
-fix verify css
-
-
-*/

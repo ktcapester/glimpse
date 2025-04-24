@@ -1,4 +1,10 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VerifyService } from '../services/verify.service';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -7,6 +13,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
   selector: 'app-verify',
   standalone: true,
   templateUrl: './verify.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './verify.component.css',
 })
 export class VerifyComponent {
