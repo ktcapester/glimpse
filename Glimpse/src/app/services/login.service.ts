@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { catchError, of, tap } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -14,18 +14,20 @@ export class LoginService {
 
   // This requests a magic link to be sent to the provided email.
   // It returns TRUE if the email is sent, FALSE if any error occurs.
-  sendEmail(email: string) {
-    this.http
-      .post<{ success: boolean }>(`${environment.apiURL}/auth/magic-link`, {
-        email,
-      })
-      .pipe(
-        catchError((err) => {
-          console.error('Trouble sending email:', err);
-          return of({ success: false });
-        }),
-        tap((result) => this._sent.set(result.success))
-      )
-      .subscribe();
+  async sendEmail(email: string) {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<{ success: boolean }>(
+          `${environment.apiURL}/auth/magic-link`,
+          {
+            email,
+          }
+        )
+      );
+      this._sent.set(response.success);
+    } catch (error) {
+      console.error('sendEmail error:', error);
+      this._sent.set(false);
+    }
   }
 }
