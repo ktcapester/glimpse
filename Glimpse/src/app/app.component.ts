@@ -3,6 +3,7 @@ import { Event, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { filter, tap } from 'rxjs/operators';
+import { narrowEventToNavigationEnd } from './type-guard.util';
 
 @Component({
   selector: 'app-root',
@@ -24,10 +25,7 @@ export class AppComponent implements OnInit {
       .pipe(
         // takeUntil(this.destroy$) is not needed here
         // because this is the root component and will automatically be cleaned up
-        filter(
-          (event: Event): event is NavigationEnd =>
-            event instanceof NavigationEnd
-        ), // above is how to force Angular to narrow the type of event. aka a "type guard"
+        filter(narrowEventToNavigationEnd), // type guard
         tap((event: NavigationEnd) => {
           // determine if the header should be shown
           this.showHeader = !this.noHeaderRoutes.includes(

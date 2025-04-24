@@ -6,9 +6,10 @@ import {
   OnInit,
 } from '@angular/core';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
-import { NavigationEnd, Router, Event } from '@angular/router';
+import { Router } from '@angular/router';
 import { filter, tap, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { narrowEventToNavigationEnd } from '../type-guard.util';
 
 @Component({
   selector: 'app-header',
@@ -36,11 +37,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.router.events
       .pipe(
         takeUntil(this.destroy$),
-        filter(
-          (event: Event): event is NavigationEnd =>
-            event instanceof NavigationEnd
-        ), // above is how to force Angular to narrow the type of event. aka a "type guard"
-        tap((event: NavigationEnd) => {
+        filter(narrowEventToNavigationEnd), // type guard from Router.Event to NavigationEnd
+        tap((event) => {
           // change color of fake-margin depending on which component is loaded
           if (this.sandColorRoutes.includes(event.urlAfterRedirects)) {
             this.setColorToSand(true);

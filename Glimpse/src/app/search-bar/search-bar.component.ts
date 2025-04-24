@@ -17,6 +17,7 @@ import { CardSearchService } from '../services/card-search.service';
 import { CurrentTotalService } from '../services/current-total.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CardSuggestionService } from '../services/card-suggestion.service';
+import { narrowEventToNavigationEnd } from '../type-guard.util';
 
 @Component({
   selector: 'app-search-bar',
@@ -49,7 +50,7 @@ export class SearchBarComponent implements OnInit {
     this.router.events
       .pipe(
         // whenever navigation ends:
-        filter((evt) => evt instanceof NavigationEnd),
+        filter(narrowEventToNavigationEnd),
         // get the deepest ActivatedRoute
         map(() => {
           let route = this.route.root;
