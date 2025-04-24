@@ -1,5 +1,3 @@
-import { Prices } from './prices.interface';
-
 export interface UserSchema {
   _id: string;
   email: string;
@@ -34,4 +32,13 @@ export interface CardSchema {
         calc: Prices | undefined;
       }
     | undefined;
+}
+
+export interface Prices {
+  usd: number;
+  usd_etched: number;
+  usd_foil: number;
+  eur: number;
+  eur_etched: number;
+  eur_foil: number;
 }
