@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { GlimpseStateService } from '../services/glimpse-state.service';
+import { ErrorService } from '../services';
 
 @Component({
   selector: 'app-four-oh-four',
@@ -10,6 +10,6 @@ import { GlimpseStateService } from '../services/glimpse-state.service';
   host: { class: 'component-container' },
 })
 export class FourOhFourComponent {
-  private stateService = inject(GlimpseStateService);
-  readonly message = this.stateService.errorMessage;
+  private errorService = inject(ErrorService);
+  readonly message = this.errorService.errorMessage;
 }

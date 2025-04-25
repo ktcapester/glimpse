@@ -3,11 +3,11 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { GlimpseStateService } from '../services/glimpse-state.service';
+import { ErrorService } from '../services';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
-  const state = inject(GlimpseStateService);
+  const errorService = inject(ErrorService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -16,13 +16,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         router.navigate(['/login']);
       } else if (error.status === 404) {
         // Not found - go to the 404 page
-        state.setErrorMessage(error.message);
+        errorService.setErrorMessage(error.message);
         router.navigate(['/404']);
       } else {
         // Other error - broadcast its contents
         console.log('ErrorInterceptor');
         console.log('HTTP Error: ', error);
-        state.setErrorMessage(error.message);
+        errorService.setErrorMessage(error.message);
       }
       // Always re-throw (or return a user-friendly fallback (?))
       return throwError(() => error);
