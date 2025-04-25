@@ -9,6 +9,7 @@ import { LoginService } from '../services';
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './login.component.css',
+  host: { class: 'component-container' },
 })
 export class LoginComponent {
   searchForm = new FormGroup({

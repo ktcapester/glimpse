@@ -1,32 +1,30 @@
-<div class="login-container">
-  <div class="title-container">
-    <h1 class="app-title">Glimpse</h1>
+<div class="title-container">Login</div>
+@if(!isEmailSent()){
+<div class="instructions">Please login to use that feature.</div>
+<!-- <div class="user-input-container"> -->
+<form
+  class="input-wrapper"
+  [formGroup]="searchForm"
+  (ngSubmit)="handleSubmit()"
+>
+  <label for="email">Email:</label>
+  <input
+    id="email"
+    type="email"
+    class="input-field"
+    placeholder="example@example.com"
+    formControlName="email"
+  />
+  <div class="button-container">
+    <button class="large-button primary-button-style" type="submit">
+      Send Email
+    </button>
   </div>
-  @if(!isEmailSent()){
-  <div class="user-input-container">
-    <form
-      class="input-wrapper"
-      [formGroup]="searchForm"
-      (ngSubmit)="handleSubmit()"
-    >
-      <label for="email">Email:</label>
-      <input
-        id="email"
-        type="email"
-        class="input-field"
-        placeholder="example@example.com"
-        formControlName="email"
-      />
-      <div class="button-container">
-        <button class="large-button primary-button-style" type="submit">
-          Send Email
-        </button>
-      </div>
-    </form>
-  </div>
-  } @else {
-  <div class="email-sent">
-    Email successfully sent, please follow the link in it.
-  </div>
-  }
+</form>
+<!-- </div> -->
+<div class="bottom-spacer"></div>
+} @else {
+<div class="email-sent">
+  Email successfully sent, please follow the link in it.
 </div>
+}
