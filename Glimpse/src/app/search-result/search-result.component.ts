@@ -1,9 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
-import { combineLatest } from 'rxjs';
-import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { map, switchMap, tap } from 'rxjs/operators';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { UserService, SearchResultService, AuthService } from '../services';
 import { CardSchema, UserSchema } from '../interfaces';
 
@@ -24,22 +28,20 @@ export class SearchResultComponent {
 
   listButtonText = '+ Add to List';
 
-  // Get the card data each time the route changes
-  readonly card$ = this.route.paramMap.pipe(
-    map((pm) => pm.get('cardName')!),
-    switchMap((cardName) => this.resultService.getCard(cardName)),
-    shareReplay({ bufferSize: 1, refCount: true })
+  readonly card = toSignal(
+    // Get the card data each time the route changes
+    this.route.paramMap.pipe(
+      map((pm) => pm.get('cardName')!),
+      switchMap((cardName) => this.resultService.getCard(cardName))
+    ),
+    { initialValue: null }
   );
 
-  // Combine the card & user streams to set the viewModel via async pipe
-  readonly viewModel$ = combineLatest([
-    this.card$,
-    this.userService.user$, // get user observable from the service
-  ]).pipe(
-    map(([card, user]) => {
-      return { card, user };
-    })
-  );
+  // Get the user from the service
+  readonly user = this.userService.user;
+
+  private _isAdding = signal(false);
+  readonly isAdding = this._isAdding.asReadonly();
 
   onAddToList(card: CardSchema, user: UserSchema | null) {
     // check if user is logged in & redirect if needed
@@ -47,7 +49,7 @@ export class SearchResultComponent {
       this.router.navigate(['/login']);
       return;
     }
-
+    this._isAdding.set(true);
     // user is logged in, so we can use the DB
     this.resultService
       .addCard(card, user.activeList)
@@ -60,10 +62,13 @@ export class SearchResultComponent {
       .subscribe();
   }
 
-  async listFeedback() {
+  listFeedback() {
     const prevText = this.listButtonText;
     this.listButtonText = 'Added to list!';
     // wait for a bit
-    setTimeout(() => (this.listButtonText = prevText), 500);
+    setTimeout(
+      () => ((this.listButtonText = prevText), this._isAdding.set(false)),
+      500
+    );
   }
 }
