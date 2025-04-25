@@ -143,6 +143,8 @@ npm run format
 
 ## Deployment
 
+### General
+
 1. **Build** for production:
    ```bash
    npm run build -- --configuration production
@@ -150,6 +152,31 @@ npm run format
 2. **Serve** the `dist/` folder with any static host (S3 + CloudFront, Firebase Hosting, etc.)
 3. **Backend**: Deploy your Express API (Elastic Beanstalk, Kubernetes, etc.) and configure CORS to allow your domain.
 4. **HTTPS**: Use a TLS certificate (via AWS Certificate Manager or Let’s Encrypt).
+
+### My Workflow
+
+#### Backend
+
+1. Copy updated files into deploy folder
+2. Move previous zip into archive folder
+3. Zip everything except the archive folder
+4. Rename zip with date and version for the day
+5. Upload to ElasticBeanstalk
+6. Wait until complete.
+
+#### Frontend
+
+1. Run `ng build`
+2. Go to `/dist` folder
+3. Upload `3rdpartylicenses.txt` to S3 bucket
+4. Go to `/dist/browser` folder
+5. Upload everything to S3 bucket
+6. In AWS, go to CloudFront
+7. Go to the distribution
+8. Go to the Invalidations tab
+9. Create a new Invalidation
+10. Define invalidation rules (`"/*"` will blanket update everything)
+11. Wait until complete.
 
 ---
 
