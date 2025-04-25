@@ -57,6 +57,7 @@ export class SearchResultComponent {
           this.listFeedback();
         })
       )
+      // since this is a HttpClient call, it'll clean up by itself.
       .subscribe();
   }
 
