@@ -22,7 +22,15 @@ export class AppComponent implements OnInit {
   showHeader = false;
   headerBG = 'bg-white';
   private noHeaderRoutes = ['/']; // only want the start page to have the header hidden
-  private sandColorRoutes = ['/login']; // defines which pages want the fake-margin to be sand color
+  private sandColorRoutes = ['/login', '/verify']; // defines which pages want the fake-margin to be sand color
+
+  private regexEscapes(s: string): string {
+    return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  }
+  private pattern = `^(?:${this.sandColorRoutes
+    .map(this.regexEscapes)
+    .join('|')})`;
+  private matchesSandRoute = new RegExp(this.pattern);
 
   ngOnInit(): void {
     this.router.events
@@ -36,7 +44,7 @@ export class AppComponent implements OnInit {
             event.urlAfterRedirects
           );
           // determine what color the fake-margin should be & pass into app-header
-          if (this.sandColorRoutes.includes(event.urlAfterRedirects)) {
+          if (this.matchesSandRoute.test(event.urlAfterRedirects)) {
             this.headerBG = 'bg-sand';
           } else {
             this.headerBG = 'bg-white';
