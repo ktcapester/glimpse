@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
-import { LoginService } from '../services/login.service';
+import { LoginService } from '../services';
 
 @Component({
   selector: 'app-login',

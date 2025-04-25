@@ -6,8 +6,8 @@ import {
   inject,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { VerifyService } from '../services/verify.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { VerifyService } from '../services';
 
 @Component({
   selector: 'app-verify',

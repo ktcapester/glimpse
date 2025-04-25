@@ -15,9 +15,8 @@ import {
   switchMap,
   tap,
 } from 'rxjs/operators';
-import { CardDetailService } from '../services/card-detail.service';
-import { UserService } from '../services/user.service';
-import { CardSchema } from '../interfaces/schemas.interface';
+import { CardDetailService, UserService } from '../services';
+import { CardSchema } from '../interfaces';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { of } from 'rxjs';
 import { isDefined } from '../type-guard.util';

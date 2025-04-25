@@ -3,11 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { combineLatest } from 'rxjs';
 import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
-import { UserService } from '../services/user.service';
-import { CardSchema, UserSchema } from '../interfaces/schemas.interface';
-import { SearchResultService } from '../services/search-result.service';
-import { AuthService } from '../services/auth.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { UserService, SearchResultService, AuthService } from '../services';
+import { CardSchema, UserSchema } from '../interfaces';
 
 @Component({
   selector: 'app-search-result',

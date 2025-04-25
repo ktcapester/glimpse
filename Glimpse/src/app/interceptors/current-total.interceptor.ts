@@ -4,7 +4,7 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { CurrentTotalService } from '../services/current-total.service';
+import { CurrentTotalService } from '../services';
 import { tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 

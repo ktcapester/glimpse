@@ -7,11 +7,9 @@ import {
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { EMPTY, Observable } from 'rxjs';
 import { catchError, first, switchMap, tap } from 'rxjs/operators';
-import { UserSchema } from '../interfaces/schemas.interface';
-import { ListData } from '../interfaces/list-data';
 import { Router } from '@angular/router';
-import { UserService } from '../services/user.service';
-import { CardListService } from '../services/card-list.service';
+import { UserSchema, ListData } from '../interfaces';
+import { UserService, CardListService } from '../services';
 
 @Component({
   selector: 'app-card-list',

@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { CardDisplayOnly } from '../interfaces/backend.interface';
+import { CardDisplayOnly } from '../interfaces';
 
 @Injectable({
   providedIn: 'root',

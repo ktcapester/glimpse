@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { CardSuggestionService } from '../services/card-suggestion.service';
-import { CardDisplayOnly } from '../interfaces/backend.interface';
 import { NgOptimizedImage } from '@angular/common';
+import { CardSuggestionService } from '../services';
+import { CardDisplayOnly } from '../interfaces';
 
 @Component({
   selector: 'app-suggestions',

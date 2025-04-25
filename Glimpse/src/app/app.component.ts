@@ -4,7 +4,7 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
-import { Event, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { filter, tap } from 'rxjs/operators';
@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
         // takeUntil(this.destroy$) is not needed here
         // because this is the root component and will automatically be cleaned up
         filter(narrowEventToNavigationEnd), // type guard
-        tap((event: NavigationEnd) => {
+        tap((event) => {
           // determine if the header should be shown
           this.showHeader = !this.noHeaderRoutes.includes(
             event.urlAfterRedirects

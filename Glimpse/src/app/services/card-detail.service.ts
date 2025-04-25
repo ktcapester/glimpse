@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, shareReplay } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { CardSchema } from '../interfaces/schemas.interface';
+import { CardSchema } from '../interfaces';
 
 @Injectable({
   providedIn: 'root',

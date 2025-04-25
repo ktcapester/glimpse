@@ -7,16 +7,22 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import {
+  FormGroup,
+  FormControl,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormGroup, FormControl } from '@angular/forms';
-import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators';
-import { UserService } from '../services/user.service';
-import { CardSearchService } from '../services/card-search.service';
-import { CurrentTotalService } from '../services/current-total.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CardSuggestionService } from '../services/card-suggestion.service';
+import {
+  UserService,
+  CardSearchService,
+  CurrentTotalService,
+  CardSuggestionService,
+} from '../services';
 import { narrowEventToNavigationEnd } from '../type-guard.util';
 
 @Component({

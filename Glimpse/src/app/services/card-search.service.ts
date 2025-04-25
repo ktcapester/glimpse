@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, shareReplay } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { CardDisplayOnly } from '../interfaces/backend.interface';
+import { CardDisplayOnly } from '../interfaces';
 
 @Injectable({
   providedIn: 'root',

@@ -11,9 +11,11 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { appConfig } from './app/app.config';
-import { authInterceptor } from './app/interceptors/auth.interceptor';
-import { errorInterceptor } from './app/interceptors/error.interceptor';
-import { currentTotalInterceptor } from './app/interceptors/current-total.interceptor';
+import {
+  authInterceptor,
+  errorInterceptor,
+  currentTotalInterceptor,
+} from './app/interceptors';
 
 if (environment.production) {
   enableProdMode();

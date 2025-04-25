@@ -3,8 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { CardSchema } from '../interfaces/schemas.interface';
-import { ListData } from '../interfaces/list-data';
+import { CardSchema, ListData } from '../interfaces';
 
 interface BackendListItem {
   card: CardSchema;
