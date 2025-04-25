@@ -63,8 +63,7 @@ export class CardListComponent implements OnInit {
               this.isModalActive = false;
               this.loadList();
             }),
-            catchError((err) => {
-              console.log('Delete failed', err);
+            catchError(() => {
               return EMPTY;
             })
           )

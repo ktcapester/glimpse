@@ -18,7 +18,6 @@ export const userAuthGuard: CanActivateFn = (route, state) => {
       return router.parseUrl('/login');
     }
   } catch (error) {
-    console.log('Token decode error', error);
     return router.parseUrl('/login');
   }
   // Token is present and valid

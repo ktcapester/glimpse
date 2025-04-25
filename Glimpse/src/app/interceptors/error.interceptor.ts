@@ -20,8 +20,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         router.navigate(['/404']);
       } else {
         // Other error - broadcast its contents
-        console.log('ErrorInterceptor');
-        console.log('HTTP Error: ', error);
         errorService.setErrorMessage(error.message);
       }
       // Always re-throw (or return a user-friendly fallback (?))
