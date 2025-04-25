@@ -10,6 +10,8 @@ import { firstValueFrom } from 'rxjs';
 })
 export class AuthService {
   private storage = inject(StorageService);
+  private http = inject(HttpClient);
+
   // Signal holding the current JWT (or null if not logged in)
   private tokenSignal = signal<string | null>(this.storage.getItem('jwtToken'));
 
@@ -28,7 +30,7 @@ export class AuthService {
     }
   });
 
-  constructor(private http: HttpClient) {
+  constructor() {
     // Persist tokenSignal to StorageService whenever it changes
     effect(() => {
       const t = this.tokenSignal();

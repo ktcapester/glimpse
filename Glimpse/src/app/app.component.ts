@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { Event, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
@@ -13,12 +18,11 @@ import { narrowEventToNavigationEnd } from './type-guard.util';
   imports: [RouterOutlet, HeaderComponent, FooterComponent],
 })
 export class AppComponent implements OnInit {
+  private router = inject(Router);
   showHeader = false;
   headerBG = 'bg-white';
   private noHeaderRoutes = ['/']; // only want the start page to have the header hidden
   private sandColorRoutes = ['/login']; // defines which pages want the fake-margin to be sand color
-
-  constructor(private router: Router) {}
 
   ngOnInit(): void {
     this.router.events

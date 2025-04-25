@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   input,
   OnDestroy,
   OnInit,
@@ -19,12 +20,11 @@ import { narrowEventToNavigationEnd } from '../type-guard.util';
   imports: [SearchBarComponent],
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
   private sandColorRoutes = ['/login']; // defines which pages want the fake-margin to be sand color
   backgroundClass = 'bg-sand';
   private destroy$ = new Subject<void>();
   initBG = input('bg-sand'); // gets starting value from app-component
-
-  constructor(private router: Router) {}
 
   ngOnDestroy(): void {
     this.destroy$.next();
