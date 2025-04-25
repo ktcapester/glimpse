@@ -15,6 +15,7 @@ import { VerifyService } from '../services';
   templateUrl: './verify.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './verify.component.css',
+  host: { class: 'component-container' },
 })
 export class VerifyComponent {
   private route = inject(ActivatedRoute);

@@ -1,18 +1,17 @@
-<div class="verify-container">
-  <div class="message-content">
-    <h5>{{ templateText().titleText }}</h5>
-  </div>
-  @if (hasResponse()) {
-  <div class="response-container">
-    <div class="response-message">{{ templateText().subtitleText }}</div>
-    <button
-      class="redirect-button large-button primary-button-style"
-      (click)="onClick()"
-    >
-      {{ templateText().navigationText }}
-    </button>
-  </div>
-  } @else {
-  <div>Waiting for response from server.</div>
-  }
+<div class="message-content">
+  {{ templateText().titleText }}
 </div>
+@if (hasResponse()) {
+<div class="response-container">
+  <div class="response-message">{{ templateText().subtitleText }}</div>
+  <button
+    class="redirect-button large-button primary-button-style"
+    (click)="onClick()"
+  >
+    {{ templateText().navigationText }}
+  </button>
+</div>
+<div class="bottom-spacer"></div>
+} @else {
+<div>Waiting for response from server.</div>
+}
