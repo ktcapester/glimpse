@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { combineLatest } from 'rxjs';
 import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
@@ -11,7 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-search-result',
-  imports: [CurrencyPipe, CommonModule],
+  imports: [CurrencyPipe, CommonModule, NgOptimizedImage],
   templateUrl: './search-result.component.html',
   styleUrls: ['./search-result.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

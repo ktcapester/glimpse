@@ -7,10 +7,10 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
 import { CardSearchService } from '../services/card-search.service';
@@ -21,7 +21,7 @@ import { narrowEventToNavigationEnd } from '../type-guard.util';
 
 @Component({
   selector: 'app-search-bar',
-  imports: [ReactiveFormsModule, CurrencyPipe],
+  imports: [ReactiveFormsModule, CurrencyPipe, NgOptimizedImage],
   templateUrl: './search-bar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './search-bar.component.css',

@@ -11,13 +11,14 @@ import { Router } from '@angular/router';
 import { filter, tap, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { narrowEventToNavigationEnd } from '../type-guard.util';
+import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SearchBarComponent],
+  imports: [SearchBarComponent, NgOptimizedImage],
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private router = inject(Router);
