@@ -7,6 +7,7 @@ import { UserService } from '../services/user.service';
 import { CardSchema, UserSchema } from '../interfaces/schemas.interface';
 import { SearchResultService } from '../services/search-result.service';
 import { AuthService } from '../services/auth.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-search-result',
@@ -55,9 +56,9 @@ export class SearchResultComponent {
       .pipe(
         tap(() => {
           this.listFeedback();
-        })
+        }),
+        takeUntilDestroyed()
       )
-      // since this is a HttpClient call, it'll clean up by itself.
       .subscribe();
   }
 
