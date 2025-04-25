@@ -1,8 +1,8 @@
-<ng-container *ngIf="cardDetail$ | async as detail; else loading">
+<ng-container *ngIf="viewDetails() as detail; else loading">
   <div class="my-top-div"></div>
   <div class="card-image-container">
     <img
-      [src]="detail.card.imgsrcFull"
+      [ngSrc]="detail.card.imgsrcFull"
       [alt]="detail.card.name"
       class="card-image"
       width="336"
@@ -37,8 +37,8 @@
     <div class="button-container small-button">
       <button
         class="secondary-button-style count-button text label"
-        (click)="onItemDecrease(detail)"
-        [disabled]="detail.quantity === 1 || isPatching"
+        (click)="updateCount(detail, -1)"
+        [disabled]="detail.quantity === 1 || isPatching()"
       >
         -
       </button>
@@ -47,8 +47,8 @@
     <div class="button-container small-button">
       <button
         class="secondary-button-style count-button text label"
-        (click)="onItemIncrease(detail)"
-        [disabled]="detail.quantity >= 99 || isPatching"
+        (click)="updateCount(detail, 1)"
+        [disabled]="detail.quantity >= 99 || isPatching()"
       >
         +
       </button>
@@ -58,7 +58,7 @@
     <button
       class="large-button secondary-button-style"
       (click)="onItemRemove(detail)"
-      [disabled]="isPatching"
+      [disabled]="isPatching()"
     >
       Remove
     </button>

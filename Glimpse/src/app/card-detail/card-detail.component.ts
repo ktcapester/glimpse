@@ -1,98 +1,101 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { combineLatest, Observable } from 'rxjs';
-import { filter, finalize, map, switchMap, tap } from 'rxjs/operators';
+import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
+import {
+  catchError,
+  distinctUntilChanged,
+  filter,
+  finalize,
+  map,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
 import { CardDetailService } from '../services/card-detail.service';
 import { UserService } from '../services/user.service';
-import { CardSchema, UserSchema } from '../interfaces/schemas.interface';
+import { CardSchema } from '../interfaces/schemas.interface';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { of } from 'rxjs';
+import { isDefined } from '../type-guard.util';
+
+interface DetailView {
+  card: CardSchema;
+  quantity: number;
+  listID: string;
+}
 
 @Component({
   selector: 'app-card-detail',
-  imports: [CurrencyPipe, CommonModule],
+  imports: [CurrencyPipe, CommonModule, NgOptimizedImage],
   templateUrl: './card-detail.component.html',
   styleUrl: './card-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'component-container' },
 })
-export class CardDetailComponent implements OnInit {
-  cardDetail$!: Observable<{
-    card: CardSchema;
-    quantity: number;
-    listID: string;
-  }>;
-  isPatching = false;
+export class CardDetailComponent {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private details = inject(CardDetailService);
+  private userService = inject(UserService);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private details: CardDetailService,
-    private userService: UserService
-  ) {}
+  private patching = signal(false);
+  readonly isPatching = this.patching.asReadonly();
 
-  ngOnInit(): void {
-    // Use the URL and the current User to get the details we need.
-    this.cardDetail$ = combineLatest([
-      this.userService.user$.pipe(filter((u): u is UserSchema => u !== null)), // make sure User is logged in
-      this.route.paramMap.pipe(map((pm) => pm.get('cardID')!)),
-    ]).pipe(
-      switchMap(([user, cardID]) =>
-        this.details.getCard(user.activeList, cardID).pipe(
-          map((v) => {
-            return { ...v, listID: user.activeList };
-          })
+  // Use the URL and the current User to get the details we need.
+  private cardID$ = this.route.paramMap.pipe(
+    map((pm) => pm.get('cardID')),
+    filter(isDefined),
+    distinctUntilChanged()
+  );
+  readonly viewDetails = toSignal<DetailView | null>(
+    this.cardID$.pipe(
+      switchMap((cardID) =>
+        this.userService.user$.pipe(
+          filter(isDefined),
+          switchMap((user) =>
+            this.details.getCard(user.activeList, cardID).pipe(
+              map((data) => ({ ...data, listID: user.activeList })),
+              catchError((err) => {
+                console.error('card load failed', err);
+                return of(null);
+              })
+            )
+          )
         )
       )
-    );
-  }
+    ),
+    { initialValue: null }
+  );
 
-  onItemIncrease(detail: {
-    card: CardSchema;
-    quantity: number;
-    listID: string;
-  }) {
-    if (detail.quantity < 99) {
-      const newCount = detail.quantity + 1;
-      this.isPatching = true;
-      this.details
-        .updateCard(
-          detail.listID,
-          detail.card._id,
-          detail.card.prices?.calc?.usd || 0,
-          newCount
-        )
-        .pipe(finalize(() => (this.isPatching = false)))
-        .subscribe();
-    }
-  }
-
-  onItemDecrease(detail: {
-    card: CardSchema;
-    quantity: number;
-    listID: string;
-  }) {
-    if (detail.quantity > 1) {
-      const newCount = detail.quantity - 1;
-      this.isPatching = true;
-      this.details
-        .updateCard(
-          detail.listID,
-          detail.card._id,
-          detail.card.prices?.calc?.usd || 0,
-          newCount
-        )
-        .pipe(finalize(() => (this.isPatching = false)))
-        .subscribe();
-    }
+  updateCount(
+    detail: { card: CardSchema; quantity: number; listID: string },
+    delta: number
+  ) {
+    const newCount = detail.quantity + delta;
+    if (newCount < 1 || newCount > 99) return;
+    this.patching.set(true);
+    this.details
+      .updateCard(
+        detail.listID,
+        detail.card._id,
+        detail.card.prices?.calc?.usd ?? 0,
+        newCount
+      )
+      .pipe(finalize(() => this.patching.set(false)))
+      .subscribe();
   }
 
   onItemRemove(detail: { card: CardSchema; quantity: number; listID: string }) {
-    this.isPatching = true;
+    this.patching.set(true);
     this.details
       .deleteCard(detail.listID, detail.card._id)
       .pipe(
         tap(() => this.router.navigate(['/list'])),
-        finalize(() => (this.isPatching = false))
+        finalize(() => this.patching.set(false))
       )
       .subscribe();
   }
