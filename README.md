@@ -166,6 +166,8 @@ npm run format
 
 #### Frontend
 
+Trying this out `npm run deploy`
+
 1. Run `ng build`
 2. Go to `/dist` folder
 3. Upload `3rdpartylicenses.txt` to S3 bucket
