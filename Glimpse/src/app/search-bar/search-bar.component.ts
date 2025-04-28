@@ -69,6 +69,10 @@ export class SearchBarComponent implements OnInit {
         switchMap((route) =>
           route.paramMap.pipe(
             map((pm) => {
+              // clear on return to search-start
+              if (!route.snapshot.url[0]) {
+                return '';
+              }
               // pull out the literal path segment (result/suggestions/none)
               const segment = route.snapshot.url[0].path;
               const term = pm.get('term') ?? '';
