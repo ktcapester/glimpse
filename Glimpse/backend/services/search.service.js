@@ -1,8 +1,6 @@
-var lastAPICall = Date.now();
+const { delay, headers } = require("../utils");
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+var lastAPICall = Date.now();
 
 // basically we use this to filter user's search term:
 // return either 1 result, 6 suggested results, or 0 results
@@ -21,14 +19,14 @@ async function searchScryfall(searchTerm) {
 
     lastAPICall = Date.now();
 
-    const scryfallResponse = await fetch(apiNamedurl);
+    const scryfallResponse = await fetch(apiNamedurl, { headers });
     const scryfallData = await scryfallResponse.json();
 
     if (scryfallResponse.status === 404) {
       if (scryfallData.type === "ambiguous") {
         const apiSearchurl = new URL(`${scryfallAPIbase}/cards/search`);
         apiSearchurl.searchParams.append("q", searchTerm);
-        const searchResponse = await fetch(apiSearchurl);
+        const searchResponse = await fetch(apiSearchurl, { headers });
         const searchData = await searchResponse.json();
         if (searchResponse.status === 200) {
           // retrieved a list of matching cards

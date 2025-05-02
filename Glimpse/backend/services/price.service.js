@@ -1,10 +1,7 @@
 const { Card } = require("../models/card.model");
+const { delay, headers } = require("../utils");
 
 var lastAPICall = Date.now();
-
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 // We know cardName is a real card, so calculate prices & add to my DB
 // returns the Card document from the DB
@@ -21,7 +18,7 @@ async function calculatePriceFromName(cardName) {
     }
     lastAPICall = Date.now();
 
-    const scryfallResponse = await fetch(apiNamedurl);
+    const scryfallResponse = await fetch(apiNamedurl, { headers });
     const scryfallData = await scryfallResponse.json();
 
     // if scryfall returns a valid single card
@@ -101,7 +98,7 @@ async function processAllPrints(prints_search_uri) {
   }
   lastAPICall = Date.now();
 
-  const all_response = await fetch(prints_no_digital);
+  const all_response = await fetch(prints_no_digital, { headers });
   const all_data = await all_response.json();
   return calculateAllPrices(all_data.data);
 }
