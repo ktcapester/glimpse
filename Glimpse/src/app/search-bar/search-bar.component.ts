@@ -88,7 +88,12 @@ export class SearchBarComponent implements OnInit {
       )
       .subscribe((term) => {
         // update the value, but don't re-trigger submit logic
-        this.searchForm.patchValue({ search: term }, { emitEvent: false });
+        if (term) {
+          this.searchForm.patchValue({ search: term }, { emitEvent: false });
+        } else {
+          // when clearing the input, use .reset() to clear invalid/dirty states
+          this.searchForm.reset({ search: '' }, { emitEvent: false });
+        }
       });
   }
 
