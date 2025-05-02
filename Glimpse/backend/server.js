@@ -61,7 +61,7 @@ async function startServer(retries = 5, delayMs = 5000) {
 
   if (retries === 0) {
     console.log("Failed to connect to DB after multiple retries.");
-    return;
+    console.warn("DB connection failed, starting anyway.");
   }
 
   const port = normalizePort(process.env.PORT || "8080"); // EB default is port 8080
