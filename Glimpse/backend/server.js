@@ -1,8 +1,51 @@
 const app = require("./app");
 const http = require("http");
+const net = require("net");
 const connectToDatabase = require("./database");
 
+async function testDBConnection(
+  host = process.env.MONGO_HOST,
+  port = process.env.MONGO_PORT,
+  timeout = 5000
+) {
+  if (!host) {
+    throw new Error("MONGO_HOST is not defined!");
+  }
+  port = parseInt(port, 10) || 27017;
+
+  return new Promise((resolve, reject) => {
+    const socket = new net.Socket();
+
+    // If connection doesn't happen within `timout` ms, abort.
+    socket.setTimeout(timeout, () => {
+      socket.destroy();
+      reject(
+        new Error(`TCP ping to ${host}:${port} timed out after ${timeout}ms`)
+      );
+    });
+
+    socket.once("error", (err) => {
+      socket.destroy();
+      reject(err);
+    });
+
+    socket.connect(port, host, () => {
+      socket.end();
+      resolve();
+    });
+  });
+}
+
 async function startServer(retries = 5, delayMs = 5000) {
+  try {
+    console.log("Pinging database");
+    await testDBConnection();
+    console.log("Ping successful! Starting mongoose connection.");
+  } catch (err) {
+    console.log("Ping failed!");
+    console.log(err.message);
+  }
+
   while (retries > 0) {
     try {
       await connectToDatabase();
@@ -21,7 +64,7 @@ async function startServer(retries = 5, delayMs = 5000) {
     return;
   }
 
-  const port = normalizePort(process.env.PORT || "3000");
+  const port = normalizePort(process.env.PORT || "8080"); // EB default is port 8080
   app.set("port", port);
 
   const server = http.createServer(app);
