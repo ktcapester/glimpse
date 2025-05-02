@@ -1,4 +1,4 @@
-const { delay, headers } = require("../utils");
+const { delay, headers, scryfallCardAPIBase } = require("../utils");
 
 var lastAPICall = Date.now();
 
@@ -6,8 +6,7 @@ var lastAPICall = Date.now();
 // return either 1 result, 6 suggested results, or 0 results
 async function searchScryfall(searchTerm) {
   try {
-    const scryfallAPIbase = "https://api.scryfall.com/";
-    const apiNamedurl = new URL(`${scryfallAPIbase}/cards/named`);
+    const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
     apiNamedurl.searchParams.append("fuzzy", searchTerm);
 
     const thisAPICall = Date.now();
@@ -24,7 +23,7 @@ async function searchScryfall(searchTerm) {
 
     if (scryfallResponse.status === 404) {
       if (scryfallData.type === "ambiguous") {
-        const apiSearchurl = new URL(`${scryfallAPIbase}/cards/search`);
+        const apiSearchurl = new URL(`${scryfallCardAPIBase}/search`);
         apiSearchurl.searchParams.append("q", searchTerm);
         const searchResponse = await fetch(apiSearchurl, { headers });
         const searchData = await searchResponse.json();

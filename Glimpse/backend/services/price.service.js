@@ -1,5 +1,5 @@
 const { Card } = require("../models/card.model");
-const { delay, headers } = require("../utils");
+const { delay, headers, scryfallCardAPIBase } = require("../utils");
 
 var lastAPICall = Date.now();
 
@@ -8,7 +8,7 @@ var lastAPICall = Date.now();
 // TODO: gee that "& add to my DB" sure seems like it doesn't belong here huh.
 async function calculatePriceFromName(cardName) {
   try {
-    const apiNamedurl = new URL("https://api.scryfall.com/cards/named");
+    const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
     apiNamedurl.searchParams.append("fuzzy", cardName);
 
     const thisAPICall = Date.now();

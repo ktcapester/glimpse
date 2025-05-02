@@ -10,3 +10,7 @@ export const headers = {
   "User-Agent": "GlimpseApp/1.0 (https://glimpsecard.com)",
   Accept: "application/json",
 };
+
+// Base for Scryfall API calls to get/find cards
+// Used in search.service.js and price.service.js
+export const scryfallCardAPIBase = "https://api.scryfall.com/cards";
