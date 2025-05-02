@@ -21,6 +21,7 @@ export class AppComponent implements OnInit {
   private router = inject(Router);
   showHeader = false;
   headerBG = 'bg-white';
+  footSize = 'footer-min';
   private noHeaderRoutes = ['/']; // only want the start page to have the header hidden
   private sandColorRoutes = ['/login', '/verify']; // defines which pages want the fake-margin to be sand color
 
@@ -43,6 +44,12 @@ export class AppComponent implements OnInit {
           this.showHeader = !this.noHeaderRoutes.includes(
             event.urlAfterRedirects
           );
+          // fix footer height depending on presence of header
+          if (this.showHeader) {
+            this.footSize = '';
+          } else {
+            this.footSize = 'footer-min';
+          }
           // determine what color the fake-margin should be & pass into app-header
           if (this.matchesSandRoute.test(event.urlAfterRedirects)) {
             this.headerBG = 'bg-sand';

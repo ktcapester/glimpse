@@ -32,6 +32,10 @@ body {
   background-color: var(--White);
 }
 
+.footer-min {
+  min-height: 70px; /* ==110px with padding. fill up space if header isn't present */
+}
+
 .component-container {
   display: flex;
   flex-direction: column;
