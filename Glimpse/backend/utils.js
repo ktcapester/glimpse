@@ -14,3 +14,7 @@ export const headers = {
 // Base for Scryfall API calls to get/find cards
 // Used in search.service.js and price.service.js
 export const scryfallCardAPIBase = "https://api.scryfall.com/cards";
+
+// Create consistent errors
+// used in magiclink.service.js , user.service.js , list.service.js
+export const createError = (status, message) => ({ status, message });

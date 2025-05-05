@@ -1,8 +1,6 @@
 const { Card } = require("../models/card.model");
 const { List } = require("../models/list.model");
-
-// Utility: Create consistent errors
-const createError = (status, message) => ({ status, message });
+const { createError } = require("../utils");
 
 // Fetch all cards and the total price
 const getAllCards = async (listId) => {

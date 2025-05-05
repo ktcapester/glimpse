@@ -1,7 +1,5 @@
 const { User } = require("../models/user.model");
-
-// Utility: Create consistent errors
-const createError = (status, message) => ({ status, message });
+const { createError } = require("../utils");
 
 const getUserByID = async (userId) => {
   try {
