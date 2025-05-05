@@ -50,9 +50,7 @@ export class UserService {
   private async fetchAndCacheUser() {
     try {
       const u = await firstValueFrom(
-        this.http.get<UserSchema>(`${environment.apiURL}/user`, {
-          withCredentials: true,
-        })
+        this.http.get<UserSchema>(`${environment.apiURL}/user`)
       );
       this.storage.setItem('user', JSON.stringify(u));
       this.userSignal.set(u);
