@@ -26,8 +26,9 @@ async function sendMagicLink(email) {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
 
     // Save the token to the database
-    await Token.create({ email, token, expiresAt });
+    const dbtok = await Token.create({ email, token, expiresAt });
     console.log("new token saved to DB");
+    console.log(dbtok._id);
 
     // Construct the magic link
     const magicLink = `${
@@ -45,19 +46,19 @@ async function sendMagicLink(email) {
 
     // Send the email
     // I tested this locally and it at least works here.
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Your Magic Link",
       text: `Click here to log in: ${magicLink}`,
       html: `<a href="${magicLink}">Log in</a>`,
     });
+    console.log("Sent mail info:", info);
   } catch (err) {
-    console.error(err);
-    throw {
-      status: err.status || 500,
-      message: err.message || "Server error",
-    };
+    console.log(err);
+    const eStatus = err.status || 500;
+    const eMessage = err.message || "Server error";
+    throw createError(eStatus, eMessage);
   }
 }
 
@@ -122,11 +123,10 @@ const verifyToken = async (token, email) => {
     // Return the existing User
     return user;
   } catch (err) {
-    console.error(err);
-    throw {
-      status: err.status || 500,
-      message: err.message || "Server error",
-    };
+    console.log(err);
+    const eStatus = err.status || 500;
+    const eMessage = err.message || "Server error";
+    throw createError(eStatus, eMessage);
   }
 };
 

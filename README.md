@@ -157,6 +157,9 @@ npm run format
 
 #### Backend
 
+CD to /backend
+Run `eb deploy`
+
 1. Copy updated files into deploy folder
 2. Move previous zip into archive folder
 3. Zip everything except the archive folder
