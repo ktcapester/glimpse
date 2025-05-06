@@ -11,7 +11,8 @@
     "sync:root": "aws s3 cp dist/Glimpse/prerendered-routes.json s3://%GLIMPSE_S3_BUCKET%/ && aws s3 cp dist/Glimpse/3rdpartylicenses.txt s3://%GLIMPSE_S3_BUCKET%/ ",
     "sync": "npm run sync:browser && npm run sync:root",
     "invalidate": "aws cloudfront create-invalidation --distribution-id %GLIMPSE_CLOUDFRONT_DIST_ID% --paths /* --no-cli-pager",
-    "deploy": "npm run build && npm run sync && npm run invalidate"
+    "deploy": "npm run build && npm run sync && npm run invalidate",
+    "docs_update": "jsdoc -c jsdoc.json --verbose"
   },
   "private": true,
   "dependencies": {
