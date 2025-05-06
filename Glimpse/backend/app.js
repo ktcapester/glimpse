@@ -8,6 +8,9 @@ const magicLinkRoute = require("./routes/magiclink.route");
 
 const app = express();
 
+/**
+ * Enable CORS for all routes with specific allowed origins, methods, and headers.
+ */
 app.options("*", cors());
 
 const allowedOrigins = [
@@ -24,16 +27,49 @@ app.use(
   })
 );
 
+/**
+ * Middleware to parse incoming JSON requests.
+ */
 app.use(express.json());
 
+/**
+ * Root route to check server status.
+ * @route GET /
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
 app.get("/", (req, res) => {
   res.send("Hello world!");
 });
 
+/**
+ * Route for card search functionality.
+ * @route /api/search
+ */
 app.use("/api/search", searchRoute);
+
+/**
+ * Route for fetching card prices.
+ * @route /api/price
+ */
 app.use("/api/price", priceRoute);
+
+/**
+ * Route for managing card lists.
+ * @route /api/list
+ */
 app.use("/api/list", listRoute);
+
+/**
+ * Route for user-related operations.
+ * @route /api/user
+ */
 app.use("/api/user", userRoute);
+
+/**
+ * Route for authentication using magic links.
+ * @route /api/auth
+ */
 app.use("/api/auth", magicLinkRoute);
 
 module.exports = app;

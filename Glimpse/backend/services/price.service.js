@@ -3,9 +3,13 @@ const { delay, headers, scryfallCardAPIBase } = require("../utils");
 
 var lastAPICall = Date.now();
 
-// We know cardName is a real card, so calculate prices & add to my DB
-// returns the Card document from the DB
-// TODO: gee that "& add to my DB" sure seems like it doesn't belong here huh.
+/**
+ * Calculate prices for a card by its name and add it to the database.
+ * @async
+ * @function calculatePriceFromName
+ * @param {string} cardName - Name of the card to fetch prices for.
+ * @returns {Promise<Object>} The card document from the database or an error object.
+ */
 async function calculatePriceFromName(cardName) {
   try {
     const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
@@ -81,6 +85,13 @@ async function calculatePriceFromName(cardName) {
   }
 }
 
+/**
+ * Process all prints of a card and calculate their prices.
+ * @async
+ * @function processAllPrints
+ * @param {string} prints_search_uri - URI to fetch all prints of a card.
+ * @returns {Promise<Object>} An object containing calculated prices for all prints.
+ */
 async function processAllPrints(prints_search_uri) {
   // eg: "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Ab9cd714b-2ad8-4fdb-a8aa-82b17730e071&unique=prints"
   // I don't like that this sometimes gives me a digital version (Vintage Masters, etc)
@@ -103,8 +114,13 @@ async function processAllPrints(prints_search_uri) {
   return calculateAllPrices(all_data.data);
 }
 
+/**
+ * Calculate average prices for all prints of a card.
+ * @function calculateAllPrices
+ * @param {Array<Object>} cards - Array of card objects from Scryfall.
+ * @returns {Object} An object containing average prices for all prints.
+ */
 function calculateAllPrices(cards) {
-  // process all cards in here
   var usd_cards = [];
   var usd_etched_cards = [];
   var usd_foil_cards = [];
@@ -151,6 +167,13 @@ function calculateAllPrices(cards) {
   };
 }
 
+/**
+ * Process a list of cards to calculate a weighted average price.
+ * @function processList
+ * @param {Array<Object>} cards - Array of card objects.
+ * @param {string} price_name - The price field to process (e.g., "usd").
+ * @returns {number} The calculated weighted average price.
+ */
 function processList(cards, price_name) {
   if (cards.length == 0) {
     return 0;
@@ -199,6 +222,13 @@ function processList(cards, price_name) {
   return numerator / denominator;
 }
 
+/**
+ * Extract a specific price from a card object.
+ * @function extractPrice
+ * @param {Object} card - Card object.
+ * @param {string} price_name - The price field to extract (e.g., "usd").
+ * @returns {number} The extracted price or NaN if not available.
+ */
 function extractPrice(card, price_name) {
   switch (price_name) {
     case "usd":
@@ -218,6 +248,14 @@ function extractPrice(card, price_name) {
   }
 }
 
+/**
+ * Compare two cards based on a specific price field.
+ * @function cardCompareFn
+ * @param {Object} card0 - First card object.
+ * @param {Object} card1 - Second card object.
+ * @param {string} price_name - The price field to compare (e.g., "usd").
+ * @returns {number} A negative value if card0 < card1, positive if card0 > card1, or 0 if equal.
+ */
 function cardCompareFn(card0, card1, price_name) {
   const p0 = extractPrice(card0, price_name);
   const p1 = extractPrice(card1, price_name);

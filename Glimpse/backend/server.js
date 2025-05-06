@@ -3,6 +3,16 @@ const http = require("http");
 const net = require("net");
 const connectToDatabase = require("./database");
 
+/**
+ * Test the database connection by performing a TCP ping.
+ * @async
+ * @function testDBConnection
+ * @param {string} [host=process.env.MONGO_HOST] - Hostname of the database.
+ * @param {number} [port=process.env.MONGO_PORT] - Port of the database.
+ * @param {number} [timeout=5000] - Timeout in milliseconds for the connection.
+ * @returns {Promise<void>} Resolves if the connection is successful, rejects otherwise.
+ * @throws Will throw an error if the connection fails or times out.
+ */
 async function testDBConnection(
   host = process.env.MONGO_HOST,
   port = process.env.MONGO_PORT,
@@ -16,7 +26,7 @@ async function testDBConnection(
   return new Promise((resolve, reject) => {
     const socket = new net.Socket();
 
-    // If connection doesn't happen within `timout` ms, abort.
+    // If connection doesn't happen within `timeout` ms, abort.
     socket.setTimeout(timeout, () => {
       socket.destroy();
       reject(
@@ -36,6 +46,15 @@ async function testDBConnection(
   });
 }
 
+/**
+ * Start the server and attempt to connect to the database.
+ * Retries the database connection a specified number of times before proceeding.
+ * @async
+ * @function startServer
+ * @param {number} [retries=5] - Number of retries for the database connection.
+ * @param {number} [delayMs=5000] - Delay in milliseconds between retries.
+ * @returns {Promise<void>} Resolves when the server starts successfully.
+ */
 async function startServer(retries = 5, delayMs = 5000) {
   try {
     console.log("Pinging database");
@@ -73,6 +92,12 @@ async function startServer(retries = 5, delayMs = 5000) {
   server.listen(port);
 }
 
+/**
+ * Normalize a port into a number, string, or false.
+ * @function normalizePort
+ * @param {string} val - The port value to normalize.
+ * @returns {number|string|boolean} The normalized port, or false if invalid.
+ */
 const normalizePort = (val) => {
   var port = parseInt(val, 10);
 
@@ -88,6 +113,14 @@ const normalizePort = (val) => {
   return false;
 };
 
+/**
+ * Handle server errors during startup.
+ * @function onError
+ * @param {Object} error - The error object.
+ * @param {Object} server - The HTTP server instance.
+ * @param {number|string} port - The port the server is attempting to use.
+ * @throws Will throw the error if it is not related to listening.
+ */
 const onError = (error, server, port) => {
   if (error.syscall !== "listen") {
     throw error;
@@ -106,6 +139,12 @@ const onError = (error, server, port) => {
   }
 };
 
+/**
+ * Log a message when the server starts listening.
+ * @function onListening
+ * @param {Object} server - The HTTP server instance.
+ * @param {number|string} port - The port the server is listening on.
+ */
 const onListening = (server, port) => {
   const addr = server.address();
   const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;

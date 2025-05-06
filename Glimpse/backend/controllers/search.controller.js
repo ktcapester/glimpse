@@ -1,6 +1,14 @@
 const searcher = require("../services/search.service");
 
-// Controller function for GET requests
+/**
+ * Controller function to search for cards by name.
+ * @route GET /api/search
+ * @param {Object} req - Express request object.
+ * @param {Object} req.query - Query parameters.
+ * @param {string} req.query.name - Name of the card to search for.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>} Responds with the search results or an error message.
+ */
 const getCardSearch = async (req, res) => {
   const searchTerm = req.query.name;
 

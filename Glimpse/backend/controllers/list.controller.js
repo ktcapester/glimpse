@@ -1,7 +1,14 @@
 const listService = require("../services/list.service");
 
-// GET all cards in a list
-// Route example: GET /api/lists/:listId
+/**
+ * Get all cards in a list.
+ * @route GET /api/lists/:listId
+ * @param {Object} req - Express request object.
+ * @param {Object} req.params - Request parameters.
+ * @param {string} req.params.listId - ID of the list.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>} Responds with the list of cards and the current total price.
+ */
 const getList = async (req, res) => {
   try {
     const listId = req.params.listId;
@@ -13,9 +20,17 @@ const getList = async (req, res) => {
   }
 };
 
-// POST a new card into a list
-// Route example: POST /api/lists/:listId
-// req.body should include { cardId, quantity }
+/**
+ * Add a new card to a list.
+ * @route POST /api/lists/:listId
+ * @param {Object} req - Express request object.
+ * @param {Object} req.params - Request parameters.
+ * @param {string} req.params.listId - ID of the list.
+ * @param {Object} req.body - Request body.
+ * @param {string} req.body.cardId - ID of the card to add.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>} Responds with the updated total price of the list.
+ */
 const postList = async (req, res) => {
   try {
     const listId = req.params.listId;
@@ -29,8 +44,15 @@ const postList = async (req, res) => {
   }
 };
 
-// DELETE all cards from a list (clearList)
-// Route example: DELETE /api/lists/:listId
+/**
+ * Clear all cards from a list.
+ * @route DELETE /api/lists/:listId
+ * @param {Object} req - Express request object.
+ * @param {Object} req.params - Request parameters.
+ * @param {string} req.params.listId - ID of the list.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>} Responds with an empty list and a total price of 0.
+ */
 const deleteList = async (req, res) => {
   try {
     const listId = req.params.listId;
@@ -42,8 +64,16 @@ const deleteList = async (req, res) => {
   }
 };
 
-// GET a specific card from a list
-// Route example: GET /api/lists/:listId/cards/:cardId
+/**
+ * Get a specific card from a list.
+ * @route GET /api/lists/:listId/cards/:cardId
+ * @param {Object} req - Express request object.
+ * @param {Object} req.params - Request parameters.
+ * @param {string} req.params.listId - ID of the list.
+ * @param {string} req.params.cardId - ID of the card.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>} Responds with the card details and its quantity.
+ */
 const getCard = async (req, res) => {
   try {
     const { listId, cardId } = req.params;
@@ -56,9 +86,17 @@ const getCard = async (req, res) => {
   }
 };
 
-// PATCH a specific card in a list (e.g., update its quantity)
-// Route example: PATCH /api/lists/:listId/cards/:cardId
-// req.body may include { quantity } or updated price info
+/**
+ * Update a specific card in a list (e.g., update its quantity).
+ * @route PATCH /api/lists/:listId/cards/:cardId
+ * @param {Object} req - Express request object.
+ * @param {Object} req.params - Request parameters.
+ * @param {string} req.params.listId - ID of the list.
+ * @param {string} req.params.cardId - ID of the card.
+ * @param {Object} req.body - Request body containing updates (e.g., quantity).
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>} Responds with the updated list and total price.
+ */
 const patchCard = async (req, res) => {
   try {
     const { listId, cardId } = req.params;
@@ -71,8 +109,16 @@ const patchCard = async (req, res) => {
   }
 };
 
-// DELETE a specific card from a list
-// Route example: DELETE /api/lists/:listId/cards/:cardId
+/**
+ * Remove a specific card from a list.
+ * @route DELETE /api/lists/:listId/cards/:cardId
+ * @param {Object} req - Express request object.
+ * @param {Object} req.params - Request parameters.
+ * @param {string} req.params.listId - ID of the list.
+ * @param {string} req.params.cardId - ID of the card.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>} Responds with the updated list and total price.
+ */
 const deleteCard = async (req, res) => {
   try {
     const { listId, cardId } = req.params;

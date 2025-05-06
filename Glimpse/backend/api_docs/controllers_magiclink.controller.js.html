@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/magiclink.controller.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/magiclink.controller.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const { sendMagicLink, verifyToken } = require("../services/magiclink.service");
+const jwt = require("jsonwebtoken");
+
+/**
+ * Endpoint to request a magic link.
+ * @route POST /api/magiclink
+ * @param {Object} req - Express request object.
+ * @param {Object} req.body - Request body.
+ * @param {string} req.body.email - Email address to send the magic link to.
+ * @param {Object} res - Express response object.
+ * @returns {Promise&lt;void>} Responds with a success message if the magic link is sent.
+ */
+const postMagicLink = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+
+    await sendMagicLink(email);
+    res.json({ message: "Magic link sent successfully.", success: true });
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+};
+
+/**
+ * Endpoint to verify the magic link token.
+ * @route GET /api/magiclink/verify
+ * @param {Object} req - Express request object.
+ * @param {Object} req.query - Query parameters.
+ * @param {string} req.query.token - Token to verify.
+ * @param {string} req.query.email - Email address associated with the token.
+ * @param {Object} res - Express response object.
+ * @returns {Promise&lt;void>} Responds with a JWT token if verification is successful.
+ */
+const getMagicToken = async (req, res) => {
+  try {
+    const { token, email } = req.query;
+    if (!token || !email) {
+      return res.status(400).json({ error: "Token and email are required." });
+    }
+
+    const user = await verifyToken(token, email);
+    if (!user) {
+      return res.status(400).json({ error: "Invalid or expired token." });
+    }
+
+    // Generate JWT for authentication
+    const authToken = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    res.json({ message: "Login successful.", token: authToken });
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  postMagicLink,
+  getMagicToken,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#Card">Card</a></li><li><a href="global.html#List">List</a></li><li><a href="global.html#Token">Token</a></li><li><a href="global.html#User">User</a></li><li><a href="global.html#activeList">activeList</a></li><li><a href="global.html#addCard">addCard</a></li><li><a href="global.html#authenticateJWT">authenticateJWT</a></li><li><a href="global.html#calculateAllPrices">calculateAllPrices</a></li><li><a href="global.html#calculatePriceFromName">calculatePriceFromName</a></li><li><a href="global.html#card">card</a></li><li><a href="global.html#cardCompareFn">cardCompareFn</a></li><li><a href="global.html#cardSchema">cardSchema</a></li><li><a href="global.html#cards">cards</a></li><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createdAt">createdAt</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#deleteCard">deleteCard</a></li><li><a href="global.html#deleteList">deleteList</a></li><li><a href="global.html#description">description</a></li><li><a href="global.html#email">email</a></li><li><a href="global.html#expiresAt">expiresAt</a></li><li><a href="global.html#extractPrice">extractPrice</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAllCards">getAllCards</a></li><li><a href="global.html#getCard">getCard</a></li><li><a href="global.html#getCardSearch">getCardSearch</a></li><li><a href="global.html#getItem">getItem</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#getMagicToken">getMagicToken</a></li><li><a href="global.html#getPrices">getPrices</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getUserByID">getUserByID</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#imgsrcFull">imgsrcFull</a></li><li><a href="global.html#imgsrcSmall">imgsrcSmall</a></li><li><a href="global.html#listSchema">listSchema</a></li><li><a href="global.html#lists">lists</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#onError">onError</a></li><li><a href="global.html#onListening">onListening</a></li><li><a href="global.html#patchCard">patchCard</a></li><li><a href="global.html#postList">postList</a></li><li><a href="global.html#postMagicLink">postMagicLink</a></li><li><a href="global.html#prices">prices</a></li><li><a href="global.html#processAllPrints">processAllPrints</a></li><li><a href="global.html#processList">processList</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#removeItem">removeItem</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#scryfallLink">scryfallLink</a></li><li><a href="global.html#searchScryfall">searchScryfall</a></li><li><a href="global.html#sendMagicLink">sendMagicLink</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li><li><a href="global.html#timestamps">timestamps</a></li><li><a href="global.html#token">token</a></li><li><a href="global.html#tokenSchema">tokenSchema</a></li><li><a href="global.html#totalPrice">totalPrice</a></li><li><a href="global.html#updateItem">updateItem</a></li><li><a href="global.html#used">used</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#userSchema">userSchema</a></li><li><a href="global.html#username">username</a></li><li><a href="global.html#verifyToken">verifyToken</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue May 06 2025 12:41:15 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

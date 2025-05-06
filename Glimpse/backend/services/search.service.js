@@ -2,8 +2,15 @@ const { delay, headers, scryfallCardAPIBase } = require("../utils");
 
 var lastAPICall = Date.now();
 
-// basically we use this to filter user's search term:
-// return either 1 result, 6 suggested results, or 0 results
+/**
+ * Search for cards on Scryfall using a search term.
+ * Returns either 1 result, up to 6 suggested results, or 0 results.
+ * @async
+ * @function searchScryfall
+ * @param {string} searchTerm - The search term provided by the user.
+ * @returns {Promise<Object>} An object containing the search results or an error message.
+ * @throws Will throw an error if the Scryfall API request fails.
+ */
 async function searchScryfall(searchTerm) {
   try {
     const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
@@ -12,7 +19,7 @@ async function searchScryfall(searchTerm) {
     const thisAPICall = Date.now();
 
     if (thisAPICall - lastAPICall < 100) {
-      // scryfall asks for 50-100ms between API calls, so wait for 100ms
+      // Scryfall asks for 50-100ms between API calls, so wait for 100ms
       await delay(100);
     }
 
@@ -28,7 +35,7 @@ async function searchScryfall(searchTerm) {
         const searchResponse = await fetch(apiSearchurl, { headers });
         const searchData = await searchResponse.json();
         if (searchResponse.status === 200) {
-          // retrieved a list of matching cards
+          // Retrieved a list of matching cards
           var cardsList = searchData.data;
           if (cardsList.length > 6) {
             cardsList = cardsList.slice(0, 6);
@@ -36,14 +43,14 @@ async function searchScryfall(searchTerm) {
           const manipd = cardsList.map((item) => {
             return {
               name: item.name,
-              imgsrc: item.image_uris.normal, // get smaller images for grid view
+              imgsrc: item.image_uris.normal, // Get smaller images for grid view
               scryfallLink: item.scryfall_uri,
             };
           });
           return { status: 200, data: manipd };
         }
       } else {
-        // scryfall didn't find any card matching the term
+        // Scryfall didn't find any card matching the term
         return {
           status: 200,
           data: [],

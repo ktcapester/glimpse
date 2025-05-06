@@ -1,6 +1,14 @@
 const pricer = require("../services/price.service");
 
-// Controller function for GET requests
+/**
+ * Controller function to get card prices by name.
+ * @route GET /api/prices
+ * @param {Object} req - Express request object.
+ * @param {Object} req.query - Query parameters.
+ * @param {string} req.query.name - Name of the card to fetch prices for.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>} Responds with the card price data or an error message.
+ */
 const getPrices = async (req, res) => {
   const cardName = req.query.name;
 

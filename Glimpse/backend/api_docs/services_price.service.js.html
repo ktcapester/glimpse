@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/price.service.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/price.service.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const { Card } = require("../models/card.model");
+const { delay, headers, scryfallCardAPIBase } = require("../utils");
+
+var lastAPICall = Date.now();
+
+/**
+ * Calculate prices for a card by its name and add it to the database.
+ * @async
+ * @function calculatePriceFromName
+ * @param {string} cardName - Name of the card to fetch prices for.
+ * @returns {Promise&lt;Object>} The card document from the database or an error object.
+ */
+async function calculatePriceFromName(cardName) {
+  try {
+    const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
+    apiNamedurl.searchParams.append("fuzzy", cardName);
+
+    const thisAPICall = Date.now();
+    if (thisAPICall - lastAPICall &lt; 100) {
+      // scryfall asks for 50-100ms between API calls, so wait for 100ms
+      await delay(100);
+    }
+    lastAPICall = Date.now();
+
+    const scryfallResponse = await fetch(apiNamedurl, { headers });
+    const scryfallData = await scryfallResponse.json();
+
+    // if scryfall returns a valid single card
+    if (scryfallResponse.status === 200) {
+      // compute the calculated prices from all prints
+      const allPrices = await processAllPrints(scryfallData.prints_search_uri);
+
+      // build the raw prices object
+      const rawPrices = {
+        usd: parseFloat(scryfallData.prices.usd) || 0,
+        usd_etched: parseFloat(scryfallData.prices.usd_etched) || 0,
+        usd_foil: parseFloat(scryfallData.prices.usd_foil) || 0,
+        eur: parseFloat(scryfallData.prices.eur) || 0,
+        eur_etched: parseFloat(scryfallData.prices.eur_etched) || 0,
+        eur_foil: parseFloat(scryfallData.prices.eur_foil) || 0,
+      };
+
+      // add to my DB, or update if already in it. aka "upsert" the card
+      let found = await Card.findOne({ name: scryfallData.name });
+
+      if (!found) {
+        // Card.create both creates and saves in one step
+        found = await Card.create({
+          name: scryfallData.name,
+          scryfallLink: scryfallData.scryfall_uri,
+          imgsrcFull: scryfallData.image_uris.large,
+          imgsrcSmall: scryfallData.image_uris.normal,
+          prices: {
+            raw: rawPrices,
+            calc: allPrices,
+          },
+        });
+      } else {
+        // update existing Card
+        found.scryfallLink = scryfallData.scryfall_uri;
+        found.imgsrcFull = scryfallData.image_uris.large;
+        found.imgsrcSmall = scryfallData.image_uris.small;
+        found.prices.raw = rawPrices;
+        found.prices.calc = allPrices;
+        found = await found.save();
+      }
+
+      // Return the calc price data
+      return { status: 200, data: found };
+    }
+
+    // if we got 404 from scryfall
+    return {
+      status: 500,
+      error: "Got a 404 from Scryfall, check the card name you searched.",
+      errorCode: "SERVER_ERROR",
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      status: 500,
+      error: "An error occurred while fetching data from Scryfall.",
+      errorCode: "SERVER_ERROR",
+    };
+  }
+}
+
+/**
+ * Process all prints of a card and calculate their prices.
+ * @async
+ * @function processAllPrints
+ * @param {string} prints_search_uri - URI to fetch all prints of a card.
+ * @returns {Promise&lt;Object>} An object containing calculated prices for all prints.
+ */
+async function processAllPrints(prints_search_uri) {
+  // eg: "https://api.scryfall.com/cards/search?order=released&amp;q=oracleid%3Ab9cd714b-2ad8-4fdb-a8aa-82b17730e071&amp;unique=prints"
+  // I don't like that this sometimes gives me a digital version (Vintage Masters, etc)
+  // Scryfall api card has .digital = true for mtgo versions, so filter it out in the all prints request
+  const digital_filter = "+-is%3Adigital";
+  const lidx = prints_search_uri.lastIndexOf("&amp;unique=prints");
+  const beginning_uri = prints_search_uri.slice(0, lidx);
+  const end_uri = prints_search_uri.slice(lidx);
+  const prints_no_digital = `${beginning_uri}${digital_filter}${end_uri}`;
+
+  const thisAPICall = Date.now();
+  if (thisAPICall - lastAPICall &lt; 100) {
+    // scryfall asks for 50-100ms between API calls, so wait for 100ms
+    await delay(100);
+  }
+  lastAPICall = Date.now();
+
+  const all_response = await fetch(prints_no_digital, { headers });
+  const all_data = await all_response.json();
+  return calculateAllPrices(all_data.data);
+}
+
+/**
+ * Calculate average prices for all prints of a card.
+ * @function calculateAllPrices
+ * @param {Array&lt;Object>} cards - Array of card objects from Scryfall.
+ * @returns {Object} An object containing average prices for all prints.
+ */
+function calculateAllPrices(cards) {
+  var usd_cards = [];
+  var usd_etched_cards = [];
+  var usd_foil_cards = [];
+  var eur_cards = [];
+  var eur_etched_cards = [];
+  var eur_foil_cards = [];
+
+  for (let index = 0; index &lt; cards.length; index++) {
+    const element = cards[index];
+    if (element.prices.usd) {
+      usd_cards.push(element);
+    }
+    if (element.prices.usd_etched) {
+      usd_etched_cards.push(element);
+    }
+    if (element.prices.usd_foil) {
+      usd_foil_cards.push(element);
+    }
+    if (element.prices.eur) {
+      eur_cards.push(element);
+    }
+    if (element.prices.eur_etched) {
+      eur_etched_cards.push(element);
+    }
+    if (element.prices.eur_foil) {
+      eur_foil_cards.push(element);
+    }
+  }
+
+  let usd_avg = processList(usd_cards, "usd");
+  let usd_etched_avg = processList(usd_etched_cards, "usd_etched");
+  let usd_foil_avg = processList(usd_foil_cards, "usd_foil");
+  let eur_avg = processList(eur_cards, "eur");
+  let eur_etched_avg = processList(eur_etched_cards, "eur_etched");
+  let eur_foil_avg = processList(eur_foil_cards, "eur_foil");
+
+  return {
+    usd: usd_avg,
+    usd_etched: usd_etched_avg,
+    usd_foil: usd_foil_avg,
+    eur: eur_avg,
+    eur_etched: eur_etched_avg,
+    eur_foil: eur_foil_avg,
+  };
+}
+
+/**
+ * Process a list of cards to calculate a weighted average price.
+ * @function processList
+ * @param {Array&lt;Object>} cards - Array of card objects.
+ * @param {string} price_name - The price field to process (e.g., "usd").
+ * @returns {number} The calculated weighted average price.
+ */
+function processList(cards, price_name) {
+  if (cards.length == 0) {
+    return 0;
+  }
+  if (cards.length == 1) {
+    return extractPrice(cards[0], price_name);
+  }
+  if (cards.length == 2) {
+    // return the cheaper of the 2 prices
+    const p0 = extractPrice(cards[0], price_name);
+    const p1 = extractPrice(cards[1], price_name);
+    if (p0 &lt; p1) {
+      return p0;
+    }
+    return p1;
+  }
+  // cards.length is at least 3
+  // sort by price ascending
+  cards.sort((a, b) => cardCompareFn(a, b, price_name));
+  var medIdx = Math.floor(cards.length / 2);
+  var median = extractPrice(cards[medIdx], price_name);
+  if (cards.length % 2 == 0) {
+    var lower = extractPrice(cards[medIdx - 1], price_name);
+    median = (median + lower) / 2;
+  }
+  // pure median result:
+  // return median
+
+  // calculating a weighted average with inverse price difference from the median price as the weights
+  var numerator = 0;
+  var denominator = 0;
+  for (let index = 0; index &lt; cards.length; index++) {
+    const element = cards[index];
+    const price = extractPrice(element, price_name);
+    if (Number.isNaN(price)) {
+      console.log("NaN price for:", element);
+    }
+    var distance = Math.abs(median - price);
+    if (distance == 0) {
+      distance = 1;
+    }
+    const weight = 1 / distance;
+    numerator += price * weight;
+    denominator += weight;
+  }
+  return numerator / denominator;
+}
+
+/**
+ * Extract a specific price from a card object.
+ * @function extractPrice
+ * @param {Object} card - Card object.
+ * @param {string} price_name - The price field to extract (e.g., "usd").
+ * @returns {number} The extracted price or NaN if not available.
+ */
+function extractPrice(card, price_name) {
+  switch (price_name) {
+    case "usd":
+      return Number.parseFloat(card.prices.usd);
+    case "usd_etched":
+      return Number.parseFloat(card.prices.usd_etched);
+    case "usd_foil":
+      return Number.parseFloat(card.prices.usd_foil);
+    case "eur":
+      return Number.parseFloat(card.prices.eur);
+    case "eur_etched":
+      return Number.parseFloat(card.prices.eur_etched);
+    case "eur_foil":
+      return Number.parseFloat(card.prices.eur_foil);
+    default:
+      return NaN;
+  }
+}
+
+/**
+ * Compare two cards based on a specific price field.
+ * @function cardCompareFn
+ * @param {Object} card0 - First card object.
+ * @param {Object} card1 - Second card object.
+ * @param {string} price_name - The price field to compare (e.g., "usd").
+ * @returns {number} A negative value if card0 &lt; card1, positive if card0 > card1, or 0 if equal.
+ */
+function cardCompareFn(card0, card1, price_name) {
+  const p0 = extractPrice(card0, price_name);
+  const p1 = extractPrice(card1, price_name);
+  if (Number.isNaN(p0)) {
+    return 1;
+  }
+  if (Number.isNaN(p1)) {
+    return -1;
+  }
+  return p0 - p1;
+}
+
+module.exports = { calculatePriceFromName };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#Card">Card</a></li><li><a href="global.html#List">List</a></li><li><a href="global.html#Token">Token</a></li><li><a href="global.html#User">User</a></li><li><a href="global.html#activeList">activeList</a></li><li><a href="global.html#addCard">addCard</a></li><li><a href="global.html#authenticateJWT">authenticateJWT</a></li><li><a href="global.html#calculateAllPrices">calculateAllPrices</a></li><li><a href="global.html#calculatePriceFromName">calculatePriceFromName</a></li><li><a href="global.html#card">card</a></li><li><a href="global.html#cardCompareFn">cardCompareFn</a></li><li><a href="global.html#cardSchema">cardSchema</a></li><li><a href="global.html#cards">cards</a></li><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createdAt">createdAt</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#deleteCard">deleteCard</a></li><li><a href="global.html#deleteList">deleteList</a></li><li><a href="global.html#description">description</a></li><li><a href="global.html#email">email</a></li><li><a href="global.html#expiresAt">expiresAt</a></li><li><a href="global.html#extractPrice">extractPrice</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAllCards">getAllCards</a></li><li><a href="global.html#getCard">getCard</a></li><li><a href="global.html#getCardSearch">getCardSearch</a></li><li><a href="global.html#getItem">getItem</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#getMagicToken">getMagicToken</a></li><li><a href="global.html#getPrices">getPrices</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getUserByID">getUserByID</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#imgsrcFull">imgsrcFull</a></li><li><a href="global.html#imgsrcSmall">imgsrcSmall</a></li><li><a href="global.html#listSchema">listSchema</a></li><li><a href="global.html#lists">lists</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#onError">onError</a></li><li><a href="global.html#onListening">onListening</a></li><li><a href="global.html#patchCard">patchCard</a></li><li><a href="global.html#postList">postList</a></li><li><a href="global.html#postMagicLink">postMagicLink</a></li><li><a href="global.html#prices">prices</a></li><li><a href="global.html#processAllPrints">processAllPrints</a></li><li><a href="global.html#processList">processList</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#removeItem">removeItem</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#scryfallLink">scryfallLink</a></li><li><a href="global.html#searchScryfall">searchScryfall</a></li><li><a href="global.html#sendMagicLink">sendMagicLink</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li><li><a href="global.html#timestamps">timestamps</a></li><li><a href="global.html#token">token</a></li><li><a href="global.html#tokenSchema">tokenSchema</a></li><li><a href="global.html#totalPrice">totalPrice</a></li><li><a href="global.html#updateItem">updateItem</a></li><li><a href="global.html#used">used</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#userSchema">userSchema</a></li><li><a href="global.html#username">username</a></li><li><a href="global.html#verifyToken">verifyToken</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue May 06 2025 12:41:15 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

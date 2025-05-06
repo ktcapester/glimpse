@@ -6,10 +6,20 @@ const {
 
 const router = express.Router();
 
-// Endpoint to request a magic link
+/**
+ * POST request to send a magic link to the user's email.
+ * @route POST /api/magic-link
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
 router.post("/magic-link", postMagicLink);
 
-// Endpoint to verify the token
+/**
+ * GET request to verify the magic link token.
+ * @route GET /api/magiclink/verify
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
 router.get("/verify", getMagicToken);
 
 module.exports = router;

@@ -2,7 +2,14 @@ const { Card } = require("../models/card.model");
 const { List } = require("../models/list.model");
 const { createError } = require("../utils");
 
-// Fetch all cards and the total price
+/**
+ * Fetch all cards and the total price of a list.
+ * @async
+ * @function getAllCards
+ * @param {string} listId - ID of the list.
+ * @returns {Promise<Object>} An object containing the list of cards and the current total price.
+ * @throws Will throw an error if the list is not found or a server error occurs.
+ */
 const getAllCards = async (listId) => {
   try {
     const list = await List.findById(listId).populate("cards.card");
@@ -64,7 +71,14 @@ const addCard = async (listId, cardId) => {
   }
 };
 
-// Clear all cards in a list
+/**
+ * Clear all cards in a list.
+ * @async
+ * @function clearList
+ * @param {string} listId - ID of the list.
+ * @returns {Promise<Object>} An object containing an empty list and a total price of 0.
+ * @throws Will throw an error if the list is not found or a server error occurs.
+ */
 const clearList = async (listId) => {
   try {
     const updatedList = await List.findByIdAndUpdate(
@@ -82,7 +96,15 @@ const clearList = async (listId) => {
   }
 };
 
-// Fetch a specific card from a list
+/**
+ * Fetch a specific card from a list.
+ * @async
+ * @function getItem
+ * @param {string} listId - ID of the list.
+ * @param {string} cardId - ID of the card to fetch.
+ * @returns {Promise<Object>} The card entry from the list.
+ * @throws Will throw an error if the list or card is not found or a server error occurs.
+ */
 const getItem = async (listId, cardId) => {
   try {
     const list = await List.findById(listId).populate("cards.card");
@@ -100,7 +122,16 @@ const getItem = async (listId, cardId) => {
   }
 };
 
-// Update a specific card's details in a list
+/**
+ * Update a specific card's details in a list.
+ * @async
+ * @function updateItem
+ * @param {string} listId - ID of the list.
+ * @param {string} cardId - ID of the card to update.
+ * @param {Object} updates - Updates to apply (e.g., quantity or price).
+ * @returns {Promise<Object>} An object containing the updated list and total price.
+ * @throws Will throw an error if the list, card, or updates are invalid or a server error occurs.
+ */
 const updateItem = async (listId, cardId, updates) => {
   try {
     const card = await Card.findById(cardId);
@@ -135,7 +166,15 @@ const updateItem = async (listId, cardId, updates) => {
   }
 };
 
-// Remove a specific card from a list
+/**
+ * Remove a specific card from a list.
+ * @async
+ * @function removeItem
+ * @param {string} listId - ID of the list.
+ * @param {string} cardId - ID of the card to remove.
+ * @returns {Promise<Object>} An object containing the updated list and total price.
+ * @throws Will throw an error if the list or card is not found or a server error occurs.
+ */
 const removeItem = async (listId, cardId) => {
   try {
     const list = await List.findById(listId).populate("cards.card");

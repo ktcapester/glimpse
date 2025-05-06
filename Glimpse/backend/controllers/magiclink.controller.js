@@ -1,7 +1,15 @@
 const { sendMagicLink, verifyToken } = require("../services/magiclink.service");
 const jwt = require("jsonwebtoken");
 
-// Endpoint to request a magic link
+/**
+ * Endpoint to request a magic link.
+ * @route POST /api/magiclink
+ * @param {Object} req - Express request object.
+ * @param {Object} req.body - Request body.
+ * @param {string} req.body.email - Email address to send the magic link to.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>} Responds with a success message if the magic link is sent.
+ */
 const postMagicLink = async (req, res) => {
   try {
     const { email } = req.body;
@@ -14,7 +22,16 @@ const postMagicLink = async (req, res) => {
   }
 };
 
-// Endpoint to verify the token
+/**
+ * Endpoint to verify the magic link token.
+ * @route GET /api/magiclink/verify
+ * @param {Object} req - Express request object.
+ * @param {Object} req.query - Query parameters.
+ * @param {string} req.query.token - Token to verify.
+ * @param {string} req.query.email - Email address associated with the token.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>} Responds with a JWT token if verification is successful.
+ */
 const getMagicToken = async (req, res) => {
   try {
     const { token, email } = req.query;

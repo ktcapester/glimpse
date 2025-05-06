@@ -5,15 +5,26 @@ const { User } = require("../models/user.model");
 const { List } = require("../models/list.model");
 const { createError } = require("../utils");
 
-// Generate a secure random token
+/**
+ * Generate a secure random token.
+ * @function generateToken
+ * @returns {string} A secure random token as a hexadecimal string.
+ */
 function generateToken() {
   return crypto.randomBytes(32).toString("hex");
 }
 
-// Send magic link to user's email
+/**
+ * Send a magic link to the user's email.
+ * @async
+ * @function sendMagicLink
+ * @param {string} email - The email address to send the magic link to.
+ * @throws Will throw an error if the email sending fails or a server error occurs.
+ */
 async function sendMagicLink(email) {
   try {
     console.log("sending magic link to:", email);
+
     // Check for old unused tokens for the email
     const record = await Token.findOne({ email, used: false });
     // Delete if found
@@ -21,6 +32,7 @@ async function sendMagicLink(email) {
       await Token.findByIdAndDelete(record._id);
     }
     console.log("old token deleted or not present");
+
     // Create new token
     const token = generateToken();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
@@ -45,7 +57,6 @@ async function sendMagicLink(email) {
     });
 
     // Send the email
-    // I tested this locally and it at least works here.
     const info = await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
@@ -62,9 +73,19 @@ async function sendMagicLink(email) {
   }
 }
 
+/**
+ * Verify a magic link token and email.
+ * @async
+ * @function verifyToken
+ * @param {string} token - The token to verify.
+ * @param {string} email - The email address associated with the token.
+ * @returns {Promise<Object>} The user object if verification is successful.
+ * @throws Will throw an error if the token is invalid, expired, or a server error occurs.
+ */
 const verifyToken = async (token, email) => {
   try {
     console.log("verifying token+email:", token, email);
+
     // Find the token in the database
     const record = await Token.findOne({ email, token, used: false });
     console.log("found record:", record);
@@ -82,10 +103,12 @@ const verifyToken = async (token, email) => {
     await record.save();
 
     console.log("looking for user with email:", email);
+
     // Token successfully verified, so find the User connected to it
     const user = await User.findOne({ email });
     if (!user) {
       console.log("no user found, creating new User");
+
       // Create a new User
       const usernamenew = email.split("@")[0];
       const newUser = new User({
@@ -95,6 +118,7 @@ const verifyToken = async (token, email) => {
       await newUser.save();
 
       console.log("creating default list for new user");
+
       // Create a default list
       const defaultList = new List({
         user: newUser._id, // connects the User into the List
@@ -104,15 +128,18 @@ const verifyToken = async (token, email) => {
       await defaultList.save();
 
       console.log("connecting list to user");
+
       // Connect the List into the User
       newUser.lists.push(defaultList._id);
       newUser.activeList = defaultList._id;
       await newUser.save();
 
       console.log("new User created & saved:", newUser);
+
       // Delete token after successful signup
       await Token.findByIdAndDelete(record._id);
       console.log("user token deleted");
+
       // Return the new User
       return newUser;
     }
@@ -120,6 +147,7 @@ const verifyToken = async (token, email) => {
     // Delete token after successful login
     await Token.findByIdAndDelete(record._id);
     console.log("user token deleted for User:", user);
+
     // Return the existing User
     return user;
   } catch (err) {

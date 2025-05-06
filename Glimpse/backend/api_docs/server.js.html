@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: server.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: server.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const app = require("./app");
+const http = require("http");
+const net = require("net");
+const connectToDatabase = require("./database");
+
+/**
+ * Test the database connection by performing a TCP ping.
+ * @async
+ * @function testDBConnection
+ * @param {string} [host=process.env.MONGO_HOST] - Hostname of the database.
+ * @param {number} [port=process.env.MONGO_PORT] - Port of the database.
+ * @param {number} [timeout=5000] - Timeout in milliseconds for the connection.
+ * @returns {Promise&lt;void>} Resolves if the connection is successful, rejects otherwise.
+ * @throws Will throw an error if the connection fails or times out.
+ */
+async function testDBConnection(
+  host = process.env.MONGO_HOST,
+  port = process.env.MONGO_PORT,
+  timeout = 5000
+) {
+  if (!host) {
+    throw new Error("MONGO_HOST is not defined!");
+  }
+  port = parseInt(port, 10) || 27017;
+
+  return new Promise((resolve, reject) => {
+    const socket = new net.Socket();
+
+    // If connection doesn't happen within `timeout` ms, abort.
+    socket.setTimeout(timeout, () => {
+      socket.destroy();
+      reject(
+        new Error(`TCP ping to ${host}:${port} timed out after ${timeout}ms`)
+      );
+    });
+
+    socket.once("error", (err) => {
+      socket.destroy();
+      reject(err);
+    });
+
+    socket.connect(port, host, () => {
+      socket.end();
+      resolve();
+    });
+  });
+}
+
+/**
+ * Start the server and attempt to connect to the database.
+ * Retries the database connection a specified number of times before proceeding.
+ * @async
+ * @function startServer
+ * @param {number} [retries=5] - Number of retries for the database connection.
+ * @param {number} [delayMs=5000] - Delay in milliseconds between retries.
+ * @returns {Promise&lt;void>} Resolves when the server starts successfully.
+ */
+async function startServer(retries = 5, delayMs = 5000) {
+  try {
+    console.log("Pinging database");
+    await testDBConnection();
+    console.log("Ping successful! Starting mongoose connection.");
+  } catch (err) {
+    console.log("Ping failed!");
+    console.log(err.message);
+  }
+
+  while (retries > 0) {
+    try {
+      await connectToDatabase();
+      break;
+    } catch (err) {
+      retries--;
+      console.log("DB connection failed, retrying in", delayMs, "ms.");
+      console.log("Retries remaining:", retries);
+      console.log("Error:", err);
+      await new Promise((res) => setTimeout(res, delayMs));
+    }
+  }
+
+  if (retries === 0) {
+    console.log("Failed to connect to DB after multiple retries.");
+    console.warn("DB connection failed, starting anyway.");
+  }
+
+  const port = normalizePort(process.env.PORT || "8080"); // EB default is port 8080
+  app.set("port", port);
+
+  const server = http.createServer(app);
+  server.on("error", (error) => onError(error, server, port));
+  server.on("listening", () => onListening(server, port));
+  server.listen(port);
+}
+
+/**
+ * Normalize a port into a number, string, or false.
+ * @function normalizePort
+ * @param {string} val - The port value to normalize.
+ * @returns {number|string|boolean} The normalized port, or false if invalid.
+ */
+const normalizePort = (val) => {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+  return false;
+};
+
+/**
+ * Handle server errors during startup.
+ * @function onError
+ * @param {Object} error - The error object.
+ * @param {Object} server - The HTTP server instance.
+ * @param {number|string} port - The port the server is attempting to use.
+ * @throws Will throw the error if it is not related to listening.
+ */
+const onError = (error, server, port) => {
+  if (error.syscall !== "listen") {
+    throw error;
+  }
+  const addr = server.address();
+  const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;
+  switch (error.code) {
+    case "EACCES":
+      console.error(bind + " requires elevated privileges");
+      process.exit(1);
+    case "EADDRINUSE":
+      console.error(bind + " is already in use");
+      process.exit(1);
+    default:
+      throw error;
+  }
+};
+
+/**
+ * Log a message when the server starts listening.
+ * @function onListening
+ * @param {Object} server - The HTTP server instance.
+ * @param {number|string} port - The port the server is listening on.
+ */
+const onListening = (server, port) => {
+  const addr = server.address();
+  const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;
+  console.log("Listening on " + bind);
+};
+
+startServer();
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#Card">Card</a></li><li><a href="global.html#List">List</a></li><li><a href="global.html#Token">Token</a></li><li><a href="global.html#User">User</a></li><li><a href="global.html#activeList">activeList</a></li><li><a href="global.html#addCard">addCard</a></li><li><a href="global.html#authenticateJWT">authenticateJWT</a></li><li><a href="global.html#calculateAllPrices">calculateAllPrices</a></li><li><a href="global.html#calculatePriceFromName">calculatePriceFromName</a></li><li><a href="global.html#card">card</a></li><li><a href="global.html#cardCompareFn">cardCompareFn</a></li><li><a href="global.html#cardSchema">cardSchema</a></li><li><a href="global.html#cards">cards</a></li><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createdAt">createdAt</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#deleteCard">deleteCard</a></li><li><a href="global.html#deleteList">deleteList</a></li><li><a href="global.html#description">description</a></li><li><a href="global.html#email">email</a></li><li><a href="global.html#expiresAt">expiresAt</a></li><li><a href="global.html#extractPrice">extractPrice</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAllCards">getAllCards</a></li><li><a href="global.html#getCard">getCard</a></li><li><a href="global.html#getCardSearch">getCardSearch</a></li><li><a href="global.html#getItem">getItem</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#getMagicToken">getMagicToken</a></li><li><a href="global.html#getPrices">getPrices</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getUserByID">getUserByID</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#imgsrcFull">imgsrcFull</a></li><li><a href="global.html#imgsrcSmall">imgsrcSmall</a></li><li><a href="global.html#listSchema">listSchema</a></li><li><a href="global.html#lists">lists</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#onError">onError</a></li><li><a href="global.html#onListening">onListening</a></li><li><a href="global.html#patchCard">patchCard</a></li><li><a href="global.html#postList">postList</a></li><li><a href="global.html#postMagicLink">postMagicLink</a></li><li><a href="global.html#prices">prices</a></li><li><a href="global.html#processAllPrints">processAllPrints</a></li><li><a href="global.html#processList">processList</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#removeItem">removeItem</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#scryfallLink">scryfallLink</a></li><li><a href="global.html#searchScryfall">searchScryfall</a></li><li><a href="global.html#sendMagicLink">sendMagicLink</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li><li><a href="global.html#timestamps">timestamps</a></li><li><a href="global.html#token">token</a></li><li><a href="global.html#tokenSchema">tokenSchema</a></li><li><a href="global.html#totalPrice">totalPrice</a></li><li><a href="global.html#updateItem">updateItem</a></li><li><a href="global.html#used">used</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#userSchema">userSchema</a></li><li><a href="global.html#username">username</a></li><li><a href="global.html#verifyToken">verifyToken</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue May 06 2025 12:41:15 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

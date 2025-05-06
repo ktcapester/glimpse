@@ -11,21 +11,54 @@ const authenticateJWT = require("../middleware/authJWT.middle");
 
 const router = express.Router();
 
-// Authenticate the JWT on every route used by this router
+/**
+ * Middleware to authenticate all routes in this router using JWT.
+ */
 router.use(authenticateJWT);
 
-// Define routes & link to controller functions
-// GET all cards in a list
+/**
+ * GET all cards in a list.
+ * @route GET /api/lists/:listId
+ * @param {string} listId - ID of the list.
+ */
 router.get("/:listId", getList);
-// POST a card to a list
+
+/**
+ * POST a card to a list.
+ * @route POST /api/lists/:listId
+ * @param {string} listId - ID of the list.
+ */
 router.post("/:listId", postList);
-// DELETE all cards in a list
+
+/**
+ * DELETE all cards in a list.
+ * @route DELETE /api/lists/:listId
+ * @param {string} listId - ID of the list.
+ */
 router.delete("/:listId", deleteList);
-// GET a card from a list
+
+/**
+ * GET a specific card from a list.
+ * @route GET /api/lists/:listId/cards/:cardId
+ * @param {string} listId - ID of the list.
+ * @param {string} cardId - ID of the card.
+ */
 router.get("/:listId/cards/:cardId", getCard);
-// PATCH a card in a list (update)
+
+/**
+ * PATCH a specific card in a list (update).
+ * @route PATCH /api/lists/:listId/cards/:cardId
+ * @param {string} listId - ID of the list.
+ * @param {string} cardId - ID of the card.
+ */
 router.patch("/:listId/cards/:cardId", patchCard);
-// DELETE a card from a list
+
+/**
+ * DELETE a specific card from a list.
+ * @route DELETE /api/lists/:listId/cards/:cardId
+ * @param {string} listId - ID of the list.
+ * @param {string} cardId - ID of the card.
+ */
 router.delete("/:listId/cards/:cardId", deleteCard);
 
 module.exports = router;

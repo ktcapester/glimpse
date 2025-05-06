@@ -1,5 +1,12 @@
 const mongoose = require("mongoose");
 
+/**
+ * Connects to the Amazon DocumentDB database using Mongoose.
+ * @async
+ * @function connectToDatabase
+ * @throws Will throw an error if the connection fails.
+ * @returns {Promise<void>} Resolves when the connection is successful.
+ */
 async function connectToDatabase() {
   const username = process.env.MONGO_USERNAME;
   const password = process.env.MONGO_PASSWORD;
