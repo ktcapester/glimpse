@@ -16,21 +16,27 @@ const getAllCards = async (listId) => {
   }
 };
 
-// Add a card to a list
-// TODO: why quantity? just adding should to list should be always 1 probably
-const addCard = async (listId, cardData) => {
+/**
+ * Add a card to a list.
+ * @async
+ * @function addCard
+ * @param {string} listId - ID of the list.
+ * @param {string} cardId - ID of the card to add.
+ * @returns {Promise<Object>} An object containing the updated total price of the list.
+ * @throws Will throw an error if the card or list is not found or a server error occurs.
+ */
+const addCard = async (listId, cardId) => {
   try {
-    const card = await Card.findById(cardData.cardId);
+    const card = await Card.findById(cardId);
     if (!card) throw createError(404, "Card not found");
 
     const cardPrice = card.prices.calc.usd || 0;
-    const quantity = cardData.quantity || 1;
 
     const list = await List.findOneAndUpdate(
       { _id: listId, "cards.card": { $ne: card._id } },
       {
-        $push: { cards: { card: card._id, quantity } },
-        $inc: { totalPrice: cardPrice * quantity },
+        $push: { cards: { card: card._id, quantity: 1 } },
+        $inc: { totalPrice: cardPrice },
       },
       { new: true }
     );
