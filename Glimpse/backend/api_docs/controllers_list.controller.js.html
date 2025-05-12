@@ -26,16 +26,73 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const listService = require("../services/list.service");
+            <pre class="prettyprint source linenums"><code>/**
+ * Controller for managing lists of cards.
+ * @module Controllers/List
+ */
+
+/**
+ * Parameter needed for operations involving whole lists.
+ * @typedef {Object} module:Controllers/List~ListParams
+ * @property {string} listId - ID of the list.
+ */
+
+/**
+ * Parameters needed for operations involving specific cards in a list.
+ * @typedef {Object} module:Controllers/List~CardParams
+ * @property {string} listId - ID of the list.
+ * @property {string} cardId - ID of the card.
+ */
+
+/**
+ * Parameter needed in the body of the HTTP request for operations involving updating cards in a list.
+ * @typedef {Object} module:Controllers/List~CardUpdateBody
+ * @property {number} [quantity] - New quantity of the card.
+ */
+
+/**
+ * Format of cards in the list.
+ * @typedef {Object} module:Controllers/List~CardInList
+ * @property {Object} card - Card object.
+ * @property {number} quantity - Quantity of the card in the list.
+ */
+
+/**
+ * Response format for operations involving lists.
+ * @typedef {Object} module:Controllers/List~ListResponse
+ * @property {CardInList[]} list - Updated list of cards.
+ * @property {number} currentTotal - Total price of the list.
+ */
+
+/**
+ * @typedef {Express.Response} module:Controllers/List~ExpressResponse
+ */
+
+/**
+ * @typedef {Express.Request&lt;ListParams>} module:Controllers/List~ListRequest
+ */
+
+/**
+ * @typedef {Express.Request&lt;CardParams>} module:Controllers/List~CardRequest
+ */
+
+/**
+ * @typedef {Express.Request&lt;CardParams, any, CardUpdateBody>} module:Controllers/List~CardUpdateRequest
+ */
+
+/**
+ * @typedef {Express.Request&lt;ListParams, any, { cardId: string }>} module:Controllers/List~CardPostRequest
+ */
+
+const listService = require("../services/list.service");
 
 /**
  * Get all cards in a list.
- * @route GET /api/lists/:listId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {Object} res - Express response object.
- * @returns {Promise&lt;void>} Responds with the list of cards and the current total price.
+ * @name module:Controllers/List.getList
+ * @function
+ * @param {ListRequest} req
+ * @param {Express.Response} res
+ * @returns {Promise&lt;ListResponse>}
  */
 const getList = async (req, res) => {
   try {
@@ -50,14 +107,11 @@ const getList = async (req, res) => {
 
 /**
  * Add a new card to a list.
- * @route POST /api/lists/:listId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {Object} req.body - Request body.
- * @param {string} req.body.cardId - ID of the card to add.
- * @param {Object} res - Express response object.
- * @returns {Promise&lt;void>} Responds with the updated total price of the list.
+ * @function
+ * @name module:Controllers/List.postList
+ * @param {CardPostRequest} req
+ * @param {ExpressResponse} res
+ * @returns {Promise&lt;{ currentTotal: number }>}
  */
 const postList = async (req, res) => {
   try {
@@ -74,12 +128,11 @@ const postList = async (req, res) => {
 
 /**
  * Clear all cards from a list.
- * @route DELETE /api/lists/:listId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {Object} res - Express response object.
- * @returns {Promise&lt;void>} Responds with an empty list and a total price of 0.
+ * @function
+ * @name module:Controllers/List.deleteList
+ * @param {ListRequest} req
+ * @param {ExpressResponse} res
+ * @returns {Promise&lt;ListResponse>} Responds with an empty list and a total price of 0.
  */
 const deleteList = async (req, res) => {
   try {
@@ -94,13 +147,11 @@ const deleteList = async (req, res) => {
 
 /**
  * Get a specific card from a list.
- * @route GET /api/lists/:listId/cards/:cardId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {string} req.params.cardId - ID of the card.
- * @param {Object} res - Express response object.
- * @returns {Promise&lt;void>} Responds with the card details and its quantity.
+ * @function
+ * @name module:Controllers/List.getCard
+ * @param {CardRequest} req
+ * @param {ExpressResponse} res
+ * @returns {Promise&lt;{ card: Object, quantity: number }>}
  */
 const getCard = async (req, res) => {
   try {
@@ -116,14 +167,11 @@ const getCard = async (req, res) => {
 
 /**
  * Update a specific card in a list (e.g., update its quantity).
- * @route PATCH /api/lists/:listId/cards/:cardId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {string} req.params.cardId - ID of the card.
- * @param {Object} req.body - Request body containing updates (e.g., quantity).
- * @param {Object} res - Express response object.
- * @returns {Promise&lt;void>} Responds with the updated list and total price.
+ * @function
+ * @name module:Controllers/List.patchCard
+ * @param {CardUpdateRequest} req
+ * @param {ExpressResponse} res
+ * @returns {Promise&lt;ListResponse>}
  */
 const patchCard = async (req, res) => {
   try {
@@ -139,13 +187,11 @@ const patchCard = async (req, res) => {
 
 /**
  * Remove a specific card from a list.
- * @route DELETE /api/lists/:listId/cards/:cardId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {string} req.params.cardId - ID of the card.
- * @param {Object} res - Express response object.
- * @returns {Promise&lt;void>} Responds with the updated list and total price.
+ * @name module:Controllers/List.deleteCard
+ * @function
+ * @param {CardRequest} req
+ * @param {ExpressResponse} res
+ * @returns {Promise&lt;ListResponse>}
  */
 const deleteCard = async (req, res) => {
   try {
@@ -176,13 +222,13 @@ module.exports = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#Card">Card</a></li><li><a href="global.html#List">List</a></li><li><a href="global.html#Token">Token</a></li><li><a href="global.html#User">User</a></li><li><a href="global.html#activeList">activeList</a></li><li><a href="global.html#addCard">addCard</a></li><li><a href="global.html#authenticateJWT">authenticateJWT</a></li><li><a href="global.html#calculateAllPrices">calculateAllPrices</a></li><li><a href="global.html#calculatePriceFromName">calculatePriceFromName</a></li><li><a href="global.html#card">card</a></li><li><a href="global.html#cardCompareFn">cardCompareFn</a></li><li><a href="global.html#cardSchema">cardSchema</a></li><li><a href="global.html#cards">cards</a></li><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createdAt">createdAt</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#deleteCard">deleteCard</a></li><li><a href="global.html#deleteList">deleteList</a></li><li><a href="global.html#description">description</a></li><li><a href="global.html#email">email</a></li><li><a href="global.html#expiresAt">expiresAt</a></li><li><a href="global.html#extractPrice">extractPrice</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAllCards">getAllCards</a></li><li><a href="global.html#getCard">getCard</a></li><li><a href="global.html#getCardSearch">getCardSearch</a></li><li><a href="global.html#getItem">getItem</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#getMagicToken">getMagicToken</a></li><li><a href="global.html#getPrices">getPrices</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getUserByID">getUserByID</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#imgsrcFull">imgsrcFull</a></li><li><a href="global.html#imgsrcSmall">imgsrcSmall</a></li><li><a href="global.html#listSchema">listSchema</a></li><li><a href="global.html#lists">lists</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#onError">onError</a></li><li><a href="global.html#onListening">onListening</a></li><li><a href="global.html#patchCard">patchCard</a></li><li><a href="global.html#postList">postList</a></li><li><a href="global.html#postMagicLink">postMagicLink</a></li><li><a href="global.html#prices">prices</a></li><li><a href="global.html#processAllPrints">processAllPrints</a></li><li><a href="global.html#processList">processList</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#removeItem">removeItem</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#scryfallLink">scryfallLink</a></li><li><a href="global.html#searchScryfall">searchScryfall</a></li><li><a href="global.html#sendMagicLink">sendMagicLink</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li><li><a href="global.html#timestamps">timestamps</a></li><li><a href="global.html#token">token</a></li><li><a href="global.html#tokenSchema">tokenSchema</a></li><li><a href="global.html#totalPrice">totalPrice</a></li><li><a href="global.html#updateItem">updateItem</a></li><li><a href="global.html#used">used</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#userSchema">userSchema</a></li><li><a href="global.html#username">username</a></li><li><a href="global.html#verifyToken">verifyToken</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Card">Card</a></li><li><a href="global.html#List">List</a></li><li><a href="global.html#Token">Token</a></li><li><a href="global.html#User">User</a></li><li><a href="global.html#activeList">activeList</a></li><li><a href="global.html#addCard">addCard</a></li><li><a href="global.html#authenticateJWT">authenticateJWT</a></li><li><a href="global.html#calculateAllPrices">calculateAllPrices</a></li><li><a href="global.html#calculatePriceFromName">calculatePriceFromName</a></li><li><a href="global.html#card">card</a></li><li><a href="global.html#cardCompareFn">cardCompareFn</a></li><li><a href="global.html#cardSchema">cardSchema</a></li><li><a href="global.html#cards">cards</a></li><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createdAt">createdAt</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#description">description</a></li><li><a href="global.html#email">email</a></li><li><a href="global.html#expiresAt">expiresAt</a></li><li><a href="global.html#extractPrice">extractPrice</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAllCards">getAllCards</a></li><li><a href="global.html#getCardSearch">getCardSearch</a></li><li><a href="global.html#getItem">getItem</a></li><li><a href="global.html#getMagicToken">getMagicToken</a></li><li><a href="global.html#getPrices">getPrices</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getUserByID">getUserByID</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#imgsrcFull">imgsrcFull</a></li><li><a href="global.html#imgsrcSmall">imgsrcSmall</a></li><li><a href="global.html#listSchema">listSchema</a></li><li><a href="global.html#lists">lists</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#onError">onError</a></li><li><a href="global.html#onListening">onListening</a></li><li><a href="global.html#postMagicLink">postMagicLink</a></li><li><a href="global.html#prices">prices</a></li><li><a href="global.html#processAllPrints">processAllPrints</a></li><li><a href="global.html#processList">processList</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#removeItem">removeItem</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#scryfallLink">scryfallLink</a></li><li><a href="global.html#searchScryfall">searchScryfall</a></li><li><a href="global.html#sendMagicLink">sendMagicLink</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li><li><a href="global.html#timestamps">timestamps</a></li><li><a href="global.html#token">token</a></li><li><a href="global.html#tokenSchema">tokenSchema</a></li><li><a href="global.html#totalPrice">totalPrice</a></li><li><a href="global.html#updateItem">updateItem</a></li><li><a href="global.html#used">used</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#userSchema">userSchema</a></li><li><a href="global.html#username">username</a></li><li><a href="global.html#verifyToken">verifyToken</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue May 06 2025 12:41:15 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed May 07 2025 12:09:52 GMT-0700 (Pacific Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
