@@ -60,8 +60,8 @@ const listService = require("../services/list.service");
 
 /**
  * Get all cards in a list.
- * @name module:Controllers/List.getList
  * @function
+ * @name module:Controllers/List.getList
  * @param {ListRequest} req
  * @param {Express.Response} res
  * @returns {Promise<ListResponse>}
@@ -123,7 +123,7 @@ const deleteList = async (req, res) => {
  * @name module:Controllers/List.getCard
  * @param {CardRequest} req
  * @param {Express.Response} res
- * @returns {Promise<{ card: Object, quantity: number }>}
+ * @returns {Promise<CardInList>} The card object and its quantity in the list.
  */
 const getCard = async (req, res) => {
   try {
@@ -159,8 +159,8 @@ const patchCard = async (req, res) => {
 
 /**
  * Remove a specific card from a list.
- * @name module:Controllers/List.deleteCard
  * @function
+ * @name module:Controllers/List.deleteCard
  * @param {CardRequest} req
  * @param {Express.Response} res
  * @returns {Promise<ListResponse>}

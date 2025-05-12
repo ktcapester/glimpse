@@ -1,13 +1,28 @@
+/**
+ * Controller for searching cards by name.
+ * @module Controllers/Search
+ */
+
+/**
+ * Query parameters for searching cards.
+ * @typedef {Object} module:Controllers/Search~SearchQuery
+ * @property {string} name - Name of the card to search for.
+ */
+
+/**
+ * Specialization of the Express Request object for card search.
+ * @typedef {Express.Request<any, any, any, SearchQuery>} module:Controllers/Search~SearchRequest
+ */
+
 const searcher = require("../services/search.service");
 
 /**
- * Controller function to search for cards by name.
- * @route GET /api/search
- * @param {Object} req - Express request object.
- * @param {Object} req.query - Query parameters.
- * @param {string} req.query.name - Name of the card to search for.
- * @param {Object} res - Express response object.
- * @returns {Promise<void>} Responds with the search results or an error message.
+ * Search for cards by name.
+ * @function
+ * @name module:Controllers/Search.getCardSearch
+ * @param {SearchRequest} req - The HTTP request containing the search term as a query parameter.
+ * @param {Express.Response} res - The HTTP response object.
+ * @returns {Promise<Express.Response>} Responds with the search results or an error message.
  */
 const getCardSearch = async (req, res) => {
   const searchTerm = req.query.name;

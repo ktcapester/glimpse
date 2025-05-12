@@ -1,13 +1,28 @@
+/**
+ * Controller for fetching card prices.
+ * @module Controllers/Price
+ */
+
+/**
+ * Query parameters for fetching card prices.
+ * @typedef {Object} module:Controllers/Price~PriceQuery
+ * @property {string} name - Name of the card to fetch prices for.
+ */
+
+/**
+ * Specialization of the Express Request object for fetching prices.
+ * @typedef {Express.Request<any, any, any, PriceQuery>} module:Controllers/Price~PriceRequest
+ */
+
 const pricer = require("../services/price.service");
 
 /**
- * Controller function to get card prices by name.
- * @route GET /api/prices
- * @param {Object} req - Express request object.
- * @param {Object} req.query - Query parameters.
- * @param {string} req.query.name - Name of the card to fetch prices for.
- * @param {Object} res - Express response object.
- * @returns {Promise<void>} Responds with the card price data or an error message.
+ * Get card prices by name.
+ * @function
+ * @name module:Controllers/Price.getPrices
+ * @param {PriceRequest} req - The HTTP request containing the card name as a query parameter.
+ * @param {Express.Response} res - The HTTP response object.
+ * @returns {Promise<Express.Response>} Responds with the card price data or an error message.
  */
 const getPrices = async (req, res) => {
   const cardName = req.query.name;

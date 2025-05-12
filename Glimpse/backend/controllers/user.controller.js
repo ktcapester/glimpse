@@ -1,13 +1,28 @@
+/**
+ * Controller for retrieving authenticated user information.
+ * @module Controllers/User
+ */
+
+/**
+ * User data added by authentication middleware.
+ * @typedef {Object} module:Controllers/User~AuthenticatedUser
+ * @property {string} userId - ID of the authenticated user.
+ */
+
+/**
+ * Specialization of the Express Request object for user retrieval.
+ * @typedef {Express.Request<any, any, any, any> & { user: module:Controllers/User~AuthenticatedUser }} module:Controllers/User~UserRequest
+ */
+
 const userService = require("../services/user.service");
 
 /**
- * Controller function to get user details by ID.
- * @route GET /api/user
- * @param {Object} req - Express request object.
- * @param {Object} req.user - User object added by authentication middleware.
- * @param {string} req.user.userId - ID of the authenticated user.
- * @param {Object} res - Express response object.
- * @returns {Promise<void>} Responds with the user details or an error message.
+ * Get details of the authenticated user.
+ * @function
+ * @name module:Controllers/User.getUser
+ * @param {UserRequest} req - The HTTP request containing the authenticated user.
+ * @param {Express.Response} res - The HTTP response object.
+ * @returns {Promise<Express.Response>} Responds with the user details or an error message.
  */
 const getUser = async (req, res) => {
   try {
