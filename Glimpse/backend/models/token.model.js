@@ -1,3 +1,16 @@
+/**
+ * Mongoose model representing authentication or verification tokens.
+ * @module Models/Token
+ */
+
+/**
+ * @typedef {Object} module:Models/Token~TokenDocument
+ * @property {string} email - Email address associated with the token.
+ * @property {string} token - The token string.
+ * @property {Date} expiresAt - Expiration date and time for the token.
+ * @property {boolean} used - Indicates whether the token has been used.
+ */
+
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
@@ -37,7 +50,7 @@ const tokenSchema = new Schema({
 
 /**
  * Mongoose model for the token schema.
- * @type {Model}
+ * @type {Model<TokenDocument>}
  */
 const Token = mongoose.model("Token", tokenSchema);
 

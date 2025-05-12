@@ -1,3 +1,17 @@
+/**
+ * Mongoose model representing a user account and their associated lists.
+ * @module Models/User
+ */
+
+/**
+ * @typedef {Object} module:Models/User~UserDocument
+ * @property {string} email - Email address of the user.
+ * @property {string} username - Username of the user.
+ * @property {Date} createdAt - Date when the user was created.
+ * @property {mongoose.Types.ObjectId[]} lists - Array of references to the user's lists.
+ * @property {mongoose.Types.ObjectId} [activeList] - Reference to the user's active list.
+ */
+
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
@@ -59,7 +73,7 @@ userSchema.index({ username: 1 });
 
 /**
  * Mongoose model for the user schema.
- * @type {Model}
+ * @type {Model<UserDocument>}
  */
 const User = mongoose.model("User", userSchema);
 

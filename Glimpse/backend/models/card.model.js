@@ -1,3 +1,33 @@
+/**
+ * Mongoose model representing a card with pricing details and Scryfall metadata.
+ * @module Models/Card
+ */
+
+/**
+ * @typedef {Object} module:Models/Card~CardDocument
+ * @property {string} name - Name of the card.
+ * @property {string} scryfallLink - Scryfall link for the card.
+ * @property {string} imgsrcFull - URL to the full-size image of the card.
+ * @property {string} imgsrcSmall - URL to the small-size image of the card.
+ * @property {Object} prices - Pricing information for the card.
+ * @property {Object} prices.raw - Raw prices in various currencies.
+ * @property {number} prices.raw.usd
+ * @property {number} prices.raw.usd_etched
+ * @property {number} prices.raw.usd_foil
+ * @property {number} prices.raw.eur
+ * @property {number} prices.raw.eur_etched
+ * @property {number} prices.raw.eur_foil
+ * @property {Object} prices.calc - Calculated prices in various currencies.
+ * @property {number} prices.calc.usd
+ * @property {number} prices.calc.usd_etched
+ * @property {number} prices.calc.usd_foil
+ * @property {number} prices.calc.eur
+ * @property {number} prices.calc.eur_etched
+ * @property {number} prices.calc.eur_foil
+ * @property {Date} createdAt - Timestamp when the card was created.
+ * @property {Date} updatedAt - Timestamp when the card was last updated.
+ */
+
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
@@ -146,7 +176,7 @@ cardSchema.index({ name: 1 });
 
 /**
  * Mongoose model for the card schema.
- * @type {Model}
+ * @type {Model<CardDocument>}
  */
 const Card = mongoose.model("Card", cardSchema);
 
