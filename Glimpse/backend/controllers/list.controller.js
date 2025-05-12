@@ -1,13 +1,70 @@
+/**
+ * Controller for managing lists of cards.
+ * @module Controllers/List
+ */
+
+/**
+ * Parameter needed for operations involving whole lists.
+ * @typedef {Object} module:Controllers/List~ListParams
+ * @property {string} listId - ID of the list.
+ */
+
+/**
+ * Parameters needed for operations involving specific cards in a list.
+ * @typedef {Object} module:Controllers/List~CardParams
+ * @property {string} listId - ID of the list.
+ * @property {string} cardId - ID of the card.
+ */
+
+/**
+ * Parameter needed in the body of the HTTP request for operations involving updating cards in a list.
+ * @typedef {Object} module:Controllers/List~CardUpdateBody
+ * @property {number} [quantity] - New quantity of the card.
+ */
+
+/**
+ * Format of cards in the list.
+ * @typedef {Object} module:Controllers/List~CardInList
+ * @property {Object} card - Card object.
+ * @property {number} quantity - Quantity of the card in the list.
+ */
+
+/**
+ * Response format for operations involving lists.
+ * @typedef {Object} module:Controllers/List~ListResponse
+ * @property {CardInList[]} list - Updated list of cards.
+ * @property {number} currentTotal - Total price of the list.
+ */
+
+/**
+ * Specialization of the Express Request object for operations involving whole lists.
+ * @typedef {Express.Request<ListParams>} module:Controllers/List~ListRequest
+ */
+
+/**
+ * Specialization of the Express Request object for operations involving specific cards in a list.
+ * @typedef {Express.Request<CardParams>} module:Controllers/List~CardRequest
+ */
+
+/**
+ * Specialization of the Express Request object for operations involving updating cards in a list.
+ * @typedef {Express.Request<CardParams, any, CardUpdateBody>} module:Controllers/List~CardUpdateRequest
+ */
+
+/**
+ * Specialization of the Express Request object for operations involving adding cards to a list.
+ * @typedef {Express.Request<ListParams, any, { cardId: string }>} module:Controllers/List~CardPostRequest
+ */
+
 const listService = require("../services/list.service");
 
 /**
  * Get all cards in a list.
- * @route GET /api/lists/:listId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {Object} res - Express response object.
- * @returns {Promise<void>} Responds with the list of cards and the current total price.
+ * @name module:Controllers/List.getList
+ * @function
+ * @param {ListRequest} req
+ * @param {Express.Response} res
+ * @returns {Promise<ListResponse>}
  */
 const getList = async (req, res) => {
   try {
@@ -22,14 +79,11 @@ const getList = async (req, res) => {
 
 /**
  * Add a new card to a list.
- * @route POST /api/lists/:listId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {Object} req.body - Request body.
- * @param {string} req.body.cardId - ID of the card to add.
- * @param {Object} res - Express response object.
- * @returns {Promise<void>} Responds with the updated total price of the list.
+ * @function
+ * @name module:Controllers/List.postList
+ * @param {CardPostRequest} req
+ * @param {Express.Response} res
+ * @returns {Promise<{ currentTotal: number }>}
  */
 const postList = async (req, res) => {
   try {
@@ -46,12 +100,11 @@ const postList = async (req, res) => {
 
 /**
  * Clear all cards from a list.
- * @route DELETE /api/lists/:listId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {Object} res - Express response object.
- * @returns {Promise<void>} Responds with an empty list and a total price of 0.
+ * @function
+ * @name module:Controllers/List.deleteList
+ * @param {ListRequest} req
+ * @param {Express.Response} res
+ * @returns {Promise<ListResponse>} Responds with an empty list and a total price of 0.
  */
 const deleteList = async (req, res) => {
   try {
@@ -66,13 +119,11 @@ const deleteList = async (req, res) => {
 
 /**
  * Get a specific card from a list.
- * @route GET /api/lists/:listId/cards/:cardId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {string} req.params.cardId - ID of the card.
- * @param {Object} res - Express response object.
- * @returns {Promise<void>} Responds with the card details and its quantity.
+ * @function
+ * @name module:Controllers/List.getCard
+ * @param {CardRequest} req
+ * @param {Express.Response} res
+ * @returns {Promise<{ card: Object, quantity: number }>}
  */
 const getCard = async (req, res) => {
   try {
@@ -88,14 +139,11 @@ const getCard = async (req, res) => {
 
 /**
  * Update a specific card in a list (e.g., update its quantity).
- * @route PATCH /api/lists/:listId/cards/:cardId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {string} req.params.cardId - ID of the card.
- * @param {Object} req.body - Request body containing updates (e.g., quantity).
- * @param {Object} res - Express response object.
- * @returns {Promise<void>} Responds with the updated list and total price.
+ * @function
+ * @name module:Controllers/List.patchCard
+ * @param {CardUpdateRequest} req
+ * @param {Express.Response} res
+ * @returns {Promise<ListResponse>}
  */
 const patchCard = async (req, res) => {
   try {
@@ -111,13 +159,11 @@ const patchCard = async (req, res) => {
 
 /**
  * Remove a specific card from a list.
- * @route DELETE /api/lists/:listId/cards/:cardId
- * @param {Object} req - Express request object.
- * @param {Object} req.params - Request parameters.
- * @param {string} req.params.listId - ID of the list.
- * @param {string} req.params.cardId - ID of the card.
- * @param {Object} res - Express response object.
- * @returns {Promise<void>} Responds with the updated list and total price.
+ * @name module:Controllers/List.deleteCard
+ * @function
+ * @param {CardRequest} req
+ * @param {Express.Response} res
+ * @returns {Promise<ListResponse>}
  */
 const deleteCard = async (req, res) => {
   try {
