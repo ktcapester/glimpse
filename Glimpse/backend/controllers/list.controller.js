@@ -23,20 +23,6 @@
  */
 
 /**
- * Format of cards in the list.
- * @typedef {Object} module:Controllers/List~CardInList
- * @property {Object} card - Card object.
- * @property {number} quantity - Quantity of the card in the list.
- */
-
-/**
- * Response format for operations involving lists.
- * @typedef {Object} module:Controllers/List~ListResponse
- * @property {CardInList[]} list - Updated list of cards.
- * @property {number} currentTotal - Total price of the list.
- */
-
-/**
  * Specialization of the Express Request object for operations involving whole lists.
  * @typedef {Express.Request<ListParams>} module:Controllers/List~ListRequest
  */
@@ -64,7 +50,7 @@ const listService = require("../services/list.service");
  * @name module:Controllers/List.getList
  * @param {ListRequest} req
  * @param {Express.Response} res
- * @returns {Promise<ListResponse>}
+ * @returns {Promise<module:Types/List~ListSummary>}
  */
 const getList = async (req, res) => {
   try {
@@ -104,7 +90,7 @@ const postList = async (req, res) => {
  * @name module:Controllers/List.deleteList
  * @param {ListRequest} req
  * @param {Express.Response} res
- * @returns {Promise<ListResponse>} Responds with an empty list and a total price of 0.
+ * @returns {Promise<module:Types/List~ListSummary>} Responds with an empty list and a total price of 0.
  */
 const deleteList = async (req, res) => {
   try {
@@ -123,7 +109,7 @@ const deleteList = async (req, res) => {
  * @name module:Controllers/List.getCard
  * @param {CardRequest} req
  * @param {Express.Response} res
- * @returns {Promise<CardInList>} The card object and its quantity in the list.
+ * @returns {Promise<module:Types/List~CardInList>} The card object and its quantity in the list.
  */
 const getCard = async (req, res) => {
   try {
@@ -143,7 +129,7 @@ const getCard = async (req, res) => {
  * @name module:Controllers/List.patchCard
  * @param {CardUpdateRequest} req
  * @param {Express.Response} res
- * @returns {Promise<ListResponse>}
+ * @returns {Promise<module:Types/List~ListSummary>}
  */
 const patchCard = async (req, res) => {
   try {
@@ -163,7 +149,7 @@ const patchCard = async (req, res) => {
  * @name module:Controllers/List.deleteCard
  * @param {CardRequest} req
  * @param {Express.Response} res
- * @returns {Promise<ListResponse>}
+ * @returns {Promise<module:Types/List~ListSummary>}
  */
 const deleteCard = async (req, res) => {
   try {

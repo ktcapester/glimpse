@@ -9,12 +9,6 @@
  * @property {{ calc: { usd: number } }} [prices] - Updated price info for the card.
  */
 
-/**
- * @typedef {Object} module:Services/List~ListSummary
- * @property {Object[]} list - Array of card entries in the list.
- * @property {number} currentTotal - Total price of the list.
- */
-
 const { Card } = require("../models/card.model");
 const { List } = require("../models/list.model");
 const { createError } = require("../utils");
@@ -25,7 +19,7 @@ const { createError } = require("../utils");
  * @function
  * @name module:Services/List.getAllCards
  * @param {string} listId - ID of the list.
- * @returns {Promise<ListSummary>} An object containing the list of cards and the current total price.
+ * @returns {Promise<module:Types/List~ListSummary>} An object containing the list of cards and the current total price.
  * @throws {Object} If the list is not found or a server error occurs.
  */
 const getAllCards = async (listId) => {
@@ -96,7 +90,7 @@ const addCard = async (listId, cardId) => {
  * @function
  * @name module:Services/List.clearList
  * @param {string} listId - ID of the list.
- * @returns {Promise<ListSummary>} An object containing an empty list and a total price of 0.
+ * @returns {Promise<module:Types/List~ListSummary>} An object containing an empty list and a total price of 0.
  * @throws Will throw an error if the list is not found or a server error occurs.
  */
 const clearList = async (listId) => {
@@ -151,7 +145,7 @@ const getItem = async (listId, cardId) => {
  * @param {string} listId - ID of the list.
  * @param {string} cardId - ID of the card to update.
  * @param {CardUpdateData} updates - Updates to apply (e.g., quantity or price).
- * @returns {Promise<ListSummary>} An object containing the updated list and total price.
+ * @returns {Promise<module:Types/List~ListSummary>} An object containing the updated list and total price.
  * @throws Will throw an error if the list, card, or updates are invalid or a server error occurs.
  */
 const updateItem = async (listId, cardId, updates) => {
@@ -195,7 +189,7 @@ const updateItem = async (listId, cardId, updates) => {
  * @name module:Services/List.removeItem
  * @param {string} listId - ID of the list.
  * @param {string} cardId - ID of the card to remove.
- * @returns {Promise<ListSummary>} An object containing the updated list and total price.
+ * @returns {Promise<module:Types/List~ListSummary>} An object containing the updated list and total price.
  * @throws Will throw an error if the list or card is not found or a server error occurs.
  */
 const removeItem = async (listId, cardId) => {
