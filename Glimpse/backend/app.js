@@ -49,7 +49,15 @@ app.get("/", (req, res) => {
  * Generate & serve Swagger documentation at /docs.
  */
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(
+  "/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: "Glimpse API Docs",
+    customCss: ".swagger-ui .topbar { display: none }",
+    customfavIcon: "https://glimpsecard.com/favicon.ico",
+  })
+);
 
 /**
  * API routes.
