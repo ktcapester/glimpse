@@ -1,11 +1,25 @@
+/**
+ * Middleware for verifying JWT authentication tokens in requests.
+ * @module Middleware/AuthJWT
+ */
+
+/**
+ * Decoded JWT payload structure.
+ * @typedef {Object} module:Middleware/AuthJWT~DecodedJWT
+ * @property {string} userId - ID of the authenticated user.
+ * @property {string} email - Email address of the authenticated user.
+ * @property {number} iat - Issued at timestamp.
+ * @property {number} exp - Expiration timestamp.
+ */
+
 const jwt = require("jsonwebtoken");
 
 /**
  * Middleware to authenticate requests using JWT.
- * @param {Object} req - Express request object.
- * @param {Object} req.headers - Request headers.
- * @param {string} [req.headers.authorization] - Authorization header containing the Bearer token.
- * @param {Object} res - Express response object.
+ * @function
+ * @name module:Middleware/AuthJWT.authenticateJWT
+ * @param {Express.Request & { user?: DecodedJWT }} req - Express request with optional user property.
+ * @param {Express.Response} res - Express response object.
  * @param {Function} next - Express next middleware function.
  * @returns {void} Responds with an error message if authentication fails, otherwise calls the next middleware.
  */
