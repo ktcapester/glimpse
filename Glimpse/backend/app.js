@@ -1,5 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerOptions = require("./swagger.config");
 const searchRoute = require("./routes/search.route");
 const priceRoute = require("./routes/price.route");
 const listRoute = require("./routes/list.route");
@@ -41,6 +44,12 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Hello world!");
 });
+
+// Generate the Swagger spec
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+// Serve the Swagger UI at /docs
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 /**
  * Route for card search functionality.
