@@ -13,12 +13,18 @@ async function connectToDatabase() {
   const host = process.env.MONGO_HOST;
   const port = process.env.MONGO_PORT;
 
+  if (!username || !password || !host || !port) {
+    throw new Error("Missing required MongoDB environment variables");
+  }
+
   const uri = `mongodb://${username}:${password}@${host}:${port}/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`;
 
   try {
     await mongoose.connect(uri, {
       tls: true,
       tlsCAFile: "./config/certs/global-bundle.pem",
+      serverSelectionTimeoutMS: 5000, // Shortened from default 30s
+      socketTimeoutMS: 30000, // Wait max 30s on stalled sockets
     });
     console.log("Connected to Amazon DocumentDB!");
   } catch (err) {
