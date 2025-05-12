@@ -68,6 +68,7 @@ async function startServer(retries = 5, delayMs = 5000) {
   while (retries > 0) {
     try {
       await connectToDatabase();
+      console.log("Successfully connected to the database.");
       break;
     } catch (err) {
       retries--;
@@ -87,9 +88,32 @@ async function startServer(retries = 5, delayMs = 5000) {
   app.set("port", port);
 
   const server = http.createServer(app);
-  server.on("error", (error) => onError(error, server, port));
-  server.on("listening", () => onListening(server, port));
-  server.listen(port);
+
+  server.listen(port, () => {
+    console.log("Server started on port", port);
+  });
+
+  process.on("SIGINT", () => {
+    console.log("SIGINT received.");
+    shutdown(server);
+  });
+  process.on("SIGTERM", () => {
+    console.log("SIGTERM received.");
+    shutdown(server);
+  });
+}
+
+/**
+ * Clean up connections and exit gracefully
+ */
+async function shutdown(server) {
+  console.log("Gracefully shutting down...");
+  server.close(() => {
+    mongoose.disconnect().then(() => {
+      console.log("Server and DB connections closed. Exiting.");
+      process.exit(0);
+    });
+  });
 }
 
 /**
@@ -111,44 +135,6 @@ const normalizePort = (val) => {
     return port;
   }
   return false;
-};
-
-/**
- * Handle server errors during startup.
- * @function onError
- * @param {Object} error - The error object.
- * @param {Object} server - The HTTP server instance.
- * @param {number|string} port - The port the server is attempting to use.
- * @throws Will throw the error if it is not related to listening.
- */
-const onError = (error, server, port) => {
-  if (error.syscall !== "listen") {
-    throw error;
-  }
-  const addr = server.address();
-  const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;
-  switch (error.code) {
-    case "EACCES":
-      console.error(bind + " requires elevated privileges");
-      process.exit(1);
-    case "EADDRINUSE":
-      console.error(bind + " is already in use");
-      process.exit(1);
-    default:
-      throw error;
-  }
-};
-
-/**
- * Log a message when the server starts listening.
- * @function onListening
- * @param {Object} server - The HTTP server instance.
- * @param {number|string} port - The port the server is listening on.
- */
-const onListening = (server, port) => {
-  const addr = server.address();
-  const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;
-  console.log("Listening on " + bind);
 };
 
 startServer();
