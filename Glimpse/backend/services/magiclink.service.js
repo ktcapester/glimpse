@@ -1,3 +1,8 @@
+/**
+ * Service functions for handling Magic Link authentication.
+ * @module Services/MagicLink
+ */
+
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { Token } = require("../models/token.model");
@@ -7,7 +12,8 @@ const { createError } = require("../utils");
 
 /**
  * Generate a secure random token.
- * @function generateToken
+ * @function
+ * @name module:Services/MagicLink.generateToken
  * @returns {string} A secure random token as a hexadecimal string.
  */
 function generateToken() {
@@ -17,8 +23,10 @@ function generateToken() {
 /**
  * Send a magic link to the user's email.
  * @async
- * @function sendMagicLink
+ * @function
+ * @name module:Services/MagicLink.sendMagicLink
  * @param {string} email - The email address to send the magic link to.
+ * @returns {Promise<void>}
  * @throws Will throw an error if the email sending fails or a server error occurs.
  */
 async function sendMagicLink(email) {
@@ -74,9 +82,10 @@ async function sendMagicLink(email) {
 }
 
 /**
- * Verify a magic link token and email.
+ * Verify a magic link token and return the associated user.
  * @async
- * @function verifyToken
+ * @function
+ * @name module:Services/MagicLink.verifyToken
  * @param {string} token - The token to verify.
  * @param {string} email - The email address associated with the token.
  * @returns {Promise<Object>} The user object if verification is successful.

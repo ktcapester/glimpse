@@ -1,3 +1,19 @@
+/**
+ * Service functions for calculating card prices using Scryfall.
+ * @module Services/Price
+ */
+
+/**
+ * Calculated prices in various currencies and print types.
+ * @typedef {Object} module:Services/Price~CalcPrices
+ * @property {number} usd - Average price in USD.
+ * @property {number} usd_etched - Average price in USD for etched foils.
+ * @property {number} usd_foil - Average price in USD for foils.
+ * @property {number} eur - Average price in EUR.
+ * @property {number} eur_etched - Average price in EUR for etched foils.
+ * @property {number} eur_foil - Average price in EUR for foils.
+ */
+
 const { Card } = require("../models/card.model");
 const { delay, headers, scryfallCardAPIBase } = require("../utils");
 
@@ -6,7 +22,8 @@ var lastAPICall = Date.now();
 /**
  * Calculate prices for a card by its name and add it to the database.
  * @async
- * @function calculatePriceFromName
+ * @function
+ * @name module:Services/Price.calculatePriceFromName
  * @param {string} cardName - Name of the card to fetch prices for.
  * @returns {Promise<Object>} The card document from the database or an error object.
  */
@@ -88,9 +105,10 @@ async function calculatePriceFromName(cardName) {
 /**
  * Process all prints of a card and calculate their prices.
  * @async
- * @function processAllPrints
+ * @function
+ * @name module:Services/Price.processAllPrints
  * @param {string} prints_search_uri - URI to fetch all prints of a card.
- * @returns {Promise<Object>} An object containing calculated prices for all prints.
+ * @returns {Promise<CalcPrices>} An object containing calculated prices for all prints.
  */
 async function processAllPrints(prints_search_uri) {
   // eg: "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Ab9cd714b-2ad8-4fdb-a8aa-82b17730e071&unique=prints"
@@ -116,9 +134,10 @@ async function processAllPrints(prints_search_uri) {
 
 /**
  * Calculate average prices for all prints of a card.
- * @function calculateAllPrices
+ * @function
+ * @name module:Services/Price.calculateAllPrices
  * @param {Array<Object>} cards - Array of card objects from Scryfall.
- * @returns {Object} An object containing average prices for all prints.
+ * @returns {CalcPrices} An object containing average prices for all prints.
  */
 function calculateAllPrices(cards) {
   var usd_cards = [];
@@ -169,7 +188,8 @@ function calculateAllPrices(cards) {
 
 /**
  * Process a list of cards to calculate a weighted average price.
- * @function processList
+ * @function
+ * @name module:Services/Price.processList
  * @param {Array<Object>} cards - Array of card objects.
  * @param {string} price_name - The price field to process (e.g., "usd").
  * @returns {number} The calculated weighted average price.
@@ -224,7 +244,8 @@ function processList(cards, price_name) {
 
 /**
  * Extract a specific price from a card object.
- * @function extractPrice
+ * @function
+ * @name module:Services/Price.extractPrice
  * @param {Object} card - Card object.
  * @param {string} price_name - The price field to extract (e.g., "usd").
  * @returns {number} The extracted price or NaN if not available.
@@ -250,7 +271,8 @@ function extractPrice(card, price_name) {
 
 /**
  * Compare two cards based on a specific price field.
- * @function cardCompareFn
+ * @function
+ * @name module:Services/Price.cardCompareFn
  * @param {Object} card0 - First card object.
  * @param {Object} card1 - Second card object.
  * @param {string} price_name - The price field to compare (e.g., "usd").

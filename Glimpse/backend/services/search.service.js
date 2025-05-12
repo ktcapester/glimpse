@@ -1,3 +1,16 @@
+/**
+ * Service for searching cards using the Scryfall API.
+ * @module Services/Search
+ */
+
+/**
+ * Search result entry returned from Scryfall.
+ * @typedef {Object} module:Services/Search~CardSearchResult
+ * @property {string} name - Name of the card.
+ * @property {string} imgsrc - URL to the card image (normal or large size).
+ * @property {string} scryfallLink - URL to the card's Scryfall page.
+ */
+
 const { delay, headers, scryfallCardAPIBase } = require("../utils");
 
 var lastAPICall = Date.now();
@@ -6,9 +19,10 @@ var lastAPICall = Date.now();
  * Search for cards on Scryfall using a search term.
  * Returns either 1 result, up to 6 suggested results, or 0 results.
  * @async
- * @function searchScryfall
+ * @function
+ * @name module:Services/Search.searchScryfall
  * @param {string} searchTerm - The search term provided by the user.
- * @returns {Promise<Object>} An object containing the search results or an error message.
+ * @returns {Promise<{ status: number, data?: CardSearchResult[], error?: string, errorCode?: string }>} An object containing the search results or an error message.
  * @throws Will throw an error if the Scryfall API request fails.
  */
 async function searchScryfall(searchTerm) {
