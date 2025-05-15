@@ -30,8 +30,13 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: allowedOrigins,
-    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+    credentials: true,
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    // if I send custom headers, I need to expose them like this:
+    // exposedHeaders: ["Foo"],
+    maxAge: 600, // cache preflight response for 10 minutes
+    optionsSuccessStatus: 200,
   })
 );
 
