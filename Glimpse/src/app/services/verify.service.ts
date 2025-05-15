@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { StorageService } from './storage.service';
+import { AuthService } from './auth.service';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -9,7 +9,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class VerifyService {
   private http = inject(HttpClient);
-  private storage = inject(StorageService);
+  private auth = inject(AuthService);
 
   // Create a signal to tell VerifyComponent when the http call is finished
   private _response = signal<boolean>(false);
@@ -28,23 +28,29 @@ export class VerifyService {
     try {
       // Wait for the backend to return with a token
       const resp = await firstValueFrom(
-        this.http.get<{ token: string }>(`${environment.apiURL}/auth/verify`, {
-          params: { email, token },
-        })
+        this.http.post<{ accessToken: string }>(
+          `${environment.apiURL}/auth/verify`,
+          {},
+          {
+            params: { email, token },
+            withCredentials: true,
+          }
+        )
       );
-      // Store the token via StorageService
-      this.storage.setItem('jwtToken', resp.token);
-      // Update signals with successful response
-      this._response.set(true);
+      // Store the token via AuthService
+      this.auth.setToken(resp.accessToken);
+      // Update signal with successful response
       this._success.set(true);
     } catch (error) {
       console.error('validateToken error:', error);
       // We got an error from the http call (maybe something else too)
       // Clear the stored jwtToken because it is invalid
-      this.storage.removeItem('jwtToken');
+      this.auth.clearToken();
       // Update the signals with the response came back but was failure
-      this._response.set(true);
       this._success.set(false);
+    } finally {
+      // Set the response signal to true, so the component can stop loading
+      this._response.set(true);
     }
   }
 }
