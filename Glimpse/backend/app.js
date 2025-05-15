@@ -9,7 +9,7 @@ const priceRoute = require("./routes/price.route");
 const listRoute = require("./routes/list.route");
 const userRoute = require("./routes/user.route");
 const magicLinkRoute = require("./routes/magiclink.route");
-const errorHandler = require("./middleware/errorHandler");
+const errorHandler = require("./middleware/globalErrorHandler.middle");
 
 const app = express();
 
