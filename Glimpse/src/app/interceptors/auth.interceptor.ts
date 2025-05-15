@@ -1,17 +1,35 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services';
+import { catchError, from, switchMap, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Get the token from storage
   const auth = inject(AuthService);
   const token = auth.token();
-  // if token exists, add to the request
-  // if not, forward the request as-is
+
+  // attach token if present
   const authReq = token
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
     : req;
 
-  // pass along the request now that it's got a token (or not)
-  return next(authReq);
+  // If the access token (JWT) is expired, use the refresh token (cookie) to get a new access token
+  // and retry the request with the new token
+  return next(authReq).pipe(
+    catchError((err: HttpErrorResponse) => {
+      if (err.status === 401 && token) {
+        // try one refresh + retry
+        return from(auth.refreshToken()).pipe(
+          switchMap(() => {
+            const newToken = auth.token();
+            const retryReq = req.clone({
+              setHeaders: { Authorization: `Bearer ${newToken}` },
+            });
+            return next(retryReq);
+          })
+        );
+      }
+      return throwError(() => err);
+    })
+  );
 };
