@@ -24,13 +24,13 @@ const userService = require("../services/user.service");
  * @param {Express.Response} res - The HTTP response object.
  * @returns {Promise<Express.Response>} Responds with the user details or an error message.
  */
-const getUser = async (req, res) => {
+const getUser = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const user = await userService.getUserByID(userId);
     res.json(user);
   } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
+    next(error);
   }
 };
 

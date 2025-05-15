@@ -8,6 +8,7 @@ const priceRoute = require("./routes/price.route");
 const listRoute = require("./routes/list.route");
 const userRoute = require("./routes/user.route");
 const magicLinkRoute = require("./routes/magiclink.route");
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
@@ -67,5 +68,8 @@ app.use("/api/price", priceRoute);
 app.use("/api/list", listRoute);
 app.use("/api/user", userRoute);
 app.use("/api/auth", magicLinkRoute);
+
+// after ALL routes, add the error handler
+app.use(errorHandler);
 
 module.exports = app;

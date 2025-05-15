@@ -52,14 +52,14 @@ const listService = require("../services/list.service");
  * @param {Express.Response} res
  * @returns {Promise<module:Types/List~ListSummary>}
  */
-const getList = async (req, res) => {
+const getList = async (req, res, next) => {
   try {
     const listId = req.params.listId;
     const data = await listService.getAllCards(listId);
     // data contains { list: list.cards, currentTotal: list.totalPrice }
     res.json(data);
   } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -71,7 +71,7 @@ const getList = async (req, res) => {
  * @param {Express.Response} res
  * @returns {Promise<{ currentTotal: number }>}
  */
-const postList = async (req, res) => {
+const postList = async (req, res, next) => {
   try {
     const listId = req.params.listId;
     // cardId, quantity, etc. come from the request body
@@ -80,7 +80,7 @@ const postList = async (req, res) => {
     // response contains { currentTotal: updatedList.totalPrice }
     res.status(201).json(response);
   } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -92,14 +92,14 @@ const postList = async (req, res) => {
  * @param {Express.Response} res
  * @returns {Promise<module:Types/List~ListSummary>} Responds with an empty list and a total price of 0.
  */
-const deleteList = async (req, res) => {
+const deleteList = async (req, res, next) => {
   try {
     const listId = req.params.listId;
     const response = await listService.clearList(listId);
     // response contains { list: [], currentTotal: 0 }
     res.json(response);
   } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -111,15 +111,14 @@ const deleteList = async (req, res) => {
  * @param {Express.Response} res
  * @returns {Promise<module:Types/List~CardInList>} The card object and its quantity in the list.
  */
-const getCard = async (req, res) => {
+const getCard = async (req, res, next) => {
   try {
     const { listId, cardId } = req.params;
     const response = await listService.getItem(listId, cardId);
     // response is { card:Card, quantity:number}
     res.json(response);
   } catch (error) {
-    // If our service throws a 404, use that status
-    res.status(error.status || 500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -131,7 +130,7 @@ const getCard = async (req, res) => {
  * @param {Express.Response} res
  * @returns {Promise<module:Types/List~ListSummary>}
  */
-const patchCard = async (req, res) => {
+const patchCard = async (req, res, next) => {
   try {
     const { listId, cardId } = req.params;
     const updates = req.body;
@@ -139,7 +138,7 @@ const patchCard = async (req, res) => {
     // response contains { list: updatedList.cards, currentTotal: updatedList.totalPrice }
     res.json(response);
   } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -151,14 +150,14 @@ const patchCard = async (req, res) => {
  * @param {Express.Response} res
  * @returns {Promise<module:Types/List~ListSummary>}
  */
-const deleteCard = async (req, res) => {
+const deleteCard = async (req, res, next) => {
   try {
     const { listId, cardId } = req.params;
     const response = await listService.removeItem(listId, cardId);
     // response contains { list: updatedList.cards, currentTotal: updatedList.totalPrice }
     res.json(response);
   } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
+    next(error);
   }
 };
 
