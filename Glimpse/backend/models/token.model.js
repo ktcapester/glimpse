@@ -1,5 +1,5 @@
 /**
- * Mongoose model representing authentication or verification tokens.
+ * Mongoose model representing magic link tokens.
  * @module Models/Token
  */
 
@@ -15,8 +15,8 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 /**
- * Mongoose schema for a token document.
- * Represents a token used for authentication or verification purposes.
+ * Mongoose schema for a magic link token document.
+ * Represents a magic link token used for authentication or verification purposes.
  */
 const tokenSchema = new Schema({
   /**
@@ -49,7 +49,7 @@ const tokenSchema = new Schema({
 });
 
 /**
- * Mongoose model for the token schema.
+ * Mongoose model for the magic link token schema.
  * @type {Model<TokenDocument>}
  */
 const Token = mongoose.model("Token", tokenSchema);
