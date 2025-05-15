@@ -2,11 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
+  OnInit,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { VerifyService } from '../services';
 
 @Component({
@@ -17,7 +16,7 @@ import { VerifyService } from '../services';
   styleUrl: './verify.component.css',
   host: { class: 'component-container' },
 })
-export class VerifyComponent {
+export class VerifyComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private verify = inject(VerifyService);
@@ -50,18 +49,11 @@ export class VerifyComponent {
     return { titleText, subtitleText, navigationText };
   });
 
-  private queryMapSignal = toSignal(this.route.queryParamMap);
-
-  constructor() {
-    effect(() => {
-      // "/verify?token={token}&email={email}"
-      const queryParams = this.queryMapSignal();
-      if (queryParams) {
-        const userToken = queryParams.get('token') || '';
-        const userEmail = queryParams.get('email') || '';
-        this.verify.validateToken(userEmail, userToken);
-      }
-    });
+  ngOnInit(): void {
+    const qp = this.route.snapshot.queryParamMap;
+    const userToken = qp.get('token')!;
+    const userEmail = qp.get('email')!;
+    this.verify.validateToken(userEmail, userToken);
   }
 
   onClick() {
