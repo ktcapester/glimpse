@@ -1,6 +1,5 @@
 import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { jwtDecode } from 'jwt-decode';
 import { environment } from 'src/environments/environment';
 import { StorageService } from './storage.service';
 import { firstValueFrom } from 'rxjs';
@@ -18,17 +17,8 @@ export class AuthService {
   // Read-only access to the token
   readonly token = this.tokenSignal.asReadonly();
 
-  // Computed boolean: true if token exists and is not expired
-  readonly isLoggedIn = computed(() => {
-    const t = this.tokenSignal();
-    if (!t) return false;
-    try {
-      const { exp } = jwtDecode<{ exp?: number }>(t);
-      return !!exp && Date.now() / 1000 < exp;
-    } catch {
-      return false;
-    }
-  });
+  // Computed boolean: true iff token exists
+  readonly isLoggedIn = computed(() => !!this.token());
 
   constructor() {
     // Persist tokenSignal to StorageService whenever it changes
@@ -47,20 +37,20 @@ export class AuthService {
     this.tokenSignal.set(token);
   }
 
-  // Clear the JWT (e.g. on logout or 401)
+  // Clear the access token (JWT)
   clearToken() {
     this.tokenSignal.set(null);
   }
 
-  // Optionally refresh the token from the server
-  async refreshToken() {
+  // Refresh the access token (JWT) when it expires
+  async refreshToken(): Promise<void> {
     const resp = await firstValueFrom(
-      this.http.post<{ token: string }>(
-        `${environment.apiURL}/auth/refresh`,
+      this.http.post<{ accessToken: string }>(
+        `${environment.apiURL}/auth/refresh-token`,
         {},
         { withCredentials: true }
       )
     );
-    this.setToken(resp.token);
+    this.setToken(resp.accessToken);
   }
 }
