@@ -76,7 +76,7 @@ router.use(authenticateJWT);
  */
 /**
  * @swagger
- * /api/lists/{listId}:
+ * /api/list/{listId}:
  *   get:
  *     summary: Get all cards in a list
  *     tags: [Lists]
@@ -108,7 +108,7 @@ router.get("/:listId", getList);
  */
 /**
  * @swagger
- * /api/lists/{listId}:
+ * /api/list/{listId}:
  *   post:
  *     summary: Add a card to a list
  *     tags: [Lists]
@@ -152,7 +152,7 @@ router.post("/:listId", postList);
  */
 /**
  * @swagger
- * /api/lists/{listId}:
+ * /api/list/{listId}:
  *   delete:
  *     summary: Clear all cards from a list
  *     tags: [Lists]
@@ -185,7 +185,7 @@ router.delete("/:listId", deleteList);
  */
 /**
  * @swagger
- * /api/lists/{listId}/cards/{cardId}:
+ * /api/list/{listId}/cards/{cardId}:
  *   get:
  *     summary: Get a specific card from a list
  *     tags: [Lists]
@@ -228,7 +228,7 @@ router.get("/:listId/cards/:cardId", getCard);
  */
 /**
  * @swagger
- * /api/lists/{listId}/cards/{cardId}:
+ * /api/list/{listId}/cards/{cardId}:
  *   patch:
  *     summary: Update a card's quantity in a list
  *     tags: [Lists]
@@ -274,7 +274,7 @@ router.patch("/:listId/cards/:cardId", patchCard);
  */
 /**
  * @swagger
- * /api/lists/{listId}/cards/{cardId}:
+ * /api/list/{listId}/cards/{cardId}:
  *   delete:
  *     summary: Remove a specific card from a list
  *     tags: [Lists]
