@@ -11,6 +11,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      console.log('Error interceptor:', error);
       if (error.status === 401) {
         // Unauthorized - send the user to the login page
         router.navigate(['/login']);
