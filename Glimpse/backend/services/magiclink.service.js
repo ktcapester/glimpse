@@ -27,6 +27,7 @@ async function createRefreshToken(userId) {
     userId,
     expiresAt,
   });
+  console.log("refresh token created:", token);
   return token;
 }
 
@@ -47,10 +48,11 @@ async function sendMagicLink(email) {
     const record = await Token.findOne({ email, used: false });
     // Delete if found
     if (record) {
+      console.log("old magic token found, deleting it");
       await Token.findByIdAndDelete(record._id);
+    } else {
+      console.log("no old token found");
     }
-    console.log("old token deleted or not present");
-
     // Create new token
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
@@ -58,7 +60,7 @@ async function sendMagicLink(email) {
     // Save the token to the database
     const dbtok = await Token.create({ email, token, expiresAt });
     console.log("new token saved to DB");
-    console.log(dbtok._id);
+    console.log(dbtok);
 
     // Construct the magic link
     const magicLink = `${
@@ -75,14 +77,13 @@ async function sendMagicLink(email) {
     });
 
     // Send the email
-    const info = await transporter.sendMail({
+    await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Your Magic Link",
       text: `Click here to log in: ${magicLink}`,
       html: `<a href="${magicLink}">Log in</a>`,
     });
-    console.log("Sent mail info:", info);
   } catch (err) {
     console.log(err);
     const eStatus = err.status || 500;
@@ -107,7 +108,7 @@ async function verifyMagicToken(token, email) {
 
     // Find the token in the database
     const record = await Token.findOne({ email, token, used: false });
-    console.log("found record:", record);
+    console.log("found magic link token:", record);
     if (!record) {
       throw createError(400, "Invalid or expired magic link.");
     }
@@ -163,9 +164,9 @@ async function verifyMagicToken(token, email) {
       return newUser;
     }
 
-    // Delete token after successful login
+    // Delete magic link token after successful login
     await Token.findByIdAndDelete(record._id);
-    console.log("user token deleted for User:", user);
+    console.log("magic link token deleted for User:", user);
 
     // Return the existing User
     return user;
