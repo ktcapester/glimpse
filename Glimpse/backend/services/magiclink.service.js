@@ -5,19 +5,29 @@
 
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
+const { RefreshToken } = require("../models/refreshtoken.model");
 const { Token } = require("../models/token.model");
 const { User } = require("../models/user.model");
 const { List } = require("../models/list.model");
 const { createError } = require("../utils");
 
-/**
- * Generate a secure random token.
- * @function
- * @name module:Services/MagicLink.generateToken
- * @returns {string} A secure random token as a hexadecimal string.
- */
-function generateToken() {
-  return crypto.randomBytes(32).toString("hex");
+const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+function generateAccessToken(userId) {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
+}
+
+async function createRefreshToken(userId) {
+  const token = uuidv4();
+  const expiresAt = new Date(Date.now() + COOKIE_MAX_AGE); // 7 days
+  await RefreshToken.create({
+    token,
+    userId,
+    expiresAt,
+  });
+  return token;
 }
 
 /**
@@ -42,7 +52,7 @@ async function sendMagicLink(email) {
     console.log("old token deleted or not present");
 
     // Create new token
-    const token = generateToken();
+    const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
 
     // Save the token to the database
@@ -85,13 +95,13 @@ async function sendMagicLink(email) {
  * Verify a magic link token and return the associated user.
  * @async
  * @function
- * @name module:Services/MagicLink.verifyToken
+ * @name module:Services/MagicLink.verifyMagicToken
  * @param {string} token - The token to verify.
  * @param {string} email - The email address associated with the token.
  * @returns {Promise<Object>} The user object if verification is successful.
  * @throws Will throw an error if the token is invalid, expired, or a server error occurs.
  */
-const verifyToken = async (token, email) => {
+async function verifyMagicToken(token, email) {
   try {
     console.log("verifying token+email:", token, email);
 
@@ -99,12 +109,12 @@ const verifyToken = async (token, email) => {
     const record = await Token.findOne({ email, token, used: false });
     console.log("found record:", record);
     if (!record) {
-      throw createError(400, "Invalid or expired token.");
+      throw createError(400, "Invalid or expired magic link.");
     }
 
     // Check if the token has expired
     if (record.expiresAt < Date.now()) {
-      throw createError(400, "Token has expired.");
+      throw createError(400, "Magic link has expired.");
     }
 
     // Mark the token as used
@@ -165,6 +175,36 @@ const verifyToken = async (token, email) => {
     const eMessage = err.message || "Server error";
     throw createError(eStatus, eMessage);
   }
-};
+}
 
-module.exports = { sendMagicLink, verifyToken };
+async function loginWithMagicLink(token, email) {
+  const user = await verifyMagicToken(token, email);
+  const accessToken = generateAccessToken(user._id);
+  const refreshToken = await createRefreshToken(user._id);
+  return { accessToken, refreshToken };
+}
+
+async function refreshAccessToken(refreshToken) {
+  const refreshDoc = await RefreshToken.findOne({ token: refreshToken });
+
+  if (!refreshDoc) {
+    throw createError(401, "Invalid refresh token.");
+  }
+
+  if (refreshDoc.expiresAt < Date.now()) {
+    throw createError(401, "Refresh token has expired.");
+  }
+
+  return generateAccessToken(refreshDoc.userId);
+}
+
+async function revokeRefreshToken(refreshToken) {
+  await RefreshToken.deleteOne({ token: refreshToken });
+}
+
+module.exports = {
+  sendMagicLink,
+  loginWithMagicLink,
+  refreshAccessToken,
+  revokeRefreshToken,
+};

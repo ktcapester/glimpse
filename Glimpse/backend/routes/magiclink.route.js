@@ -1,7 +1,9 @@
 const express = require("express");
 const {
   postMagicLink,
-  getMagicToken,
+  postLoginTokens,
+  postRefreshToken,
+  postLogout,
 } = require("../controllers/magiclink.controller");
 
 const router = express.Router();
@@ -13,7 +15,7 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /api/magic-link:
+ * /api/auth/magic-link:
  *   post:
  *     summary: Send a magic login link to the provided email address
  *     tags: [Auth]
@@ -49,15 +51,15 @@ const router = express.Router();
 router.post("/magic-link", postMagicLink);
 
 /**
- * GET request to verify the magic link token.
+ * POST request to verify the magic link token.
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object.
  */
 /**
  * @swagger
- * /api/magiclink/verify:
- *   get:
- *     summary: Verify magic link token and return a JWT
+ * /api/auth/verify:
+ *   post:
+ *     summary: Verify magic link token and return access and refresh tokens
  *     tags: [Auth]
  *     parameters:
  *       - in: query
@@ -91,6 +93,46 @@ router.post("/magic-link", postMagicLink);
  *       500:
  *         description: Server error
  */
-router.get("/verify", getMagicToken);
+router.post("/verify", postLoginTokens);
+
+/**
+ * @swagger
+ * /api/auth/refresh-token:
+ *   post:
+ *     summary: Refresh the access token using the refresh token
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Access token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: New access token
+ */
+router.post("/refresh-token", postRefreshToken);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout and invalidate the refresh token
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Successfully logged out
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Logged out
+ */
+router.post("/logout", postLogout);
 
 module.exports = router;

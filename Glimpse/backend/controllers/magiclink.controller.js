@@ -19,8 +19,20 @@
  * @typedef {Express.Request<any, any, any, { token: string, email: string }>} module:Controllers/MagicLink~MagicLinkVerifyRequest
  */
 
-const { sendMagicLink, verifyToken } = require("../services/magiclink.service");
-const jwt = require("jsonwebtoken");
+const {
+  sendMagicLink,
+  loginWithMagicLink,
+  refreshAccessToken,
+  revokeRefreshToken,
+} = require("../services/magiclink.service");
+const { createError } = require("../utils");
+
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "Strict",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
 
 /**
  * Send a magic link to the user's email.
@@ -30,54 +42,76 @@ const jwt = require("jsonwebtoken");
  * @param {Express.Response} res - The HTTP response object.
  * @returns {Promise<{ message: string, success: boolean }>} Responds with a success message if the magic link is sent.
  */
-const postMagicLink = async (req, res) => {
+const postMagicLink = async (req, res, next) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ error: "Email is required." });
+    if (!email) throw createError(400, "Email is required.");
 
     await sendMagicLink(email);
     res.json({ message: "Magic link sent successfully.", success: true });
   } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
+    next(error);
   }
 };
 
 /**
- * Verify the magic link token and issue a JWT.
+ * Verify the magic link token and issue access and refresh tokens.
  * @function
- * @name module:Controllers/MagicLink.getMagicToken
+ * @name module:Controllers/MagicLink.postLoginTokens
  * @param {MagicLinkVerifyRequest} req - The HTTP request containing token and email as query parameters.
  * @param {Express.Response} res - The HTTP response object.
- * @returns {Promise<{ message: string, token: string }>} Responds with a JWT if verification is successful.
+ * @returns {Promise<{ message: string, token: string }>} Responds with access and refresh tokens if verification is successful.
  */
-const getMagicToken = async (req, res) => {
+const postLoginTokens = async (req, res, next) => {
   try {
     const { token, email } = req.query;
     if (!token || !email) {
-      return res.status(400).json({ error: "Token and email are required." });
+      throw createError(400, "Token and email are required.");
     }
 
-    const user = await verifyToken(token, email);
-    if (!user) {
-      return res.status(400).json({ error: "Invalid or expired token." });
-    }
-
-    // Generate JWT for authentication
-    const authToken = jwt.sign(
-      { userId: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
+    const { accessToken, refreshToken } = await loginWithMagicLink(
+      token,
+      email
     );
 
-    res.json({ message: "Login successful.", token: authToken });
+    // Set the refresh token in a secure cookie
+    res.cookie("refreshToken", refreshToken, COOKIE_OPTS);
+    res.json({ accessToken });
   } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
+    next(error);
+  }
+};
+
+const postRefreshToken = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      throw createError(401, "No refresh token provided.");
+    }
+    const newAccessToken = await refreshAccessToken(refreshToken);
+    res.json({ accessToken: newAccessToken });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const postLogout = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      throw createError(401, "No refresh token provided.");
+    }
+    await revokeRefreshToken(refreshToken);
+    res.clearCookie("refreshToken");
+    res.json({ message: "Logged out" });
+  } catch (error) {
+    next(error);
   }
 };
 
 module.exports = {
   postMagicLink,
-  getMagicToken,
+  postLoginTokens,
+  postRefreshToken,
+  postLogout,
 };
