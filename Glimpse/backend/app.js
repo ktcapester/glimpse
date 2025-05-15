@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerOptions = require("./swagger.config");
@@ -33,6 +34,11 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+/**
+ * Middleware to parse cookies.
+ */
+app.use(cookieParser());
 
 /**
  * Middleware to parse incoming JSON requests.
