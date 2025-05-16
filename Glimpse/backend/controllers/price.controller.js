@@ -15,6 +15,7 @@
  */
 
 const pricer = require("../services/price.service");
+const { createError } = require("../utils");
 
 /**
  * Get card prices by name.
@@ -24,25 +25,17 @@ const pricer = require("../services/price.service");
  * @param {Express.Response} res - The HTTP response object.
  * @returns {Promise<Express.Response>} Responds with the card price data or an error message.
  */
-const getPrices = async (req, res) => {
+const getPrices = async (req, res, next) => {
   const cardName = req.query.name;
-
   if (!cardName) {
-    return res
-      .status(400)
-      .json({ error: "Card name is required.", errorCode: "NO_CARD_NAME" });
+    return next(createError(400, "Card name is required."));
   }
 
-  const result = await pricer.calculatePriceFromName(cardName);
-  // possible formats of result:
-  // { status: 200, data: CardSchema }
-  // { status:  500, error:str, errorCode:str }
-  if (result.status === 200) {
-    return res.status(200).json(result.data);
-  } else {
-    return res
-      .status(result.status)
-      .json({ error: result.error, errorCode: result.errorCode });
+  try {
+    const result = await pricer.calculatePriceFromName(cardName);
+    return res.json(result);
+  } catch (error) {
+    next(error);
   }
 };
 
