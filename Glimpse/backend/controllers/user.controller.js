@@ -4,17 +4,12 @@
  */
 
 /**
- * User data added by authentication middleware.
- * @typedef {Object} module:Controllers/User~AuthenticatedUser
- * @property {string} userId - ID of the authenticated user.
- */
-
-/**
  * Specialization of the Express Request object for user retrieval.
- * @typedef {Express.Request<any, any, any, any> & { user: module:Controllers/User~AuthenticatedUser }} module:Controllers/User~UserRequest
+ * @typedef {Express.Request<any, any, any, any> & { userId: string }} module:Controllers/User~UserRequest
  */
 
 const userService = require("../services/user.service");
+const { createError } = require("../utils");
 
 /**
  * Get details of the authenticated user.
@@ -25,8 +20,12 @@ const userService = require("../services/user.service");
  * @returns {Promise<Express.Response>} Responds with the user details or an error message.
  */
 const getUser = async (req, res, next) => {
+  const userId = req.userId;
+  if (!userId) {
+    return next(createError(400, "User ID is required."));
+  }
+
   try {
-    const userId = req.user.userId;
     const user = await userService.getUserByID(userId);
     res.json(user);
   } catch (error) {
