@@ -11,9 +11,14 @@
  * @property {string} scryfallLink - URL to the card's Scryfall page.
  */
 
-const { delay, headers, scryfallCardAPIBase } = require("../utils");
+const {
+  delay,
+  headers,
+  scryfallCardAPIBase,
+  createError,
+} = require("../utils");
 
-var lastAPICall = Date.now();
+let lastAPICall = Date.now();
 
 /**
  * Search for cards on Scryfall using a search term.
@@ -22,74 +27,64 @@ var lastAPICall = Date.now();
  * @function
  * @name module:Services/Search.searchScryfall
  * @param {string} searchTerm - The search term provided by the user.
- * @returns {Promise<{ status: number, data?: CardSearchResult[], error?: string, errorCode?: string }>} An object containing the search results or an error message.
+ * @returns {Promise<CardSearchResult[]>} An array of search results.
  * @throws Will throw an error if the Scryfall API request fails.
  */
 async function searchScryfall(searchTerm) {
-  try {
-    const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
-    apiNamedurl.searchParams.append("fuzzy", searchTerm);
+  const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
+  apiNamedurl.searchParams.append("fuzzy", searchTerm);
 
-    const thisAPICall = Date.now();
+  if (Date.now() - lastAPICall < 100) {
+    // Scryfall asks for 50-100ms between API calls, so wait for 100ms
+    await delay(100);
+  }
+  lastAPICall = Date.now();
 
-    if (thisAPICall - lastAPICall < 100) {
-      // Scryfall asks for 50-100ms between API calls, so wait for 100ms
-      await delay(100);
-    }
+  const scryfallResponse = await fetch(apiNamedurl, { headers });
 
-    lastAPICall = Date.now();
-
-    const scryfallResponse = await fetch(apiNamedurl, { headers });
+  if (scryfallResponse.status === 404) {
     const scryfallData = await scryfallResponse.json();
 
-    if (scryfallResponse.status === 404) {
-      if (scryfallData.type === "ambiguous") {
-        const apiSearchurl = new URL(`${scryfallCardAPIBase}/search`);
-        apiSearchurl.searchParams.append("q", searchTerm);
-        const searchResponse = await fetch(apiSearchurl, { headers });
-        const searchData = await searchResponse.json();
-        if (searchResponse.status === 200) {
-          // Retrieved a list of matching cards
-          var cardsList = searchData.data;
-          if (cardsList.length > 6) {
-            cardsList = cardsList.slice(0, 6);
-          }
-          const manipd = cardsList.map((item) => {
-            return {
-              name: item.name,
-              imgsrc: item.image_uris.normal, // Get smaller images for grid view
-              scryfallLink: item.scryfall_uri,
-            };
-          });
-          return { status: 200, data: manipd };
-        }
-      } else {
-        // Scryfall didn't find any card matching the term
-        return {
-          status: 200,
-          data: [],
-        };
+    if (scryfallData.type === "ambiguous") {
+      const apiSearchurl = new URL(`${scryfallCardAPIBase}/search`);
+      apiSearchurl.searchParams.append("q", searchTerm);
+
+      if (Date.now() - lastAPICall < 100) {
+        // Scryfall asks for 50-100ms between API calls, so wait for 100ms
+        await delay(100);
       }
-    } else {
-      return {
-        status: 200,
-        data: [
-          {
-            name: scryfallData.name,
-            imgsrc: scryfallData.image_uris.large,
-            scryfallLink: scryfallData.scryfall_uri,
-          },
-        ],
-      };
+      lastAPICall = Date.now();
+
+      const searchResponse = await fetch(apiSearchurl, { headers });
+      const searchData = await searchResponse.json();
+      if (!searchResponse.ok) {
+        throw createError(502, "Error fetching suggestions from Scryfall.");
+      }
+
+      // Retrieve up to 6 cards from the results
+      const cardsList = searchData.data.slice(0, 6);
+      // Manipulate the data into the desired format
+      const manipd = cardsList.map((item) => ({
+        name: item.name,
+        imgsrc: item.image_uris.normal, // Get smaller images for grid view
+        scryfallLink: item.scryfall_uri,
+      }));
+      return manipd;
     }
-  } catch (error) {
-    console.error(error);
-    return {
-      status: 500,
-      error: "An error occurred while fetching data from Scryfall.",
-      errorCode: "SERVER_ERROR",
-    };
+    // Scryfall didn't find any card matching the term
+    return [];
   }
+  if (!scryfallResponse.ok) {
+    throw createError(502, "Error fetching card data from Scryfall.");
+  }
+  const singleData = await scryfallResponse.json();
+  return [
+    {
+      name: singleData.name,
+      imgsrc: singleData.image_uris.large,
+      scryfallLink: singleData.scryfall_uri,
+    },
+  ];
 }
 
 module.exports = { searchScryfall };
