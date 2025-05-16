@@ -15,16 +15,9 @@ const { createError } = require("../utils");
  * @throws Will throw an error if the user is not found or a server error occurs.
  */
 const getUserByID = async (userId) => {
-  try {
-    const user = await User.findById(userId);
-    if (!user) throw createError(404, "User not found!");
-    return user;
-  } catch (error) {
-    throw {
-      status: error.status || 500,
-      message: error.message || "Server error",
-    };
-  }
+  const user = await User.findById(userId);
+  if (!user) throw createError(404, "User not found!");
+  return user;
 };
 
 module.exports = {
