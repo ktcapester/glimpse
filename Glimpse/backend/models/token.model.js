@@ -8,7 +8,6 @@
  * @property {string} email - Email address associated with the token.
  * @property {string} token - The token string.
  * @property {Date} expiresAt - Expiration date and time for the token.
- * @property {boolean} used - Indicates whether the token has been used.
  */
 
 const mongoose = require("mongoose");
@@ -39,13 +38,6 @@ const tokenSchema = new Schema({
    * @required
    */
   expiresAt: { type: Date, required: true },
-
-  /**
-   * Indicates whether the token has been used.
-   * @type {boolean}
-   * @default false
-   */
-  used: { type: Boolean, default: false },
 });
 
 /**
