@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { CardSchema } from '../interfaces';
 import { shareReplay } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 
 class LRUCache<K, V> {
   // Least Recently Used Cache
@@ -59,13 +59,20 @@ export class SearchResultService {
   }
 
   addCard(card: CardSchema, listID: string) {
+    console.log('service.addCard - Adding', card._id, 'to list', listID);
+    console.log('using URL', `${environment.apiURL}/list/${listID}`);
     // adds the card to the user's active list
     // returns the updated total for the list
-    return this.http.post<{ currentTotal: number }>(
-      `${environment.apiURL}/list/${listID}`,
-      {
-        cardID: card._id,
-      }
-    );
+    try {
+      return this.http.post<{ currentTotal: number }>(
+        `${environment.apiURL}/list/${listID}`,
+        {
+          cardId: card._id,
+        }
+      );
+    } catch (error) {
+      console.log('Error in addCard http call:', error);
+      return throwError(() => error);
+    }
   }
 }

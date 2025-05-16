@@ -38,7 +38,7 @@
       (click)="onAddToList(card, user())"
       [disabled]="isAdding()"
     >
-      {{ user() ? listButtonText : "Log in to Add" }}
+      {{ user() ? listButtonText() : "Log in to Add" }}
     </button>
   </div>
   <div class="button-container">

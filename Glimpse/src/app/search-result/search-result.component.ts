@@ -7,7 +7,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { UserService, SearchResultService, AuthService } from '../services';
 import { CardSchema, UserSchema } from '../interfaces';
 import { EMPTY } from 'rxjs';
@@ -27,7 +27,7 @@ export class SearchResultComponent {
   private resultService = inject(SearchResultService);
   private authService = inject(AuthService);
 
-  listButtonText = '+ Add to List';
+  listButtonText = signal('+ Add to List');
 
   readonly card = toSignal(
     // Get the card data each time the route changes
@@ -58,25 +58,31 @@ export class SearchResultComponent {
       .addCard(card, user.activeList)
       .pipe(
         tap(() => {
+          console.log('in the tap()');
           this.listFeedback();
         }),
         catchError((err) => {
           console.log('search-result-component onAddToList error:', err);
           this._isAdding.set(false);
           return EMPTY;
-        }),
-        takeUntilDestroyed()
+        })
       )
       .subscribe();
   }
 
   listFeedback() {
-    const prevText = this.listButtonText;
-    this.listButtonText = 'Added to list!';
+    console.log('listFeedback()');
+    const prevText = this.listButtonText();
+    this.listButtonText.set('Added to list!');
     // wait for a bit
-    setTimeout(
-      () => ((this.listButtonText = prevText), this._isAdding.set(false)),
-      500
-    );
+    setTimeout(() => {
+      try {
+        console.log('Timeout in listFeedback()');
+        this.listButtonText.set(prevText);
+        this._isAdding.set(false);
+      } catch (error) {
+        console.log('Error in listFeedback:', error);
+      }
+    }, 500);
   }
 }
