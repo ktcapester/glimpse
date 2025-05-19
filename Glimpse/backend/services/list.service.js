@@ -44,7 +44,7 @@ const addCard = async (listId, cardId) => {
 
   const cardPrice = card.prices.calc.usd || 0;
 
-  const list = await List.findOneAndUpdate(
+  const listWithNewCard = await List.findOneAndUpdate(
     { _id: listId, "cards.card": { $ne: card._id } },
     {
       $push: { cards: { card: card._id, quantity: 1 } },
@@ -53,21 +53,21 @@ const addCard = async (listId, cardId) => {
     { new: true }
   );
 
-  if (!list) {
-    const updatedList = await List.findOneAndUpdate(
+  if (!listWithNewCard) {
+    const listWithUpdatedCard = await List.findOneAndUpdate(
       { _id: listId, "cards.card": card._id },
       {
         $inc: {
-          "cards.$.quantity": quantity,
-          totalPrice: cardPrice * quantity,
+          "cards.$.quantity": 1,
+          totalPrice: cardPrice,
         },
       },
       { new: true }
     );
-    return { currentTotal: updatedList.totalPrice };
+    return { currentTotal: listWithUpdatedCard.totalPrice };
   }
 
-  return { currentTotal: list.totalPrice };
+  return { currentTotal: listWithNewCard.totalPrice };
 };
 
 /**
