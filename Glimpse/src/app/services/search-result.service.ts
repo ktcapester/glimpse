@@ -59,8 +59,6 @@ export class SearchResultService {
   }
 
   addCard(card: CardSchema, listID: string) {
-    console.log('service.addCard - Adding', card._id, 'to list', listID);
-    console.log('using URL', `${environment.apiURL}/list/${listID}`);
     // adds the card to the user's active list
     // returns the updated total for the list
     try {
