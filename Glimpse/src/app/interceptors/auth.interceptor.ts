@@ -26,6 +26,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
               setHeaders: { Authorization: `Bearer ${newToken}` },
             });
             return next(retryReq);
+          }),
+          catchError((refreshError) => {
+            // if the refresh fails, clear out the old token
+            auth.clearToken();
+            return throwError(() => refreshError);
           })
         );
       }
