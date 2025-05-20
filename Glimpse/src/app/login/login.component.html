@@ -1,25 +1,31 @@
 <div class="title-container">Login</div>
 @if(!isEmailSent()){
 <div class="instructions">Please login to use that feature.</div>
-<form
-  class="input-wrapper"
-  [formGroup]="searchForm"
-  (ngSubmit)="handleSubmit()"
->
-  <label for="email">Email:</label>
-  <input
-    id="email"
-    type="email"
-    class="input-field"
-    placeholder="example@example.com"
-    formControlName="email"
-  />
-  <div class="button-container">
-    <button class="large-button primary-button-style" type="submit">
-      Send Email
-    </button>
-  </div>
-</form>
+<div class="input-container">
+  <form
+    class="input-wrapper"
+    [formGroup]="searchForm"
+    (ngSubmit)="handleSubmit()"
+  >
+    <div class="input-spacer"></div>
+    <div class="input-input">
+      <label for="email">Email:</label>
+      <input
+        id="email"
+        type="email"
+        class="input-field"
+        placeholder="example@example.com"
+        formControlName="email"
+      />
+    </div>
+    <div class="button-container input-button">
+      <button class="large-button primary-button-style" type="submit">
+        Send Email
+      </button>
+    </div>
+    <div class="input-spacer"></div>
+  </form>
+</div>
 <div class="bottom-spacer"></div>
 } @else {
 <div class="email-sent">
