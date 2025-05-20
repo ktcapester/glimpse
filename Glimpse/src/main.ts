@@ -28,9 +28,9 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(
       withInterceptorsFromDi(),
       withInterceptors([
-        authInterceptor,
         errorInterceptor,
         currentTotalInterceptor,
+        authInterceptor,
       ])
     ),
   ],
