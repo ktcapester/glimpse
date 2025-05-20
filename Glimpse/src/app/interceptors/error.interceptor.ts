@@ -3,17 +3,18 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ErrorService } from '../services';
+import { AuthService, ErrorService } from '../services';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const errorService = inject(ErrorService);
+  const auth = inject(AuthService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       console.log('Error interceptor:', error);
-      if (error.status === 401) {
-        // Unauthorized - send the user to the login page
+      if (error.status === 401 && !auth.isLoggedIn()) {
+        // Access token is missing
         router.navigate(['/login']);
       } else if (error.status === 404) {
         // Not found - go to the 404 page
