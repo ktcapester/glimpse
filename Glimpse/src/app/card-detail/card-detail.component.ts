@@ -1,11 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   catchError,
   distinctUntilChanged,
@@ -20,6 +21,7 @@ import { CardSchema } from '../interfaces';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { of } from 'rxjs';
 import { isDefined } from '../type-guard.util';
+import { CardDisplayComponent } from '../card-display/card-display.component';
 
 interface DetailView {
   card: CardSchema;
@@ -29,11 +31,10 @@ interface DetailView {
 
 @Component({
   selector: 'app-card-detail',
-  imports: [CurrencyPipe, CommonModule, NgOptimizedImage],
+  imports: [CommonModule, CardDisplayComponent],
   templateUrl: './card-detail.component.html',
   styleUrl: './card-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'component-container' },
 })
 export class CardDetailComponent {
   private route = inject(ActivatedRoute);
@@ -69,6 +70,12 @@ export class CardDetailComponent {
     ),
     { initialValue: null }
   );
+
+  disabler = computed(() => {
+    const view = this.viewDetails();
+    if (!view) return true;
+    return this.patching() || view.quantity >= 99 || view.quantity === 1;
+  });
 
   updateCount(
     detail: { card: CardSchema; quantity: number; listID: string },

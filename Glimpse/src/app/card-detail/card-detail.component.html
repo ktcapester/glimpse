@@ -1,54 +1,20 @@
-<ng-container *ngIf="viewDetails() as detail; else loading">
-  <div class="my-top-div"></div>
-  <div class="card-image-container">
-    <img
-      [ngSrc]="detail.card.imgsrcFull"
-      [alt]="detail.card.name"
-      class="card-image"
-      width="336"
-      height="468"
-    />
-  </div>
-  <div class="prices-super">
-    <div
-      class="prices-container"
-      [ngClass]="{
-        'three-col': detail.card.prices?.calc?.usd_etched,
-        'two-col': !detail.card.prices?.calc?.usd_etched,
-      }"
-    >
-      <div class="text label">Normal</div>
-      <div class="text label">Foil</div>
-      <div *ngIf="detail.card.prices?.calc?.usd_etched" class="text label">
-        Etched
-      </div>
-      <div class="text value">
-        {{ detail.card.prices?.calc?.usd | currency }}
-      </div>
-      <div class="text value">
-        {{ detail.card.prices?.calc?.usd_foil | currency }}
-      </div>
-      <div *ngIf="detail.card.prices?.calc?.usd_etched" class="text value">
-        {{ detail.card.prices?.calc?.usd_etched | currency }}
-      </div>
-    </div>
-  </div>
+<app-card-display [card]="viewDetails()?.card ?? null">
   <div class="count-container">
     <div class="button-container small-button">
       <button
         class="secondary-button-style count-button text label"
-        (click)="updateCount(detail, -1)"
-        [disabled]="detail.quantity === 1 || isPatching()"
+        (click)="updateCount(viewDetails()!, -1)"
+        [disabled]="disabler()"
       >
         -
       </button>
     </div>
-    <div class="text label">{{ detail.quantity }}</div>
+    <div class="text label">{{ viewDetails()?.quantity }}</div>
     <div class="button-container small-button">
       <button
         class="secondary-button-style count-button text label"
-        (click)="updateCount(detail, 1)"
-        [disabled]="detail.quantity >= 99 || isPatching()"
+        (click)="updateCount(viewDetails()!, 1)"
+        [disabled]="disabler()"
       >
         +
       </button>
@@ -57,13 +23,10 @@
   <div class="button-container">
     <button
       class="large-button secondary-button-style"
-      (click)="onItemRemove(detail)"
+      (click)="onItemRemove(viewDetails()!)"
       [disabled]="isPatching()"
     >
       Remove
     </button>
   </div>
-</ng-container>
-<ng-template #loading>
-  <div class="spinner">Loading card details...</div>
-</ng-template>
+</app-card-display>
