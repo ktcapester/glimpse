@@ -28,12 +28,12 @@ export class CardDetailService {
       );
   }
 
-  updateCard(listId: string, cardId: string, price: number, count: number) {
+  updateCard(listId: string, cardId: string, price: number, quantity: number) {
     return this.http.patch<{ currentTotal: number }>(
       `${this.apiUrl}/${listId}/cards/${cardId}`,
       {
         price,
-        count,
+        quantity,
       }
     );
   }
