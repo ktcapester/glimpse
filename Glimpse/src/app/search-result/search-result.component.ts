@@ -5,7 +5,7 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   catchError,
   delayWhen,
@@ -18,14 +18,14 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { UserService, SearchResultService, AuthService } from '../services';
 import { CardSchema, UserSchema } from '../interfaces';
 import { EMPTY, timer } from 'rxjs';
+import { CardDisplayComponent } from '../card-display/card-display.component';
 
 @Component({
   selector: 'app-search-result',
-  imports: [CurrencyPipe, CommonModule, NgOptimizedImage],
+  imports: [CommonModule, CardDisplayComponent],
   templateUrl: './search-result.component.html',
   styleUrls: ['./search-result.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'component-container' },
 })
 export class SearchResultComponent {
   private route = inject(ActivatedRoute);
