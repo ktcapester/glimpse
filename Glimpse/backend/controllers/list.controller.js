@@ -115,7 +115,7 @@ const getCard = async (req, res, next) => {
   try {
     const { listId, cardId } = req.params;
     const response = await listService.getItem(listId, cardId);
-    // response is { card:Card, quantity:number}
+    // response is { list: cardentry[], quantity:number}
     res.json(response);
   } catch (error) {
     next(error);

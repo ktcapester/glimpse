@@ -122,28 +122,57 @@ const getItem = async (listId, cardId) => {
  */
 const updateItem = async (listId, cardId, updates) => {
   const card = await Card.findById(cardId);
-  if (!card) throw createError(404, "Card not found");
+  if (!card) throw createError(404, "Card not found in DB");
+  const list = await List.findOne({ _id: listId, "cards.card": cardId });
+  if (!list) throw createError(404, "List not found");
 
-  const updatesToApply = {};
+  // Short-circuit if no updates are provided
+  if (!updates || Object.keys(updates).length === 0)
+    return { list: list.cards, currentTotal: list.totalPrice };
+
+  const cardEntry = list.cards.find((entry) => entry.card._id.equals(cardId));
+  if (!cardEntry) throw createError(404, "Card not found in list");
+
+  const oldPrice = card.prices.calc.usd || 0;
+  const oldQuantity = cardEntry.quantity;
+
+  const updateOps = { $set: {}, $inc: {} };
+
+  // If there is a quantity update, handle it here
   if (updates.quantity !== undefined) {
     if (updates.quantity <= 0)
       throw createError(400, "Quantity must be greater than 0");
-    updatesToApply["cards.$.quantity"] = updates.quantity;
+    const quantityDiff = updates.quantity - oldQuantity;
+    updateOps.$set["cards.$.quantity"] = updates.quantity;
+    updateOps.$inc.totalPrice = oldPrice * quantityDiff;
   }
+
+  // If there is a price update, handle it here
   if (updates.prices?.calc?.usd !== undefined) {
     if (updates.prices.calc.usd < 0)
       throw createError(400, "Price must be non-negative");
-    const priceDifference =
-      updates.prices.calc.usd - (card.prices.calc.usd || 0);
-    updatesToApply.totalPrice = { $inc: priceDifference * updates.quantity };
+    const newPrice = updates.prices.calc.usd;
+    const priceDifference = newPrice - oldPrice;
+    const effectiveQuantity =
+      updates.quantity !== undefined ? updates.quantity : oldQuantity;
+    // Save new price and update total price
+    updateOps.$set["cards.$.prices.calc.usd"] = newPrice;
+    updateOps.$inc.totalPrice =
+      (updateOps.$inc.totalPrice || 0) + priceDifference * effectiveQuantity;
   }
 
+  // Remove unused update operations
+  if (Object.keys(updateOps.$set).length === 0) delete updateOps.$set;
+  if (Object.keys(updateOps.$inc).length === 0) delete updateOps.$inc;
+
+  // Update the list in one call
   const updatedList = await List.findOneAndUpdate(
     { _id: listId, "cards.card": cardId },
-    { $set: updatesToApply },
+    updateOps,
     { new: true }
   );
   if (!updatedList) throw createError(404, "List or card not found");
+
   return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
 };
 
