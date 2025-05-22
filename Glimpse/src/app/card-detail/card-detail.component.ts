@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -10,30 +11,25 @@ import { CommonModule } from '@angular/common';
 import {
   catchError,
   distinctUntilChanged,
+  exhaustMap,
   filter,
   finalize,
   map,
+  shareReplay,
   switchMap,
   tap,
 } from 'rxjs/operators';
 import { CardDetailService, UserService } from '../services';
-import { CardSchema } from '../interfaces';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { of } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { combineLatest, of } from 'rxjs';
 import { isDefined } from '../type-guard.util';
 import { CardDisplayComponent } from '../card-display/card-display.component';
-
-interface DetailView {
-  card: CardSchema;
-  quantity: number;
-  listID: string;
-}
 
 @Component({
   selector: 'app-card-detail',
   imports: [CommonModule, CardDisplayComponent],
   templateUrl: './card-detail.component.html',
-  styleUrl: './card-detail.component.css',
+  styleUrls: ['./card-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardDetailComponent {
@@ -45,60 +41,107 @@ export class CardDetailComponent {
   private patching = signal(false);
   readonly isPatching = this.patching.asReadonly();
 
-  // Use the URL and the current User to get the details we need.
+  private readonly listId = computed(
+    () => this.userService.user()?.activeList ?? ''
+  );
+
+  // Use the URL to get the cardID param
   private cardID$ = this.route.paramMap.pipe(
     map((pm) => pm.get('cardID')),
     filter(isDefined),
-    distinctUntilChanged()
+    distinctUntilChanged(),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
-  readonly viewDetails = toSignal<DetailView | null>(
-    this.cardID$.pipe(
-      switchMap((cardID) =>
-        this.userService.user$.pipe(
-          filter(isDefined),
-          switchMap((user) =>
-            this.details.getCard(user.activeList, cardID).pipe(
-              map((data) => ({ ...data, listID: user.activeList })),
-              catchError((err) => {
-                console.error('card load failed', err);
-                return of(null);
-              })
-            )
-          )
-        )
+
+  // Combine listID and cardID to get the card details
+  private readonly cardResult$ = combineLatest({
+    listID: toObservable(this.listId),
+    cardID: this.cardID$,
+  }).pipe(
+    filter(({ listID, cardID }) => !!listID && !!cardID),
+    switchMap(({ listID, cardID }) =>
+      this.details.getCard(listID, cardID).pipe(
+        catchError((err) => {
+          console.error('Failed loading card details', err);
+          return of<null>(null);
+        })
       )
     ),
-    { initialValue: null }
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  disabler = computed(() => {
-    const view = this.viewDetails();
+  // Signals for UI updates
+  readonly cardDetail = toSignal(this.cardResult$, { initialValue: null });
+  readonly card = computed(() => this.cardDetail()?.card ?? null);
+  readonly quantity = signal(0);
+  readonly disablerIncrement = computed(() => {
+    const view = this.cardDetail();
     if (!view) return true;
-    return this.patching() || view.quantity >= 99 || view.quantity === 1;
+    return this.patching() || this.quantity() >= 99;
+  });
+  readonly disablerDecrement = computed(() => {
+    const view = this.cardDetail();
+    if (!view) return true;
+    return this.patching() || this.quantity() === 1;
   });
 
-  updateCount(
-    detail: { card: CardSchema; quantity: number; listID: string },
-    delta: number
-  ) {
-    const newCount = detail.quantity + delta;
-    if (newCount < 1 || newCount > 99) return;
-    this.patching.set(true);
-    this.details
-      .updateCard(
-        detail.listID,
-        detail.card._id,
-        detail.card.prices?.calc?.usd ?? 0,
-        newCount
-      )
-      .pipe(finalize(() => this.patching.set(false)))
-      .subscribe();
+  // Signal to safely process clicks. {delta} makes each click a new event
+  // even if delta is the same value.
+  private readonly updateClicks = signal<{ delta: number } | null>(null);
+  private readonly updateClicks$ = toObservable(this.updateClicks);
+
+  constructor() {
+    // Initialize the quantity signal based on the card details
+    effect(() => {
+      const result = this.cardDetail();
+      this.quantity.set(result?.quantity ?? 0);
+    });
+
+    // Define click event handler, using onCleanup to unsubscribe
+    effect((onCleanup) => {
+      const sub = this.updateClicks$
+        .pipe(
+          filter(isDefined),
+          exhaustMap(({ delta }) => {
+            const listID = this.listId();
+            const c = this.card();
+            if (!listID || !c) return of<void>(undefined);
+
+            this.patching.set(true);
+            const newQty = Math.max(1, Math.min(99, this.quantity() + delta));
+
+            return this.details
+              .updateCard(listID, c._id, c.prices?.calc?.usd ?? 0, newQty)
+              .pipe(
+                tap(() => this.quantity.set(newQty)),
+                catchError((err) => {
+                  console.log('Update failed', err);
+                  return of<void>(undefined);
+                }),
+                finalize(() => this.patching.set(false))
+              );
+          })
+        )
+        .subscribe();
+      onCleanup(() => sub.unsubscribe());
+    });
   }
 
-  onItemRemove(detail: { card: CardSchema; quantity: number; listID: string }) {
+  // Button callbacks
+  increment() {
+    this.updateClicks.set({ delta: 1 });
+  }
+  decrement() {
+    this.updateClicks.set({ delta: -1 });
+  }
+  remove() {
+    const listID = this.listId();
+    const c = this.card();
+    if (!listID || !c) return;
+
     this.patching.set(true);
     this.details
-      .deleteCard(detail.listID, detail.card._id)
+      .deleteCard(listID, c._id)
       .pipe(
         tap(() => this.router.navigate(['/list'])),
         finalize(() => this.patching.set(false))

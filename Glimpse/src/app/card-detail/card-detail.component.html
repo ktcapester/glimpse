@@ -1,20 +1,20 @@
-<app-card-display [card]="viewDetails()?.card ?? null">
+<app-card-display [card]="card()">
   <div class="count-container">
     <div class="button-container small-button">
       <button
         class="secondary-button-style count-button text label"
-        (click)="updateCount(viewDetails()!, -1)"
-        [disabled]="disabler()"
+        (click)="decrement()"
+        [disabled]="disablerDecrement()"
       >
         -
       </button>
     </div>
-    <div class="text label">{{ viewDetails()?.quantity }}</div>
+    <div class="text label">{{ quantity() }}</div>
     <div class="button-container small-button">
       <button
         class="secondary-button-style count-button text label"
-        (click)="updateCount(viewDetails()!, 1)"
-        [disabled]="disabler()"
+        (click)="increment()"
+        [disabled]="disablerIncrement()"
       >
         +
       </button>
@@ -23,7 +23,7 @@
   <div class="button-container">
     <button
       class="large-button secondary-button-style"
-      (click)="onItemRemove(viewDetails()!)"
+      (click)="remove()"
       [disabled]="isPatching()"
     >
       Remove
