@@ -30,7 +30,8 @@ const { createError } = require("../utils");
 const COOKIE_OPTS = {
   httpOnly: true,
   secure: true,
-  sameSite: "Strict",
+  sameSite: "None",
+  domain: ".glimpsecard.com",
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
