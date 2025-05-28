@@ -10,7 +10,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   // attach token if present
   const authReq = token
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+    ? req.clone({
+        setHeaders: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      })
     : req;
 
   // If the access token (JWT) is expired, use the refresh token (cookie) to get a new access token
@@ -24,6 +27,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             const newToken = auth.token();
             const retryReq = req.clone({
               setHeaders: { Authorization: `Bearer ${newToken}` },
+              withCredentials: true,
             });
             return next(retryReq);
           }),

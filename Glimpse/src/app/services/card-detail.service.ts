@@ -34,13 +34,15 @@ export class CardDetailService {
       {
         price,
         quantity,
-      }
+      },
+      { withCredentials: true }
     );
   }
 
   deleteCard(listId: string, cardId: string) {
     return this.http.delete<{ currentTotal: number }>(
-      `${this.apiUrl}/${listId}/cards/${cardId}`
+      `${this.apiUrl}/${listId}/cards/${cardId}`,
+      { withCredentials: true }
     );
   }
 }

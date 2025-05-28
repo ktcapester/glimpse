@@ -66,7 +66,8 @@ export class SearchResultService {
         `${environment.apiURL}/list/${listID}`,
         {
           cardId: card._id,
-        }
+        },
+        { withCredentials: true }
       );
     } catch (error) {
       console.log('Error in addCard http call:', error);
