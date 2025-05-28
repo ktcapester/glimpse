@@ -1,74 +1,82 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   inject,
-  OnInit,
+  signal,
 } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { EMPTY, Observable } from 'rxjs';
-import { catchError, first, switchMap, tap } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
+import { EMPTY } from 'rxjs';
+import { catchError, finalize, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { UserSchema, ListData } from '../interfaces';
+import { ListData } from '../interfaces';
 import { UserService, CardListService } from '../services';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-card-list',
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.css'],
-  imports: [CurrencyPipe, CommonModule],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'component-container' },
 })
-export class CardListComponent implements OnInit {
+export class CardListComponent {
   private router = inject(Router);
   private listService = inject(CardListService);
   private userService = inject(UserService);
 
-  listData$!: Observable<ListData>;
-  isModalActive = false;
-  isDeleting = false;
+  private _listSig = signal<ListData | null>(null);
+  readonly listData = this._listSig.asReadonly();
 
-  ngOnInit(): void {
-    this.loadList();
+  private readonly listId = computed(
+    () => this.userService.user()?.activeList ?? ''
+  );
+
+  constructor() {
+    effect(() => {
+      const id = this.listId();
+      if (!id) return;
+      this.listService
+        .getList(id)
+        .pipe(
+          tap((resp) => this._listSig.set(resp)),
+          takeUntilDestroyed()
+        )
+        .subscribe();
+    });
   }
 
-  private loadList() {
-    // Use the current User to get the active list.
-    this.listData$ = this.userService.user$.pipe(
-      first((u): u is UserSchema => u !== null),
-      switchMap((user) => this.listService.getList(user.activeList))
-    );
-  }
+  readonly isModalActive = signal(false);
+  readonly isDeleting = signal(false);
 
   onItemClick(id: string, name: string) {
     this.router.navigate(['/detail', id, name]);
   }
 
   onClearList() {
-    this.isModalActive = true;
+    this.isModalActive.set(true);
   }
 
   onCancel() {
-    this.isModalActive = false;
+    this.isModalActive.set(false);
   }
 
   onConfirm() {
-    this.isDeleting = true;
-    this.userService.user$
-      .pipe(
-        first((u): u is UserSchema => u !== null),
-        switchMap((user) =>
-          this.listService.deleteList(user.activeList).pipe(
-            tap(() => {
-              this.isModalActive = false;
-              this.loadList();
-            }),
-            catchError(() => {
-              return EMPTY;
-            })
-          )
+    if (this.listId()) {
+      this.isDeleting.set(true);
+      this.listService
+        .deleteList(this.listId())
+        .pipe(
+          tap((response) => {
+            this._listSig.set(response);
+            this.isModalActive.set(false);
+          }),
+          catchError(() => EMPTY),
+          finalize(() => this.isDeleting.set(false))
         )
-      )
-      .subscribe({ complete: () => (this.isDeleting = false) });
+        .subscribe();
+    }
   }
 }

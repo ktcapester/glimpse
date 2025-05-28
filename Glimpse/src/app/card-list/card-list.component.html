@@ -1,29 +1,29 @@
-<ng-container *ngIf="listData$ | async as listData; else loading">
+<ng-container *ngIf="listData() as listData; else loading">
   <div class="scrollable-list">
-    @if (listData.list.length === 0){
-    <div class="empty-list">Add cards to your list!</div>
-    } @for (item of listData.list; track item.id; let i = $index) {
+    @for (item of listData.list; track item.id; let i = $index) {
     <div
       class="card-list-item"
-      [class.alternate-item]="i % 2 == 1"
+      [class.alternate-item]="i % 2 === 1"
       (click)="onItemClick(item.id, item.name)"
     >
       <div
         class="card-list-item-typography card-name-special"
-        [class.alternate-item]="i % 2 == 1"
+        [class.alternate-item]="i % 2 === 1"
       >
         {{ item.count }} {{ item.name }}
       </div>
       <div
         class="card-list-item-typography"
-        [class.alternate-item]="i % 2 == 1"
+        [class.alternate-item]="i % 2 === 1"
       >
         {{ item.price * item.count | currency }}
       </div>
     </div>
+    } @empty {
+    <div class="empty-list">Add cards to your list!</div>
     }
   </div>
-  <ng-container *ngIf="isModalActive; else noModal">
+  <ng-container *ngIf="isModalActive(); else noModal">
     <div class="total-container">
       <div class="total-label">Clear list?</div>
     </div>
@@ -31,9 +31,9 @@
       <button
         class="large-button primary-button-style"
         (click)="onConfirm()"
-        [disabled]="isDeleting"
+        [disabled]="isDeleting()"
       >
-        {{ isDeleting ? "Clearing..." : "Yee" }}
+        {{ isDeleting() ? "Clearing..." : "Yee" }}
       </button>
     </div>
     <div class="button-container">
