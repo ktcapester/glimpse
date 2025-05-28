@@ -4,6 +4,10 @@ import { AuthService } from '../services';
 import { catchError, from, switchMap, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  if (req.url.includes('auth/refresh-token')) {
+    return next(req);
+  }
+
   // Get the token from storage
   const auth = inject(AuthService);
   const token = auth.token();
