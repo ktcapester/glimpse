@@ -8,11 +8,10 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EMPTY } from 'rxjs';
-import { catchError, finalize, tap } from 'rxjs/operators';
+import { catchError, finalize, take, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { ListData } from '../interfaces';
 import { UserService, CardListService } from '../services';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-card-list',
@@ -37,12 +36,18 @@ export class CardListComponent {
   constructor() {
     effect(() => {
       const id = this.listId();
-      if (!id) return;
+      if (!id) {
+        this._listSig.set(null);
+        return;
+      }
       this.listService
         .getList(id)
         .pipe(
-          tap((resp) => this._listSig.set(resp)),
-          takeUntilDestroyed()
+          take(1), // explicitly take only the first emission (overkill due to HTTPClient)
+          tap((resp) => {
+            console.log('[CardList] fetch response:', resp);
+            this._listSig.set(resp);
+          })
         )
         .subscribe();
     });
@@ -64,10 +69,11 @@ export class CardListComponent {
   }
 
   onConfirm() {
-    if (this.listId()) {
+    const id = this.listId();
+    if (id) {
       this.isDeleting.set(true);
       this.listService
-        .deleteList(this.listId())
+        .deleteList(id)
         .pipe(
           tap((response) => {
             this._listSig.set(response);
