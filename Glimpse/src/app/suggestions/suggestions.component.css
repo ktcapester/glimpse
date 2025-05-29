@@ -1,10 +1,13 @@
 .scrollable-list {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  scroll-behavior: smooth;
   display: grid;
-  grid-template: auto auto auto / auto auto;
+  flex: 1 1 auto;
+  padding: 0px 24px;
+  gap: 24px;
+  margin-bottom: 18px;
+  /* overflow-y: auto;
+  scroll-behavior: smooth; */
   justify-content: space-evenly;
+  grid-template-columns: repeat(var(--cols, 1), minmax(146px, 1fr));
 }
 
 .suggestion-question {
@@ -18,9 +21,14 @@
 }
 
 .suggestion-item {
-  margin: 8px;
+  min-width: 146px;
+  min-height: 204px;
 }
 
 .card-image {
   border-radius: 4.75% / 3.5%; /* ty scryfall */
+  width: 100%;
+  height: auto;
+  min-width: 146px;
+  min-height: 204px;
 }
