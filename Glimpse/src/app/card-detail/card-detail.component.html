@@ -1,52 +1,20 @@
-<div class="component-container">
-  <app-header></app-header>
-  @if (loadingDone){
-  <div class="card-image-container">
-    <img
-      [src]="displayCard.imgsrc"
-      [alt]="displayCard.name"
-      class="card-image"
-      width="336"
-      height="468"
-    />
-  </div>
-  <div class="prices-super">
-    <div
-      class="prices-container"
-      [ngStyle]="{
-        'grid-template': displayCard.etchedprice
-          ? 'auto auto / auto auto auto'
-          : 'auto auto / auto auto'
-      }"
-    >
-      <div class="text label">Normal</div>
-      <div class="text label">Foil</div>
-      @if (displayCard.etchedprice) {
-      <div class="text label">Etched</div>
-      }
-      <div class="text value">{{ displayCard.normalprice | currency }}</div>
-      <div class="text value">{{ displayCard.foilprice | currency }}</div>
-      @if (displayCard.etchedprice) {
-      <div class="text value">
-        {{ displayCard.etchedprice | currency }}
-      </div>
-      }
-    </div>
-  </div>
+<app-card-display [card]="card()">
   <div class="count-container">
     <div class="button-container small-button">
       <button
         class="secondary-button-style count-button text label"
-        (click)="onItemDecrease()"
+        (click)="decrement()"
+        [disabled]="disablerDecrement()"
       >
         -
       </button>
     </div>
-    <div class="text label">{{ myCard.count }}</div>
+    <div class="text label">{{ quantity() }}</div>
     <div class="button-container small-button">
       <button
         class="secondary-button-style count-button text label"
-        (click)="onItemIncrease()"
+        (click)="increment()"
+        [disabled]="disablerIncrement()"
       >
         +
       </button>
@@ -55,10 +23,10 @@
   <div class="button-container">
     <button
       class="large-button secondary-button-style"
-      (click)="onItemRemove()"
+      (click)="remove()"
+      [disabled]="isPatching()"
     >
       Remove
     </button>
   </div>
-  }
-</div>
+</app-card-display>

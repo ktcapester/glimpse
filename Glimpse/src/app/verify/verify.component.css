@@ -1,12 +1,3 @@
-.verify-container {
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  height: 100vh;
-  box-sizing: border-box;
-  background-color: var(--Sand);
-}
-
 div {
   background-color: var(--Sand);
 }
@@ -16,11 +7,31 @@ div {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--Sand);
+  font-size: x-large;
+  text-align: center;
 }
 
 .response-container {
   display: flex;
+  flex-grow: 1;
   max-width: 100%;
-  justify-content: center;
+  justify-content: space-around;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.response-container > * {
+  margin: 18px 24px;
+}
+
+.response-message {
+  text-align: center;
+}
+
+.redirect-button {
+  flex-grow: unset;
+}
+
+.bottom-spacer {
+  flex-grow: 1;
 }

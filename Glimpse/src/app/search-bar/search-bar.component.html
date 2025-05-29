@@ -9,17 +9,24 @@
       class="input-field"
       placeholder="Card name"
       formControlName="search"
-      (click)="clearInput()"
       #inputField
     />
     <img
-      src="../../assets/icon-search.svg"
+      ngSrc="../../assets/icon-search.svg"
       alt="Search Icon"
       class="input-icon"
+      width="16"
+      height="16"
     />
   </form>
   <button class="list-button" (click)="navigateToList()">
-    <img src="../../assets/icon-list.svg" alt="List Icon" class="list-icon" />
-    {{ displayTotal | currency }}
+    <img
+      ngSrc="../../assets/icon-list.svg"
+      alt="List Icon"
+      class="list-icon"
+      width="12"
+      height="20"
+    />
+    {{ total() | currency }}
   </button>
 </div>

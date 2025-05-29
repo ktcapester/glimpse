@@ -1,0 +1,20 @@
+.title-text {
+  flex-grow: 1;
+  font-size: x-large;
+  font-weight: 700;
+  line-height: 150%;
+  text-align: center;
+  align-content: center;
+}
+
+.detail-text {
+  flex-grow: 1;
+  font-size: larger;
+  line-height: 150%;
+  text-align: center;
+  align-content: center;
+}
+
+.bottom-spacer {
+  flex-grow: 6;
+}

@@ -1,135 +1,163 @@
+/**
+ * Service functions for handling Magic Link authentication.
+ * @module Services/MagicLink
+ */
+
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
+const { RefreshToken } = require("../models/refreshtoken.model");
 const { Token } = require("../models/token.model");
 const { User } = require("../models/user.model");
 const { List } = require("../models/list.model");
+const { createError } = require("../utils");
 
-// Utility: Create consistent errors
-const createError = (status, message) => ({ status, message });
+const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-// Generate a secure random token
-function generateToken() {
-  return crypto.randomBytes(32).toString("hex");
+function generateAccessToken(userId) {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
 }
 
-// Send magic link to user's email
+async function createRefreshToken(userId) {
+  const token = uuidv4();
+  const expiresAt = new Date(Date.now() + COOKIE_MAX_AGE); // 7 days
+  await RefreshToken.create({
+    token,
+    userId,
+    expiresAt,
+  });
+  return token;
+}
+
+/**
+ * Send a magic link to the user's email.
+ * @async
+ * @function
+ * @name module:Services/MagicLink.sendMagicLink
+ * @param {string} email - The email address to send the magic link to.
+ * @returns {Promise<void>}
+ * @throws Will throw an error if the email sending fails or a server error occurs.
+ */
 async function sendMagicLink(email) {
-  try {
-    console.log("sending magic link to:", email);
-    // Check for old unused tokens for the email
-    const record = await Token.findOne({ email, used: false });
-    // Delete if found
-    if (record) {
-      await Token.findByIdAndDelete(record._id);
-    }
-    console.log("old token deleted or not present");
-    // Create new token
-    const token = generateToken();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
+  console.log("sending magic link to:", email);
 
-    // Save the token to the database
-    await Token.create({ email, token, expiresAt });
-    console.log("new token saved to DB");
-
-    // Construct the magic link
-    const magicLink = `${
-      process.env.BASE_URL
-    }/verify?token=${token}&email=${encodeURIComponent(email)}`;
-
-    // Configure email transport
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    // Send the email
-    // I tested this locally and it at least works here.
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your Magic Link",
-      text: `Click here to log in: ${magicLink}`,
-      html: `<a href="${magicLink}">Log in</a>`,
-    });
-  } catch (err) {
-    console.error(err);
-    throw {
-      status: err.status || 500,
-      message: err.message || "Server error",
-    };
+  // Check for old unused tokens for the email
+  const record = await Token.findOne({ email });
+  // Delete if found
+  if (record) {
+    await Token.findByIdAndDelete(record._id);
   }
+  // Create new token
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
+
+  // Save the token to the database
+  const dbtok = await Token.create({ email, token, expiresAt });
+  console.log("new token saved to DB");
+  console.log(dbtok);
+
+  // Construct the magic link
+  const magicLink = `${
+    process.env.BASE_URL
+  }/verify?token=${token}&email=${encodeURIComponent(email)}`;
+
+  // Configure email transport
+  const transporter = nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  // Send the email
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your Magic Link",
+    text: `Click here to log in: ${magicLink}`,
+    html: `<a href="${magicLink}">Log in</a>`,
+  });
 }
 
-const verifyToken = async (token, email) => {
-  try {
-    console.log("verifying token+email:", token, email);
-    // Find the token in the database
-    const record = await Token.findOne({ email, token, used: false });
-    console.log("found record:", record);
-    if (!record) {
-      throw createError(400, "Invalid or expired token.");
-    }
+/**
+ * Verify a magic link token and return the associated user.
+ * @async
+ * @function
+ * @name module:Services/MagicLink.verifyMagicToken
+ * @param {string} token - The token to verify.
+ * @param {string} email - The email address associated with the token.
+ * @returns {Promise<string>} The user ID if verification is successful.
+ * @throws Will throw an error if the token is invalid, expired, or a server error occurs.
+ */
+async function verifyMagicToken(token, email) {
+  console.log("verifying token+email:", token, email);
 
-    // Check if the token has expired
-    if (record.expiresAt < Date.now()) {
-      throw createError(400, "Token has expired.");
-    }
+  // 1) Find & delete the unexpired token in one go
+  const record = await Token.findOneAndDelete({
+    email,
+    token,
+    expiresAt: { $gt: Date.now() },
+  });
 
-    // Mark the token as used
-    record.used = true;
-    await record.save();
-
-    console.log("looking for user with email:", email);
-    // Token successfully verified, so find the User connected to it
-    const user = await User.findOne({ email });
-    if (!user) {
-      console.log("no user found, creating new User");
-      // Create a new User
-      const usernamenew = email.split("@")[0];
-      const newUser = new User({
-        email: email,
-        username: usernamenew,
-      });
-      await newUser.save();
-
-      console.log("creating default list for new user");
-      // Create a default list
-      const defaultList = new List({
-        user: newUser._id, // connects the User into the List
-        name: `${usernamenew} Default List`,
-        description: `${usernamenew}'s auto generated list.`,
-      });
-      await defaultList.save();
-
-      console.log("connecting list to user");
-      // Connect the List into the User
-      newUser.lists.push(defaultList._id);
-      newUser.activeList = defaultList._id;
-      await newUser.save();
-
-      console.log("new User created & saved:", newUser);
-      // Delete token after successful signup
-      await Token.findByIdAndDelete(record._id);
-      console.log("user token deleted");
-      // Return the new User
-      return newUser;
-    }
-
-    // Delete token after successful login
-    await Token.findByIdAndDelete(record._id);
-    console.log("user token deleted for User:", user);
-    // Return the existing User
-    return user;
-  } catch (err) {
-    console.error(err);
-    throw {
-      status: err.status || 500,
-      message: err.message || "Server error",
-    };
+  if (!record) {
+    throw createError(400, "Invalid or expired magic link.");
   }
-};
 
-module.exports = { sendMagicLink, verifyToken };
+  // 2) Find existing user or create one
+  let user = await User.findOne({ email });
+  if (!user) {
+    // Create a new User
+    const username = email.split("@")[0];
+    user = await User.create({
+      email: email,
+      username: username,
+    });
+    // Create a default list
+    const defaultList = await List.create({
+      user: user._id, // connects the User into the List
+      name: `${username} Default List`,
+      description: `${username}'s auto generated list.`,
+    });
+    // Connect the List into the User
+    user.lists = [defaultList._id];
+    user.activeList = defaultList._id;
+    await user.save();
+  }
+  console.log("resulting user ID:", user._id);
+  // Return the User
+  return user;
+}
+
+async function loginWithMagicLink(token, email) {
+  const user = await verifyMagicToken(token, email);
+  const accessToken = generateAccessToken(user._id);
+  const refreshToken = await createRefreshToken(user._id);
+  return { accessToken, refreshToken };
+}
+
+async function refreshAccessToken(refreshToken) {
+  const refreshDoc = await RefreshToken.findOne({ token: refreshToken });
+
+  if (!refreshDoc) {
+    throw createError(401, "Invalid refresh token.");
+  }
+
+  if (refreshDoc.expiresAt < Date.now()) {
+    throw createError(401, "Refresh token has expired.");
+  }
+
+  return generateAccessToken(refreshDoc.userId);
+}
+
+async function revokeRefreshToken(refreshToken) {
+  await RefreshToken.deleteOne({ token: refreshToken });
+}
+
+module.exports = {
+  sendMagicLink,
+  loginWithMagicLink,
+  refreshAccessToken,
+  revokeRefreshToken,
+};

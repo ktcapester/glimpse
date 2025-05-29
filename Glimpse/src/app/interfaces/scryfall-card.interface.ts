@@ -1,3 +1,4 @@
+// Not currently used, but keeping for my reference
 export interface ScryfallCard {
   name: string;
   id: string;

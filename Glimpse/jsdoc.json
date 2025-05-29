@@ -1,0 +1,11 @@
+{
+  "source": {
+    "include": ["./backend/"],
+    "includePattern": ".js$",
+    "excludePattern": "(node_modules|api_docs)"
+  },
+  "opts": {
+    "destination": "./backend/api_docs",
+    "recurse": true
+  }
+}

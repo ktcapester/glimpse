@@ -1,54 +1,62 @@
-<div class="component-container">
-  <app-header></app-header>
-
+<ng-container *ngIf="listData() as listData; else loading">
   <div class="scrollable-list">
-    @if (!displayList || displayList.length == 0){
-    <div class="empty-list">Add cards to your list!</div>
-    } @for (item of displayList; track item.id; let i = $index) {
+    @for (item of listData.list; track item.id; let i = $index) {
     <div
       class="card-list-item"
-      [class.alternate-item]="i % 2 == 1"
-      (click)="onItemClick(item)"
+      [class.alternate-item]="i % 2 === 1"
+      (click)="onItemClick(item.id, item.name)"
     >
       <div
         class="card-list-item-typography card-name-special"
-        [class.alternate-item]="i % 2 == 1"
+        [class.alternate-item]="i % 2 === 1"
       >
         {{ item.count }} {{ item.name }}
       </div>
       <div
         class="card-list-item-typography"
-        [class.alternate-item]="i % 2 == 1"
+        [class.alternate-item]="i % 2 === 1"
       >
         {{ item.price * item.count | currency }}
       </div>
     </div>
+    } @empty {
+    <div class="empty-list">Add cards to your list!</div>
     }
   </div>
-
-  @if (isModalActive) {
-  <div class="total-container">
-    <div class="total-label">Clear list?</div>
-  </div>
-  <div class="button-container">
-    <button class="large-button primary-button-style" (click)="onConfirm()">
-      Yee
-    </button>
-  </div>
-  <div class="button-container">
-    <button class="large-button secondary-button-style" (click)="onCancel()">
-      Cancel
-    </button>
-  </div>
-  } @else {
-  <div class="total-container">
-    <a class="total-label">Total</a>
-    <a class="total-price">{{ totalPrice | currency }}</a>
-  </div>
-  <div class="button-container">
-    <button class="large-button secondary-button-style" (click)="onClearList()">
-      Clear list
-    </button>
-  </div>
-  }
-</div>
+  <ng-container *ngIf="isModalActive(); else noModal">
+    <div class="total-container">
+      <div class="total-label">Clear list?</div>
+    </div>
+    <div class="button-container">
+      <button
+        class="large-button primary-button-style"
+        (click)="onConfirm()"
+        [disabled]="isDeleting()"
+      >
+        {{ isDeleting() ? "Clearing..." : "Yee" }}
+      </button>
+    </div>
+    <div class="button-container">
+      <button class="large-button secondary-button-style" (click)="onCancel()">
+        Cancel
+      </button>
+    </div>
+  </ng-container>
+  <ng-template #noModal>
+    <div class="total-container">
+      <a class="total-label">Total</a>
+      <a class="total-price">{{ listData.currentTotal | currency }}</a>
+    </div>
+    <div class="button-container">
+      <button
+        class="large-button secondary-button-style"
+        (click)="onClearList()"
+      >
+        Clear list
+      </button>
+    </div>
+  </ng-template>
+</ng-container>
+<ng-template #loading>
+  <div class="spinner">Loading list details...</div>
+</ng-template>

@@ -1,35 +1,4 @@
-.card-image-container {
-  display: flex;
-  justify-content: center;
-}
-
-.prices-super {
-  display: flex;
-  justify-content: center;
-}
-
-.card-image {
-  border-radius: 4.75% / 3.5%; /* ty scryfall */
-}
-
-.prices-container {
-  width: 50%;
-  display: grid;
-  column-gap: 10px;
-  justify-items: center;
-}
-
-.text {
-  text-align: center;
-  font-size: 18px;
-  font-style: normal;
-  line-height: 150%; /* 27px */
-}
-
-.label {
-  font-weight: 700;
-}
-
-.value {
-  font-weight: 400;
+.link-out {
+  color: inherit;
+  text-decoration: inherit;
 }

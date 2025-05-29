@@ -1,0 +1,11 @@
+# ignore secret env file
+.env
+
+# ignore git stuff
+.git/
+.gitignore
+
+# ignore local dev artifacts
+node_modules/
+npm-debug.log*
+*.log

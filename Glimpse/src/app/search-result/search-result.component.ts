@@ -1,137 +1,80 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { HeaderComponent } from '../header/header.component';
-import { DisplayCard } from '../interfaces/display-card.interface';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GlimpseStateService } from '../services/glimpse-state.service';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { combineLatest, Subject } from 'rxjs';
-import { takeUntil, tap } from 'rxjs/operators';
-import { BackendGlueService } from '../services/backend-glue.service';
-import { SearchDataService } from '../services/search-data.service';
-import { ResultPricesService } from '../services/result-prices.service';
-import { UserService } from '../services/user.service';
-import { UserSchema } from '../interfaces/schemas.interface';
+import { CommonModule } from '@angular/common';
+import {
+  catchError,
+  delayWhen,
+  finalize,
+  map,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { UserService, SearchResultService, AuthService } from '../services';
+import { CardSchema, UserSchema } from '../interfaces';
+import { EMPTY, timer } from 'rxjs';
+import { CardDisplayComponent } from '../card-display/card-display.component';
 
 @Component({
   selector: 'app-search-result',
-  standalone: true,
-  imports: [HeaderComponent, CurrencyPipe, CommonModule],
+  imports: [CommonModule, CardDisplayComponent],
   templateUrl: './search-result.component.html',
-  styleUrl: './search-result.component.css',
+  styleUrls: ['./search-result.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SearchResultComponent implements OnInit, OnDestroy {
-  displayCard!: DisplayCard;
-  private destroy$ = new Subject<void>();
-  listButtonText = '+ Add to List';
-  private myCardName = '';
-  myUser!: UserSchema;
+export class SearchResultComponent {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private userService = inject(UserService);
+  private resultService = inject(SearchResultService);
+  private authService = inject(AuthService);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private state: GlimpseStateService,
-    private glue: BackendGlueService,
-    private search: SearchDataService,
-    private prices: ResultPricesService,
-    private userService: UserService
-  ) {}
+  listButtonText = signal('+ Add to List');
 
-  ngOnDestroy(): void {
-    console.log('SearchResult ngOnDestroy called!', Date.now());
-    this.prices.clearPrices();
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  readonly card = toSignal(
+    // Get the card data each time the route changes
+    this.route.paramMap.pipe(
+      map((pm) => pm.get('cardName')!),
+      switchMap((cardName) => this.resultService.getCard(cardName))
+    ),
+    { initialValue: null }
+  );
 
-  ngOnInit(): void {
-    console.log('SearchResult ngOnInit called!', Date.now());
+  // Get the user from the service
+  readonly user = this.userService.user;
 
-    this.userService.user$
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((data) => {
-          if (data) {
-            this.myUser = data;
-          }
-        })
-      )
-      .subscribe();
+  private _isAdding = signal(false);
+  readonly isAdding = this._isAdding.asReadonly();
 
-    // Set up getting names out of the URL
-    this.route.paramMap
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((params) => {
-          const name = params.get('cardName') || '';
-          this.myCardName = name;
-
-          combineLatest([this.search.searchResults$, this.prices.priceResults$])
-            .pipe(
-              takeUntil(this.destroy$),
-              tap(([searchResult, prices]) => {
-                if (prices.usd) {
-                  const display: DisplayCard = {
-                    name: searchResult.cards[0].name,
-                    imgsrc: searchResult.cards[0].imgsrc,
-                    normalprice: prices.usd,
-                    foilprice: prices.usd_foil,
-                    etchedprice: prices.usd_etched,
-                    scryfallLink: searchResult.cards[0].scryfallLink,
-                  };
-                  this.displayCard = { ...display };
-                } else {
-                  console.log('There was an error in prices but who cares');
-                }
-              })
-            )
-            .subscribe();
-          // Now that the pipeline is set up, kick it off
-          this.search.updateSearchTerm(this.myCardName);
-          this.prices.updatePricesTerm(this.myCardName);
-        })
-      )
-      .subscribe();
-  }
-
-  onAddToList() {
-    // use backend to add to the list
+  onAddToList(card: CardSchema, user: UserSchema | null) {
     // check if user is logged in & redirect if needed
-    if (!this.myUser || !this.userService.isTokenValid()) {
+    if (!user || !this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
       return;
     }
+    this._isAdding.set(true);
+    let prevText: string;
     // user is logged in, so we can use the DB
-    this.glue
-      .postCardList(
-        this.myUser.activeList,
-        this.displayCard.name,
-        this.displayCard.imgsrc,
-        this.displayCard.normalprice
-      )
+    this.resultService
+      .addCard(card, user.activeList)
       .pipe(
-        takeUntil(this.destroy$),
-        tap((list_response) => {
-          if (list_response.data.name === this.displayCard.name) {
-            this.state.pushNewTotal(list_response.currentTotal);
-            this.listFeedback();
-          } else {
-            console.log('Something went wrong.');
-            console.log(list_response);
-          }
-        })
+        catchError((err) => {
+          console.log('search-result-component onAddToList error:', err);
+          return EMPTY;
+        }),
+        tap(() => {
+          prevText = this.listButtonText();
+          this.listButtonText.set('Added to list!');
+        }),
+        delayWhen(() => timer(500)),
+        tap(() => this.listButtonText.set(prevText)),
+        finalize(() => this._isAdding.set(false))
       )
       .subscribe();
-  }
-
-  async listFeedback() {
-    const prevText = this.listButtonText;
-    this.listButtonText = 'Added to list!';
-    // wait for a bit
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    this.listButtonText = prevText;
-  }
-
-  onGoToScryfall() {
-    window.open(this.displayCard.scryfallLink, '_blank');
   }
 }

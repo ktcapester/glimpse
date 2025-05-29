@@ -1,86 +1,110 @@
+/**
+ * Service functions for calculating card prices using Scryfall.
+ * @module Services/Price
+ */
+
+/**
+ * Calculated prices in various currencies and print types.
+ * @typedef {Object} module:Services/Price~CalcPrices
+ * @property {number} usd - Average price in USD.
+ * @property {number} usd_etched - Average price in USD for etched foils.
+ * @property {number} usd_foil - Average price in USD for foils.
+ * @property {number} eur - Average price in EUR.
+ * @property {number} eur_etched - Average price in EUR for etched foils.
+ * @property {number} eur_foil - Average price in EUR for foils.
+ */
+
 const { Card } = require("../models/card.model");
+const {
+  delay,
+  headers,
+  scryfallCardAPIBase,
+  createError,
+} = require("../utils");
 
-var lastAPICall = Date.now();
+let lastAPICall = Date.now();
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
+/**
+ * Calculate prices for a card by its name and add it to the database.
+ * @async
+ * @function
+ * @name module:Services/Price.calculatePriceFromName
+ * @param {string} cardName - Name of the card to fetch prices for.
+ * @returns {Promise<Object>} The card document from the database or an error object.
+ */
 async function calculatePriceFromName(cardName) {
-  try {
-    const apiNamedurl = new URL("https://api.scryfall.com/cards/named");
-    apiNamedurl.searchParams.append("fuzzy", cardName);
-
-    const thisAPICall = Date.now();
-    if (thisAPICall - lastAPICall < 100) {
-      // scryfall asks for 50-100ms between API calls, so wait for 100ms
-      await delay(100);
-    }
-    lastAPICall = Date.now();
-
-    const scryfallResponse = await fetch(apiNamedurl);
-    const scryfallData = await scryfallResponse.json();
-
-    // if scryfall returns a valid single card
-    if (scryfallResponse.status === 200) {
-      // compute the calculated prices from all prints
-      const allPrices = await processAllPrints(scryfallData.prints_search_uri);
-
-      // build the raw prices object
-      const rawPrices = {
-        usd: parseFloat(scryfallData.prices.usd) || 0,
-        usd_etched: parseFloat(scryfallData.prices.usd_etched) || 0,
-        usd_foil: parseFloat(scryfallData.prices.usd_foil) || 0,
-        eur: parseFloat(scryfallData.prices.eur) || 0,
-        eur_etched: parseFloat(scryfallData.prices.eur_etched) || 0,
-        eur_foil: parseFloat(scryfallData.prices.eur_foil) || 0,
-      };
-
-      // add to my DB, or update if already in it. aka "upsert" the card
-      const found = await Card.findOne({ name: scryfallData.name });
-
-      if (!found) {
-        // Card.create both creates and saves in one step
-        await Card.create({
-          name: scryfallData.name,
-          scryfallLink: scryfallData.scryfall_uri,
-          imgsrcFull: scryfallData.image_uris.large,
-          imgsrcSmall: scryfallData.image_uris.normal,
-          prices: {
-            raw: rawPrices,
-            calc: allPrices,
-          },
-        });
-      } else {
-        // update existing Card
-        found.scryfallLink = scryfallData.scryfall_uri;
-        found.imgsrcFull = scryfallData.image_uris.large;
-        found.imgsrcSmall = scryfallData.image_uris.small;
-        found.prices.raw = rawPrices;
-        found.prices.calc = allPrices;
-        await found.save();
-      }
-
-      // Return the calc price data
-      return { status: 200, data: allPrices };
-    }
-
-    // if we got 404 from scryfall
-    return {
-      status: 500,
-      error: "Got a 404 from Scryfall, check the card name you searched.",
-      errorCode: "SERVER_ERROR",
-    };
-  } catch (error) {
-    console.error(error);
-    return {
-      status: 500,
-      error: "An error occurred while fetching data from Scryfall.",
-      errorCode: "SERVER_ERROR",
-    };
+  if (!cardName) {
+    throw createError(400, "Card name is required.");
   }
+  const thisAPICall = Date.now();
+  if (thisAPICall - lastAPICall < 100) {
+    // scryfall asks for 50-100ms between API calls, so wait for 100ms
+    await delay(100);
+  }
+  lastAPICall = Date.now();
+
+  const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
+  apiNamedurl.searchParams.append("fuzzy", cardName);
+  const scryfallResponse = await fetch(apiNamedurl, { headers });
+
+  if (!scryfallResponse.ok) {
+    if (scryfallResponse.status === 404) {
+      throw createError(404, `Card ${cardName} not found.`);
+    }
+    throw createError(502, "Error fetching card data from Scryfall.");
+  }
+  const scryfallData = await scryfallResponse.json();
+
+  // compute the calculated prices from all prints
+  const allPrices = await processAllPrints(scryfallData.prints_search_uri);
+
+  // build the raw prices object
+  const rawPrices = {
+    usd: parseFloat(scryfallData.prices.usd) || 0,
+    usd_etched: parseFloat(scryfallData.prices.usd_etched) || 0,
+    usd_foil: parseFloat(scryfallData.prices.usd_foil) || 0,
+    eur: parseFloat(scryfallData.prices.eur) || 0,
+    eur_etched: parseFloat(scryfallData.prices.eur_etched) || 0,
+    eur_foil: parseFloat(scryfallData.prices.eur_foil) || 0,
+  };
+
+  // add to my DB, or update if already in it. aka "upsert" the card
+  let found = await Card.findOne({ name: scryfallData.name });
+
+  if (!found) {
+    // Card.create both creates and saves in one step
+    found = await Card.create({
+      name: scryfallData.name,
+      scryfallLink: scryfallData.scryfall_uri,
+      imgsrcFull: scryfallData.image_uris.large,
+      imgsrcSmall: scryfallData.image_uris.normal,
+      prices: {
+        raw: rawPrices,
+        calc: allPrices,
+      },
+    });
+  } else {
+    // update existing Card
+    found.scryfallLink = scryfallData.scryfall_uri;
+    found.imgsrcFull = scryfallData.image_uris.large;
+    found.imgsrcSmall = scryfallData.image_uris.small;
+    found.prices.raw = rawPrices;
+    found.prices.calc = allPrices;
+    found = await found.save();
+  }
+
+  // Return the calc price data
+  return found;
 }
 
+/**
+ * Process all prints of a card and calculate their prices.
+ * @async
+ * @function
+ * @name module:Services/Price.processAllPrints
+ * @param {string} prints_search_uri - URI to fetch all prints of a card.
+ * @returns {Promise<CalcPrices>} An object containing calculated prices for all prints.
+ */
 async function processAllPrints(prints_search_uri) {
   // eg: "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Ab9cd714b-2ad8-4fdb-a8aa-82b17730e071&unique=prints"
   // I don't like that this sometimes gives me a digital version (Vintage Masters, etc)
@@ -98,13 +122,22 @@ async function processAllPrints(prints_search_uri) {
   }
   lastAPICall = Date.now();
 
-  const all_response = await fetch(prints_no_digital);
+  const all_response = await fetch(prints_no_digital, { headers });
+  if (!all_response.ok) {
+    throw createError(502, "Error fetching print data from Scryfall.");
+  }
   const all_data = await all_response.json();
   return calculateAllPrices(all_data.data);
 }
 
+/**
+ * Calculate average prices for all prints of a card.
+ * @function
+ * @name module:Services/Price.calculateAllPrices
+ * @param {Array<Object>} cards - Array of card objects from Scryfall.
+ * @returns {CalcPrices} An object containing average prices for all prints.
+ */
 function calculateAllPrices(cards) {
-  // process all cards in here
   var usd_cards = [];
   var usd_etched_cards = [];
   var usd_foil_cards = [];
@@ -151,6 +184,14 @@ function calculateAllPrices(cards) {
   };
 }
 
+/**
+ * Process a list of cards to calculate a weighted average price.
+ * @function
+ * @name module:Services/Price.processList
+ * @param {Array<Object>} cards - Array of card objects.
+ * @param {string} price_name - The price field to process (e.g., "usd").
+ * @returns {number} The calculated weighted average price.
+ */
 function processList(cards, price_name) {
   if (cards.length == 0) {
     return 0;
@@ -199,6 +240,14 @@ function processList(cards, price_name) {
   return numerator / denominator;
 }
 
+/**
+ * Extract a specific price from a card object.
+ * @function
+ * @name module:Services/Price.extractPrice
+ * @param {Object} card - Card object.
+ * @param {string} price_name - The price field to extract (e.g., "usd").
+ * @returns {number} The extracted price or NaN if not available.
+ */
 function extractPrice(card, price_name) {
   switch (price_name) {
     case "usd":
@@ -218,6 +267,15 @@ function extractPrice(card, price_name) {
   }
 }
 
+/**
+ * Compare two cards based on a specific price field.
+ * @function
+ * @name module:Services/Price.cardCompareFn
+ * @param {Object} card0 - First card object.
+ * @param {Object} card1 - Second card object.
+ * @param {string} price_name - The price field to compare (e.g., "usd").
+ * @returns {number} A negative value if card0 < card1, positive if card0 > card1, or 0 if equal.
+ */
 function cardCompareFn(card0, card1, price_name) {
   const p0 = extractPrice(card0, price_name);
   const p1 = extractPrice(card1, price_name);

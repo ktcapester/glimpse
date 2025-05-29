@@ -1,28 +1,23 @@
-.login-container {
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  height: 100vh;
-  box-sizing: border-box;
-  background-color: var(--Sand);
-}
-
-.title-container {
-  flex-shrink: 0;
-}
-
 div {
   background-color: var(--Sand);
 }
 
-.app-title {
-  background-color: var(--Sand);
+.title-container {
+  flex-grow: 2;
   text-align: center;
-  margin: 0;
-  font-size: 24px;
-  font-style: normal;
+  align-content: center;
+  font-size: x-large;
   font-weight: 700;
   line-height: 150%;
+}
+
+.instructions {
+  text-align: center;
+  font-size: larger;
+}
+
+.bottom-spacer {
+  flex-grow: 2;
 }
 
 .user-input-container {
@@ -33,16 +28,44 @@ div {
   background-color: var(--Sand);
 }
 
+.input-container {
+  display: flex;
+  justify-content: center;
+  flex-grow: 3;
+}
+
+.input-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0px 24px;
+  background-color: var(--Sand);
+  width: 70%;
+  max-width: 500px;
+}
+
+.input-spacer {
+  flex-grow: 1;
+}
+
+.input-input {
+  margin: 0px 24px;
+}
+
 .input-field {
   border-radius: 8px;
   border: 1px solid var(--Shadow);
   background: var(--White);
   height: 44px;
   padding: 10px 10px 10px 36px;
-  flex-grow: 1;
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 18px;
+}
+
+.input-button {
+  flex-grow: 0.2;
 }
 
 .input-field::placeholder {

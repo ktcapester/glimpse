@@ -1,1 +1,9 @@
-<router-outlet />
+@if (showHeader){
+<app-header [initBG]="headerBG"></app-header>
+}
+<div class="outlet-container">
+  <router-outlet />
+</div>
+<div class="footer-container">
+  <app-footer [minSize]="footSize"></app-footer>
+</div>

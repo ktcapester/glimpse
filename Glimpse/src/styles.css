@@ -24,11 +24,16 @@ body {
   margin: 0;
 }
 
-* {
-  color: var(--Ink);
-  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
-    "Lucida Sans", Arial, sans-serif;
-  letter-spacing: -0.2px;
+.bg-sand {
+  background-color: var(--Sand);
+}
+
+.bg-white {
+  background-color: var(--White);
+}
+
+.footer-min {
+  min-height: 70px; /* ==110px with padding. fill up space if header isn't present */
 }
 
 .component-container {
@@ -36,7 +41,23 @@ body {
   flex-direction: column;
   justify-content: space-between;
   box-sizing: border-box;
-  height: 100vh;
+  height: calc(100vh - 110px); /* header = 110px tall */
+}
+
+* {
+  color: var(--Ink);
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
+  letter-spacing: -0.2px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .button-container {
@@ -78,40 +99,4 @@ body {
 
 .secondary-button-style:hover {
   background-color: var(--Sand);
-}
-
-/* w3schools suggested breakpoints */
-/* Extra small devices (phones, 600px and down) */
-@media only screen and (max-width: 600px) {
-  div {
-    background-color: var(--White);
-  }
-}
-
-/* Small devices (portrait tablets and large phones, 600px and up) */
-@media only screen and (min-width: 600px) {
-  div {
-    background-color: var(--White);
-  }
-}
-
-/* Medium devices (landscape tablets, 768px and up) */
-@media only screen and (min-width: 768px) {
-  div {
-    background-color: var(--White);
-  }
-}
-
-/* Large devices (laptops/desktops, 992px and up) */
-@media only screen and (min-width: 992px) {
-  div {
-    background-color: var(--White);
-  }
-}
-
-/* Extra large devices (large laptops and desktops, 1200px and up) */
-@media only screen and (min-width: 1200px) {
-  div {
-    background-color: var(--White);
-  }
 }

@@ -1,93 +1,88 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { HeaderComponent } from '../header/header.component';
-import { BackendGlueService } from '../services/backend-glue.service';
-import { Subject } from 'rxjs';
-import { takeUntil, tap } from 'rxjs/operators';
-import { CardListItem } from '../interfaces/backend.interface';
-import { UserSchema } from '../interfaces/schemas.interface';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { EMPTY } from 'rxjs';
+import { catchError, finalize, take, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { GlimpseStateService } from '../services/glimpse-state.service';
-import { UserService } from '../services/user.service';
+import { ListData } from '../interfaces';
+import { UserService, CardListService } from '../services';
 
 @Component({
   selector: 'app-card-list',
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.css'],
-  standalone: true,
-  imports: [HeaderComponent, CurrencyPipe, CommonModule],
+  imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'component-container' },
 })
-export class CardListComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-  myUser!: UserSchema;
+export class CardListComponent {
+  private router = inject(Router);
+  private listService = inject(CardListService);
+  private userService = inject(UserService);
 
-  constructor(
-    private glue: BackendGlueService,
-    private state: GlimpseStateService,
-    private router: Router,
-    private userService: UserService
-  ) {}
+  private _listSig = signal<ListData | null>(null);
+  readonly listData = this._listSig.asReadonly();
 
-  displayList: CardListItem[] = [];
-  totalPrice = 0.0;
-  isModalActive = false;
+  private readonly listId = computed(
+    () => this.userService.user()?.activeList ?? ''
+  );
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  constructor() {
+    effect(() => {
+      const id = this.listId();
+      if (!id) {
+        this._listSig.set(null);
+        return;
+      }
+      this.listService
+        .getList(id)
+        .pipe(
+          take(1), // explicitly take only the first emission (overkill due to HTTPClient)
+          tap((resp) => {
+            console.log('[CardList] fetch response:', resp);
+            this._listSig.set(resp);
+          })
+        )
+        .subscribe();
+    });
   }
 
-  ngOnInit(): void {
-    this.userService.user$
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((data) => {
-          if (data) {
-            this.myUser = data;
-          }
-        })
-      )
-      .subscribe();
+  readonly isModalActive = signal(false);
+  readonly isDeleting = signal(false);
 
-    this.glue
-      .getCardList(this.myUser.activeList)
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((response) => {
-          this.displayList = response.list;
-          this.totalPrice = response.currentTotal;
-          this.state.pushNewTotal(response.currentTotal);
-        })
-      )
-      .subscribe();
-  }
-
-  onItemClick(item: CardListItem) {
-    this.router.navigate(['/detail', item.id, item.name]);
+  onItemClick(id: string, name: string) {
+    this.router.navigate(['/detail', id, name]);
   }
 
   onClearList() {
-    if (this.displayList.length) {
-      this.isModalActive = true;
-    }
+    this.isModalActive.set(true);
   }
 
   onCancel() {
-    this.isModalActive = false;
+    this.isModalActive.set(false);
   }
 
   onConfirm() {
-    this.glue
-      .deleteCardList(this.myUser.activeList)
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((response) => {
-          this.displayList = response.list;
-          this.totalPrice = response.currentTotal;
-          this.state.pushNewTotal(response.currentTotal);
-          this.isModalActive = false;
-        })
-      )
-      .subscribe();
+    const id = this.listId();
+    if (id) {
+      this.isDeleting.set(true);
+      this.listService
+        .deleteList(id)
+        .pipe(
+          tap((response) => {
+            this._listSig.set(response);
+            this.isModalActive.set(false);
+          }),
+          catchError(() => EMPTY),
+          finalize(() => this.isDeleting.set(false))
+        )
+        .subscribe();
+    }
   }
 }

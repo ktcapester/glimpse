@@ -1,13 +1,7 @@
 import { Routes } from '@angular/router';
 import { SearchStartComponent } from './search-start/search-start.component';
-import { CardListComponent } from './card-list/card-list.component';
-import { SearchResultComponent } from './search-result/search-result.component';
 import { FourOhFourComponent } from './four-oh-four/four-oh-four.component';
-import { SuggestionsComponent } from './suggestions/suggestions.component';
-import { NoResultsComponent } from './no-results/no-results.component';
-import { CardDetailComponent } from './card-detail/card-detail.component';
 import { LoginComponent } from './login/login.component';
-import { VerifyComponent } from './verify/verify.component';
 import { userAuthGuard } from './user-auth.guard';
 
 export const routes: Routes = [
@@ -19,29 +13,44 @@ export const routes: Routes = [
   {
     path: 'list',
     title: 'Glimpse',
-    component: CardListComponent,
     canActivate: [userAuthGuard],
+    loadComponent: () =>
+      import('./card-list/card-list.component').then(
+        (m) => m.CardListComponent
+      ),
   },
   {
     path: 'detail/:cardID/:cardName',
     title: 'Glimpse',
-    component: CardDetailComponent,
     canActivate: [userAuthGuard],
+    loadComponent: () =>
+      import('./card-detail/card-detail.component').then(
+        (m) => m.CardDetailComponent
+      ),
   },
   {
     path: 'result/:cardName',
     title: 'Glimpse',
-    component: SearchResultComponent,
+    loadComponent: () =>
+      import('./search-result/search-result.component').then(
+        (m) => m.SearchResultComponent
+      ),
   },
   {
     path: 'suggestions/:term',
     title: 'Glimpse',
-    component: SuggestionsComponent,
+    loadComponent: () =>
+      import('./suggestions/suggestions.component').then(
+        (m) => m.SuggestionsComponent
+      ),
   },
   {
     path: 'none/:term',
     title: 'Glimpse',
-    component: NoResultsComponent,
+    loadComponent: () =>
+      import('./no-results/no-results.component').then(
+        (m) => m.NoResultsComponent
+      ),
   },
   {
     path: 'login',
@@ -51,7 +60,8 @@ export const routes: Routes = [
   {
     path: 'verify',
     title: 'Glimpse',
-    component: VerifyComponent,
+    loadComponent: () =>
+      import('./verify/verify.component').then((m) => m.VerifyComponent),
   },
   {
     path: '**',

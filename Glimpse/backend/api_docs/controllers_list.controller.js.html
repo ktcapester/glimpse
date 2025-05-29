@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/list.controller.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/list.controller.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Controller for managing lists of cards.
+ * @module Controllers/List
+ */
+
+/**
+ * Parameter needed for operations involving whole lists.
+ * @typedef {Object} module:Controllers/List~ListParams
+ * @property {string} listId - ID of the list.
+ */
+
+/**
+ * Parameters needed for operations involving specific cards in a list.
+ * @typedef {Object} module:Controllers/List~CardParams
+ * @property {string} listId - ID of the list.
+ * @property {string} cardId - ID of the card.
+ */
+
+/**
+ * Parameter needed in the body of the HTTP request for operations involving updating cards in a list.
+ * @typedef {Object} module:Controllers/List~CardUpdateBody
+ * @property {number} [quantity] - New quantity of the card.
+ */
+
+/**
+ * Format of cards in the list.
+ * @typedef {Object} module:Controllers/List~CardInList
+ * @property {Object} card - Card object.
+ * @property {number} quantity - Quantity of the card in the list.
+ */
+
+/**
+ * Response format for operations involving lists.
+ * @typedef {Object} module:Controllers/List~ListResponse
+ * @property {CardInList[]} list - Updated list of cards.
+ * @property {number} currentTotal - Total price of the list.
+ */
+
+/**
+ * @typedef {Express.Response} module:Controllers/List~ExpressResponse
+ */
+
+/**
+ * @typedef {Express.Request&lt;ListParams>} module:Controllers/List~ListRequest
+ */
+
+/**
+ * @typedef {Express.Request&lt;CardParams>} module:Controllers/List~CardRequest
+ */
+
+/**
+ * @typedef {Express.Request&lt;CardParams, any, CardUpdateBody>} module:Controllers/List~CardUpdateRequest
+ */
+
+/**
+ * @typedef {Express.Request&lt;ListParams, any, { cardId: string }>} module:Controllers/List~CardPostRequest
+ */
+
+const listService = require("../services/list.service");
+
+/**
+ * Get all cards in a list.
+ * @name module:Controllers/List.getList
+ * @function
+ * @param {ListRequest} req
+ * @param {Express.Response} res
+ * @returns {Promise&lt;ListResponse>}
+ */
+const getList = async (req, res) => {
+  try {
+    const listId = req.params.listId;
+    const data = await listService.getAllCards(listId);
+    // data contains { list: list.cards, currentTotal: list.totalPrice }
+    res.json(data);
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+};
+
+/**
+ * Add a new card to a list.
+ * @function
+ * @name module:Controllers/List.postList
+ * @param {CardPostRequest} req
+ * @param {ExpressResponse} res
+ * @returns {Promise&lt;{ currentTotal: number }>}
+ */
+const postList = async (req, res) => {
+  try {
+    const listId = req.params.listId;
+    // cardId, quantity, etc. come from the request body
+    const { cardId } = req.body;
+    const response = await listService.addCard(listId, cardId);
+    // response contains { currentTotal: updatedList.totalPrice }
+    res.status(201).json(response);
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+};
+
+/**
+ * Clear all cards from a list.
+ * @function
+ * @name module:Controllers/List.deleteList
+ * @param {ListRequest} req
+ * @param {ExpressResponse} res
+ * @returns {Promise&lt;ListResponse>} Responds with an empty list and a total price of 0.
+ */
+const deleteList = async (req, res) => {
+  try {
+    const listId = req.params.listId;
+    const response = await listService.clearList(listId);
+    // response contains { list: [], currentTotal: 0 }
+    res.json(response);
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+};
+
+/**
+ * Get a specific card from a list.
+ * @function
+ * @name module:Controllers/List.getCard
+ * @param {CardRequest} req
+ * @param {ExpressResponse} res
+ * @returns {Promise&lt;{ card: Object, quantity: number }>}
+ */
+const getCard = async (req, res) => {
+  try {
+    const { listId, cardId } = req.params;
+    const response = await listService.getItem(listId, cardId);
+    // response is { card:Card, quantity:number}
+    res.json(response);
+  } catch (error) {
+    // If our service throws a 404, use that status
+    res.status(error.status || 500).json({ error: error.message });
+  }
+};
+
+/**
+ * Update a specific card in a list (e.g., update its quantity).
+ * @function
+ * @name module:Controllers/List.patchCard
+ * @param {CardUpdateRequest} req
+ * @param {ExpressResponse} res
+ * @returns {Promise&lt;ListResponse>}
+ */
+const patchCard = async (req, res) => {
+  try {
+    const { listId, cardId } = req.params;
+    const updates = req.body;
+    const response = await listService.updateItem(listId, cardId, updates);
+    // response contains { list: updatedList.cards, currentTotal: updatedList.totalPrice }
+    res.json(response);
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+};
+
+/**
+ * Remove a specific card from a list.
+ * @name module:Controllers/List.deleteCard
+ * @function
+ * @param {CardRequest} req
+ * @param {ExpressResponse} res
+ * @returns {Promise&lt;ListResponse>}
+ */
+const deleteCard = async (req, res) => {
+  try {
+    const { listId, cardId } = req.params;
+    const response = await listService.removeItem(listId, cardId);
+    // response contains { list: updatedList.cards, currentTotal: updatedList.totalPrice }
+    res.json(response);
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  getList,
+  postList,
+  deleteList,
+  getCard,
+  patchCard,
+  deleteCard,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Card">Card</a></li><li><a href="global.html#List">List</a></li><li><a href="global.html#Token">Token</a></li><li><a href="global.html#User">User</a></li><li><a href="global.html#activeList">activeList</a></li><li><a href="global.html#addCard">addCard</a></li><li><a href="global.html#authenticateJWT">authenticateJWT</a></li><li><a href="global.html#calculateAllPrices">calculateAllPrices</a></li><li><a href="global.html#calculatePriceFromName">calculatePriceFromName</a></li><li><a href="global.html#card">card</a></li><li><a href="global.html#cardCompareFn">cardCompareFn</a></li><li><a href="global.html#cardSchema">cardSchema</a></li><li><a href="global.html#cards">cards</a></li><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createdAt">createdAt</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#description">description</a></li><li><a href="global.html#email">email</a></li><li><a href="global.html#expiresAt">expiresAt</a></li><li><a href="global.html#extractPrice">extractPrice</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAllCards">getAllCards</a></li><li><a href="global.html#getCardSearch">getCardSearch</a></li><li><a href="global.html#getItem">getItem</a></li><li><a href="global.html#getMagicToken">getMagicToken</a></li><li><a href="global.html#getPrices">getPrices</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getUserByID">getUserByID</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#imgsrcFull">imgsrcFull</a></li><li><a href="global.html#imgsrcSmall">imgsrcSmall</a></li><li><a href="global.html#listSchema">listSchema</a></li><li><a href="global.html#lists">lists</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#onError">onError</a></li><li><a href="global.html#onListening">onListening</a></li><li><a href="global.html#postMagicLink">postMagicLink</a></li><li><a href="global.html#prices">prices</a></li><li><a href="global.html#processAllPrints">processAllPrints</a></li><li><a href="global.html#processList">processList</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#removeItem">removeItem</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#scryfallLink">scryfallLink</a></li><li><a href="global.html#searchScryfall">searchScryfall</a></li><li><a href="global.html#sendMagicLink">sendMagicLink</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li><li><a href="global.html#timestamps">timestamps</a></li><li><a href="global.html#token">token</a></li><li><a href="global.html#tokenSchema">tokenSchema</a></li><li><a href="global.html#totalPrice">totalPrice</a></li><li><a href="global.html#updateItem">updateItem</a></li><li><a href="global.html#used">used</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#userSchema">userSchema</a></li><li><a href="global.html#username">username</a></li><li><a href="global.html#verifyToken">verifyToken</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed May 07 2025 12:09:52 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

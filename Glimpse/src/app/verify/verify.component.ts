@@ -1,76 +1,63 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil, tap } from 'rxjs/operators';
-import { BackendGlueService } from '../services/backend-glue.service';
-import { HeaderComponent } from '../header/header.component';
+import { VerifyService } from '../services';
 
 @Component({
   selector: 'app-verify',
   standalone: true,
-  imports: [HeaderComponent],
   templateUrl: './verify.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './verify.component.css',
+  host: { class: 'component-container' },
 })
-export class VerifyComponent implements OnInit, OnDestroy {
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private glue: BackendGlueService
-  ) {}
+export class VerifyComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private verify = inject(VerifyService);
 
-  private destroy$ = new Subject<void>();
-  displayMessage = 'Verifying your login. . .';
-  showResponse = false;
-  responseResult = false;
-  responseMessage = '';
-  redirectMessage = '';
+  readonly hasResponse = this.verify.response;
+
+  readonly templateText = computed(() => {
+    let titleText = '';
+    let subtitleText = '';
+    let navigationText = '';
+    if (!this.verify.response()) {
+      // Waiting for response from the backend
+      titleText = 'Verifying your login. . .';
+      subtitleText = '';
+      navigationText = '';
+    } else {
+      if (this.verify.success()) {
+        // Case: Backend return successful login
+        titleText = 'Login successful!';
+        subtitleText = 'You can now view your saved cards.';
+        navigationText = 'Go to list';
+      } else {
+        // Case: Backend failed to login
+        titleText = 'Login failed, please try again.';
+        subtitleText =
+          'Try the link in your email again. If this problem persists, please request a new email.';
+        navigationText = 'Back to sign in';
+      }
+    }
+    return { titleText, subtitleText, navigationText };
+  });
 
   ngOnInit(): void {
-    // /verify?token={token}&email={email}
-    this.route.queryParamMap
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((params) => {
-          const userToken = params.get('token') || '';
-          const userEmail = params.get('email') || '';
-
-          this.glue
-            .getVerifyToken(userEmail, userToken)
-            .pipe(
-              takeUntil(this.destroy$),
-              tap((response) => {
-                this.showResponse = true;
-                if (response.success === true) {
-                  localStorage.setItem('jwtToken', response.data);
-                  this.displayMessage = 'Login successful!';
-                  this.responseMessage = 'You can now view your saved cards.';
-                  this.redirectMessage = 'Go to list';
-                  this.responseResult = true;
-                } else {
-                  // encountered an error!
-                  console.log('verify onInit got:', response.data);
-                  this.displayMessage = 'Login failed, please try again.';
-                  this.responseMessage =
-                    'Try the link in your email again. If this problem persists, please request a new email.';
-                  this.redirectMessage = 'Back to sign in';
-                  this.responseResult = false;
-                }
-              })
-            )
-            .subscribe();
-        })
-      )
-      .subscribe();
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    const qp = this.route.snapshot.queryParamMap;
+    const userToken = qp.get('token')!;
+    const userEmail = qp.get('email')!;
+    this.verify.validateToken(userEmail, userToken);
   }
 
   onClick() {
-    if (this.responseResult === true) {
+    if (this.verify.success()) {
       // link to list
       this.router.navigate(['/list']);
     } else {

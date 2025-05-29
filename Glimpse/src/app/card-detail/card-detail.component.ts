@@ -1,187 +1,150 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CardListItem } from '../interfaces/backend.interface';
-import { HeaderComponent } from '../header/header.component';
-import { DisplayCard } from '../interfaces/display-card.interface';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GlimpseStateService } from '../services/glimpse-state.service';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { combineLatest, Subject } from 'rxjs';
-import { takeUntil, tap } from 'rxjs/operators';
-import { BackendGlueService } from '../services/backend-glue.service';
-import { CardDetailService } from '../services/card-detail.service';
-import { ResultPricesService } from '../services/result-prices.service';
-import { UserService } from '../services/user.service';
-import { UserSchema } from '../interfaces/schemas.interface';
+import { CommonModule } from '@angular/common';
+import {
+  catchError,
+  distinctUntilChanged,
+  exhaustMap,
+  filter,
+  finalize,
+  map,
+  shareReplay,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
+import { CardDetailService, UserService } from '../services';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { combineLatest, of } from 'rxjs';
+import { isDefined } from '../type-guard.util';
+import { CardDisplayComponent } from '../card-display/card-display.component';
 
 @Component({
   selector: 'app-card-detail',
-  standalone: true,
-  imports: [HeaderComponent, CurrencyPipe, CommonModule],
+  imports: [CommonModule, CardDisplayComponent],
   templateUrl: './card-detail.component.html',
-  styleUrl: './card-detail.component.css',
+  styleUrls: ['./card-detail.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardDetailComponent implements OnInit, OnDestroy {
-  displayCard!: DisplayCard;
-  myCard!: CardListItem;
-  myUser!: UserSchema;
-  myID = '';
-  loadingDone = false;
+export class CardDetailComponent {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private details = inject(CardDetailService);
+  private userService = inject(UserService);
 
-  private destroy$ = new Subject<void>();
+  private patching = signal(false);
+  readonly isPatching = this.patching.asReadonly();
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private state: GlimpseStateService,
-    private glue: BackendGlueService,
-    private prices: ResultPricesService,
-    private details: CardDetailService,
-    private userService: UserService
-  ) {}
+  private readonly listId = computed(
+    () => this.userService.user()?.activeList ?? ''
+  );
 
-  ngOnDestroy(): void {
-    console.log(`${this.constructor.name} ngOnDestroy called!`, Date.now());
-    this.details.clearCardDetails();
-    this.details.clearPatchCard();
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  // Use the URL to get the cardID param
+  private cardID$ = this.route.paramMap.pipe(
+    map((pm) => pm.get('cardID')),
+    filter(isDefined),
+    distinctUntilChanged(),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
 
-  ngOnInit(): void {
-    console.log(
-      `${this.constructor.name} ngOnInit called!`,
-      new Date().toISOString().split('T')[1].slice(0, 12)
-    );
-
-    this.userService.user$
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((data) => {
-          if (data) {
-            this.myUser = data;
-          }
+  // Combine listID and cardID to get the card details
+  private readonly cardResult$ = combineLatest({
+    listID: toObservable(this.listId),
+    cardID: this.cardID$,
+  }).pipe(
+    filter(({ listID, cardID }) => !!listID && !!cardID),
+    switchMap(({ listID, cardID }) =>
+      this.details.getCard(listID, cardID).pipe(
+        catchError((err) => {
+          console.error('Failed loading card details', err);
+          return of<null>(null);
         })
       )
-      .subscribe();
+    ),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
 
-    // Set up getting names out of the URL
-    this.route.paramMap
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((params) => {
-          const name = params.get('cardName') || '';
-          this.details.updateSearchFromName(name);
-          this.prices.updatePricesTerm(name);
-          const id = params.get('cardID') || '';
-          this.myID = id;
-          this.details.updateDetailFromID(this.myUser.activeList, id);
-        })
-      )
-      .subscribe();
+  // Signals for UI updates
+  readonly cardDetail = toSignal(this.cardResult$, { initialValue: null });
+  readonly card = computed(() => this.cardDetail()?.card ?? null);
+  readonly quantity = signal(0);
+  readonly disablerIncrement = computed(() => {
+    const view = this.cardDetail();
+    if (!view) return true;
+    return this.patching() || this.quantity() >= 99;
+  });
+  readonly disablerDecrement = computed(() => {
+    const view = this.cardDetail();
+    if (!view) return true;
+    return this.patching() || this.quantity() === 1;
+  });
 
-    // wait for both API calls to return before presenting data
-    combineLatest([
-      this.details.detailSearchResults$,
-      this.details.cardFromID$,
-      this.prices.priceResults$,
-    ])
-      .pipe(
-        takeUntil(this.destroy$),
-        tap(([searchResult, cardDetails, cardPrices]) => {
-          if (!searchResult) {
-            this.state.setErrorMessage('Trouble with detailSearchResults$');
-            this.router.navigate(['/404']);
-            return;
-          }
-          if (!cardDetails) {
-            this.state.setErrorMessage('Trouble with cardFromID$');
-            this.router.navigate(['/404']);
-            return;
-          }
-          if (!cardPrices) {
-            this.state.setErrorMessage('Trouble with priceResults$');
-            this.router.navigate(['/404']);
-            return;
-          }
-          this.myCard = cardDetails;
+  // Signal to safely process clicks. {delta} makes each click a new event
+  // even if delta is the same value.
+  private readonly updateClicks = signal<{ delta: number } | null>(null);
+  private readonly updateClicks$ = toObservable(this.updateClicks);
 
-          const cardDisp = searchResult.cards[0];
+  constructor() {
+    // Initialize the quantity signal based on the card details
+    effect(() => {
+      const result = this.cardDetail();
+      this.quantity.set(result?.quantity ?? 0);
+    });
 
-          this.displayCard = {
-            name: cardDisp.name,
-            imgsrc: cardDisp.imgsrc,
-            foilprice: cardPrices.usd_foil,
-            normalprice: cardPrices.usd,
-            etchedprice: cardPrices.usd_etched,
-            scryfallLink: cardDisp.scryfallLink,
-          };
+    // Define click event handler, using onCleanup to unsubscribe
+    effect((onCleanup) => {
+      const sub = this.updateClicks$
+        .pipe(
+          filter(isDefined),
+          exhaustMap(({ delta }) => {
+            const listID = this.listId();
+            const c = this.card();
+            if (!listID || !c) return of<void>(undefined);
 
-          // update the price with latest from scryfall
+            this.patching.set(true);
+            const newQty = Math.max(1, Math.min(99, this.quantity() + delta));
 
-          this.myCard.price = cardPrices.usd;
-
-          this.loadingDone = true;
-        })
-      )
-      .subscribe();
-
-    this.details.patchCard$
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((response) => {
-          this.state.pushNewTotal(response);
-        })
-      )
-      .subscribe();
+            return this.details
+              .updateCard(listID, c._id, c.prices?.calc?.usd ?? 0, newQty)
+              .pipe(
+                tap(() => this.quantity.set(newQty)),
+                catchError((err) => {
+                  console.log('Update failed', err);
+                  return of<void>(undefined);
+                }),
+                finalize(() => this.patching.set(false))
+              );
+          })
+        )
+        .subscribe();
+      onCleanup(() => sub.unsubscribe());
+    });
   }
 
-  private setDisplayCard(card: any): void {
-    this.displayCard = {
-      name: card.name,
-      imgsrc: card.imgsrc,
-      foilprice: card.usd_foil, // ???
-      normalprice: card.usd, // ???
-      etchedprice: card.usd_etched, // ???
-      scryfallLink: card.scryfallLink,
-    };
-    // update the price with latest from scryfall ???
-    this.myCard.price = card.usd;
+  // Button callbacks
+  increment() {
+    this.updateClicks.set({ delta: 1 });
   }
-
-  onItemIncrease() {
-    if (this.myCard.count < 99) {
-      this.myCard.count += 1;
-      this.details.updatePatchCard(this.myUser.activeList, this.myCard);
-    }
+  decrement() {
+    this.updateClicks.set({ delta: -1 });
   }
+  remove() {
+    const listID = this.listId();
+    const c = this.card();
+    if (!listID || !c) return;
 
-  onItemDecrease() {
-    if (this.myCard.count > 0) {
-      this.myCard.count -= 1;
-      this.details.updatePatchCard(this.myUser.activeList, this.myCard);
-    }
-  }
-
-  onItemRemove() {
-    console.log('onItemRemove');
-    console.log(this.myCard);
-    this.glue
-      .deleteSingleCard(this.myUser.activeList, this.myCard.id)
+    this.patching.set(true);
+    this.details
+      .deleteCard(listID, c._id)
       .pipe(
-        takeUntil(this.destroy$),
-        tap((result) => {
-          console.log('glue.delete result:', result);
-          if (typeof result === 'string') {
-            this.state.setErrorMessage(result);
-            this.router.navigate(['/404']);
-          } else {
-            // successful response
-            // aka response is { list, total}
-            this.state.pushNewTotal(result.currentTotal);
-            // return to list page after removing
-            this.router.navigate(['/list']);
-          }
-        })
+        tap(() => this.router.navigate(['/list'])),
+        finalize(() => this.patching.set(false))
       )
       .subscribe();
   }

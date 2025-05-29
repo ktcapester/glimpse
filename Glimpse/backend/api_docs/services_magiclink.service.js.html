@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/magiclink.service.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/magiclink.service.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+const { Token } = require("../models/token.model");
+const { User } = require("../models/user.model");
+const { List } = require("../models/list.model");
+const { createError } = require("../utils");
+
+/**
+ * Generate a secure random token.
+ * @function generateToken
+ * @returns {string} A secure random token as a hexadecimal string.
+ */
+function generateToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
+
+/**
+ * Send a magic link to the user's email.
+ * @async
+ * @function sendMagicLink
+ * @param {string} email - The email address to send the magic link to.
+ * @throws Will throw an error if the email sending fails or a server error occurs.
+ */
+async function sendMagicLink(email) {
+  try {
+    console.log("sending magic link to:", email);
+
+    // Check for old unused tokens for the email
+    const record = await Token.findOne({ email, used: false });
+    // Delete if found
+    if (record) {
+      await Token.findByIdAndDelete(record._id);
+    }
+    console.log("old token deleted or not present");
+
+    // Create new token
+    const token = generateToken();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
+
+    // Save the token to the database
+    const dbtok = await Token.create({ email, token, expiresAt });
+    console.log("new token saved to DB");
+    console.log(dbtok._id);
+
+    // Construct the magic link
+    const magicLink = `${
+      process.env.BASE_URL
+    }/verify?token=${token}&amp;email=${encodeURIComponent(email)}`;
+
+    // Configure email transport
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Send the email
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your Magic Link",
+      text: `Click here to log in: ${magicLink}`,
+      html: `&lt;a href="${magicLink}">Log in&lt;/a>`,
+    });
+    console.log("Sent mail info:", info);
+  } catch (err) {
+    console.log(err);
+    const eStatus = err.status || 500;
+    const eMessage = err.message || "Server error";
+    throw createError(eStatus, eMessage);
+  }
+}
+
+/**
+ * Verify a magic link token and email.
+ * @async
+ * @function verifyToken
+ * @param {string} token - The token to verify.
+ * @param {string} email - The email address associated with the token.
+ * @returns {Promise&lt;Object>} The user object if verification is successful.
+ * @throws Will throw an error if the token is invalid, expired, or a server error occurs.
+ */
+const verifyToken = async (token, email) => {
+  try {
+    console.log("verifying token+email:", token, email);
+
+    // Find the token in the database
+    const record = await Token.findOne({ email, token, used: false });
+    console.log("found record:", record);
+    if (!record) {
+      throw createError(400, "Invalid or expired token.");
+    }
+
+    // Check if the token has expired
+    if (record.expiresAt &lt; Date.now()) {
+      throw createError(400, "Token has expired.");
+    }
+
+    // Mark the token as used
+    record.used = true;
+    await record.save();
+
+    console.log("looking for user with email:", email);
+
+    // Token successfully verified, so find the User connected to it
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.log("no user found, creating new User");
+
+      // Create a new User
+      const usernamenew = email.split("@")[0];
+      const newUser = new User({
+        email: email,
+        username: usernamenew,
+      });
+      await newUser.save();
+
+      console.log("creating default list for new user");
+
+      // Create a default list
+      const defaultList = new List({
+        user: newUser._id, // connects the User into the List
+        name: `${usernamenew} Default List`,
+        description: `${usernamenew}'s auto generated list.`,
+      });
+      await defaultList.save();
+
+      console.log("connecting list to user");
+
+      // Connect the List into the User
+      newUser.lists.push(defaultList._id);
+      newUser.activeList = defaultList._id;
+      await newUser.save();
+
+      console.log("new User created &amp; saved:", newUser);
+
+      // Delete token after successful signup
+      await Token.findByIdAndDelete(record._id);
+      console.log("user token deleted");
+
+      // Return the new User
+      return newUser;
+    }
+
+    // Delete token after successful login
+    await Token.findByIdAndDelete(record._id);
+    console.log("user token deleted for User:", user);
+
+    // Return the existing User
+    return user;
+  } catch (err) {
+    console.log(err);
+    const eStatus = err.status || 500;
+    const eMessage = err.message || "Server error";
+    throw createError(eStatus, eMessage);
+  }
+};
+
+module.exports = { sendMagicLink, verifyToken };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Card">Card</a></li><li><a href="global.html#List">List</a></li><li><a href="global.html#Token">Token</a></li><li><a href="global.html#User">User</a></li><li><a href="global.html#activeList">activeList</a></li><li><a href="global.html#addCard">addCard</a></li><li><a href="global.html#authenticateJWT">authenticateJWT</a></li><li><a href="global.html#calculateAllPrices">calculateAllPrices</a></li><li><a href="global.html#calculatePriceFromName">calculatePriceFromName</a></li><li><a href="global.html#card">card</a></li><li><a href="global.html#cardCompareFn">cardCompareFn</a></li><li><a href="global.html#cardSchema">cardSchema</a></li><li><a href="global.html#cards">cards</a></li><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createdAt">createdAt</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#description">description</a></li><li><a href="global.html#email">email</a></li><li><a href="global.html#expiresAt">expiresAt</a></li><li><a href="global.html#extractPrice">extractPrice</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAllCards">getAllCards</a></li><li><a href="global.html#getCardSearch">getCardSearch</a></li><li><a href="global.html#getItem">getItem</a></li><li><a href="global.html#getMagicToken">getMagicToken</a></li><li><a href="global.html#getPrices">getPrices</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getUserByID">getUserByID</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#imgsrcFull">imgsrcFull</a></li><li><a href="global.html#imgsrcSmall">imgsrcSmall</a></li><li><a href="global.html#listSchema">listSchema</a></li><li><a href="global.html#lists">lists</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#onError">onError</a></li><li><a href="global.html#onListening">onListening</a></li><li><a href="global.html#postMagicLink">postMagicLink</a></li><li><a href="global.html#prices">prices</a></li><li><a href="global.html#processAllPrints">processAllPrints</a></li><li><a href="global.html#processList">processList</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#removeItem">removeItem</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#scryfallLink">scryfallLink</a></li><li><a href="global.html#searchScryfall">searchScryfall</a></li><li><a href="global.html#sendMagicLink">sendMagicLink</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li><li><a href="global.html#timestamps">timestamps</a></li><li><a href="global.html#token">token</a></li><li><a href="global.html#tokenSchema">tokenSchema</a></li><li><a href="global.html#totalPrice">totalPrice</a></li><li><a href="global.html#updateItem">updateItem</a></li><li><a href="global.html#used">used</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#userSchema">userSchema</a></li><li><a href="global.html#username">username</a></li><li><a href="global.html#verifyToken">verifyToken</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed May 07 2025 12:09:52 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,86 +1,71 @@
-import { Injectable } from '@angular/core';
-import { BackendGlueService } from './backend-glue.service';
-import { UserSchema } from '../interfaces/schemas.interface';
-import { BehaviorSubject, of } from 'rxjs';
-import { catchError, switchMap, tap } from 'rxjs/operators';
-import { jwtDecode } from 'jwt-decode';
+import { effect, inject, Injectable, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { UserSchema } from '../interfaces';
+import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
+import { AuthService } from './auth.service';
+import { StorageService } from './storage.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
-  constructor(private glue: BackendGlueService) {
-    this.initUserLoad();
+  private http = inject(HttpClient);
+  private auth = inject(AuthService);
+  private storage = inject(StorageService);
+
+  // Signal holding the current User data
+  private userSignal = signal<UserSchema | null>(null);
+  readonly user = this.userSignal.asReadonly();
+  readonly user$ = toObservable(this.userSignal);
+
+  constructor() {
+    // Whenever auth state changes, fetch or clear user
+    effect(() => {
+      if (this.auth.isLoggedIn()) {
+        const raw = this.storage.getItem('user');
+        let loaded = false;
+        if (raw) {
+          try {
+            const u: UserSchema = JSON.parse(raw);
+            this.userSignal.set(u);
+            loaded = true;
+          } catch {
+            this.storage.removeItem('user');
+          }
+        }
+        // if no cached User, fetch from backend
+        if (!loaded) {
+          this.fetchAndCacheUser();
+        }
+      } else {
+        // clear on logout or expired token
+        this.userSignal.set(null);
+        this.storage.removeItem('user');
+      }
+    });
   }
 
-  private userSubject = new BehaviorSubject<UserSchema | null>(null);
-  user$ = this.userSubject.asObservable();
-  private fetchTrigger = new BehaviorSubject<void>(undefined);
-
-  private loadUserFromStorage() {
-    const storedUser = localStorage.getItem('user');
-    console.log('got stored user:', storedUser);
-    if (storedUser) {
-      this.userSubject.next(JSON.parse(storedUser));
-      return true;
-    }
-    return false;
-  }
-
-  private initUserLoad() {
-    // Set up fetching the User from the server using the JWT
-    this.fetchTrigger
-      .pipe(
-        switchMap(() => {
-          return this.glue.getUser().pipe(
-            tap((user) => {
-              if (typeof user == 'string') {
-                console.log('not logged in:', user);
-              } else {
-                console.log('storing user:', user);
-                localStorage.setItem('user', JSON.stringify(user));
-                this.userSubject.next(user);
-              }
-            }),
-            catchError((error) => {
-              console.error('Error fetching user:', error);
-              this.userSubject.next(null);
-              return of(null);
-            })
-          );
-        })
-      )
-      .subscribe();
-
-    // Check localStorage for a cached User
-    const success = this.loadUserFromStorage();
-    if (!success) {
-      // not in localStorage, so trigger the backend request
-      console.log('trigger user fetch');
-      this.fetchUser();
-    }
-    // if no user or JWT found, just do nothing...probably?
-  }
-
-  fetchUser() {
-    this.fetchTrigger.next();
-  }
-
-  isTokenValid() {
-    const token = localStorage.getItem('jwtToken');
-    if (!token || this.isTokenExpired(token)) {
-      return false;
-    }
-    return true;
-  }
-
-  isTokenExpired(token: string): boolean {
+  private async fetchAndCacheUser() {
     try {
-      const decoded = jwtDecode(token);
-      return !decoded.exp || Date.now() / 1000 >= decoded.exp;
-    } catch (error) {
-      console.log('isTokenExpired() got an error:', error);
-      return true;
+      const u = await firstValueFrom(
+        this.http.get<UserSchema>(`${environment.apiURL}/user`, {
+          withCredentials: true,
+        })
+      );
+      this.storage.setItem('user', JSON.stringify(u));
+      this.userSignal.set(u);
+    } catch {
+      this.userSignal.set(null);
+      this.storage.removeItem('user');
+    }
+  }
+
+  // Manually refresh profile when needed
+  refresh() {
+    if (this.auth.isLoggedIn()) {
+      this.fetchAndCacheUser();
     }
   }
 }

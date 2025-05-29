@@ -1,14 +1,14 @@
-<div class="login-container">
-  <div class="title-container">
-    <h1 class="app-title">Glimpse</h1>
-  </div>
-  @if(!emailSent){
-  <div class="user-input-container">
-    <form
-      class="input-wrapper"
-      [formGroup]="searchForm"
-      (ngSubmit)="handleSubmit()"
-    >
+<div class="title-container">Login</div>
+@if(!isEmailSent()){
+<div class="instructions">Please login to use that feature.</div>
+<div class="input-container">
+  <form
+    class="input-wrapper"
+    [formGroup]="searchForm"
+    (ngSubmit)="handleSubmit()"
+  >
+    <div class="input-spacer"></div>
+    <div class="input-input">
       <label for="email">Email:</label>
       <input
         id="email"
@@ -17,16 +17,18 @@
         placeholder="example@example.com"
         formControlName="email"
       />
-      <div class="button-container">
-        <button class="large-button primary-button-style" type="submit">
-          Send Email
-        </button>
-      </div>
-    </form>
-  </div>
-  } @else {
-  <div class="email-sent">
-    Email successfully sent, please follow the link in it.
-  </div>
-  }
+    </div>
+    <div class="button-container input-button">
+      <button class="large-button primary-button-style" type="submit">
+        Send Email
+      </button>
+    </div>
+    <div class="input-spacer"></div>
+  </form>
 </div>
+<div class="bottom-spacer"></div>
+} @else {
+<div class="email-sent">
+  Email successfully sent, please follow the link in it.
+</div>
+}
