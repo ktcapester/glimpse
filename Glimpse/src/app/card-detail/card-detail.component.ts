@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import {
   catchError,
   distinctUntilChanged,
@@ -27,7 +27,7 @@ import { CardDisplayComponent } from '../card-display/card-display.component';
 
 @Component({
   selector: 'app-card-detail',
-  imports: [CommonModule, CardDisplayComponent],
+  imports: [CardDisplayComponent],
   templateUrl: './card-detail.component.html',
   styleUrls: ['./card-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

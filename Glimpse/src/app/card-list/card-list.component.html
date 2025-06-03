@@ -1,29 +1,29 @@
-<ng-container *ngIf="listData() as listData; else loading">
+@if (listData(); as listData) {
   <div class="scrollable-list">
     @for (item of listData.list; track item.id; let i = $index) {
-    <div
-      class="card-list-item"
-      [class.alternate-item]="i % 2 === 1"
-      (click)="onItemClick(item.id, item.name)"
-    >
       <div
-        class="card-list-item-typography card-name-special"
+        class="card-list-item"
         [class.alternate-item]="i % 2 === 1"
-      >
-        {{ item.count }} {{ item.name }}
+        (click)="onItemClick(item.id, item.name)"
+        >
+        <div
+          class="card-list-item-typography card-name-special"
+          [class.alternate-item]="i % 2 === 1"
+          >
+          {{ item.count }} {{ item.name }}
+        </div>
+        <div
+          class="card-list-item-typography"
+          [class.alternate-item]="i % 2 === 1"
+          >
+          {{ item.price * item.count | currency }}
+        </div>
       </div>
-      <div
-        class="card-list-item-typography"
-        [class.alternate-item]="i % 2 === 1"
-      >
-        {{ item.price * item.count | currency }}
-      </div>
-    </div>
-    } @empty {
-    <div class="empty-list">Add cards to your list!</div>
+      } @empty {
+      <div class="empty-list">Add cards to your list!</div>
     }
   </div>
-  <ng-container *ngIf="isModalActive(); else noModal">
+  @if (isModalActive()) {
     <div class="total-container">
       <div class="total-label">Clear list?</div>
     </div>
@@ -32,7 +32,7 @@
         class="large-button primary-button-style"
         (click)="onConfirm()"
         [disabled]="isDeleting()"
-      >
+        >
         {{ isDeleting() ? "Clearing..." : "Yee" }}
       </button>
     </div>
@@ -41,8 +41,7 @@
         Cancel
       </button>
     </div>
-  </ng-container>
-  <ng-template #noModal>
+  } @else {
     <div class="total-container">
       <a class="total-label">Total</a>
       <a class="total-price">{{ listData.currentTotal | currency }}</a>
@@ -51,12 +50,11 @@
       <button
         class="large-button secondary-button-style"
         (click)="onClearList()"
-      >
+        >
         Clear list
       </button>
     </div>
-  </ng-template>
-</ng-container>
-<ng-template #loading>
+  }
+} @else {
   <div class="spinner">Loading list details...</div>
-</ng-template>
+}

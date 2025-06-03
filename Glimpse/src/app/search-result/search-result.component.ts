@@ -5,7 +5,7 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import {
   catchError,
   delayWhen,
@@ -22,7 +22,7 @@ import { CardDisplayComponent } from '../card-display/card-display.component';
 
 @Component({
   selector: 'app-search-result',
-  imports: [CommonModule, CardDisplayComponent],
+  imports: [CardDisplayComponent],
   templateUrl: './search-result.component.html',
   styleUrls: ['./search-result.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
