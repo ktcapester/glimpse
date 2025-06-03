@@ -1,12 +1,15 @@
-.scrollable-list {
+:host {
+  height: auto !important;
+  min-height: calc(100vh - 110px);
+}
+
+.suggestions-list {
   display: grid;
-  flex: 1 1 auto;
+  flex-grow: 1;
   padding: 0px 24px;
   gap: 24px;
   margin-bottom: 18px;
-  /* overflow-y: auto;
-  scroll-behavior: smooth; */
-  justify-content: space-evenly;
+  align-content: center;
   grid-template-columns: repeat(var(--cols, 1), minmax(146px, 1fr));
 }
 
@@ -31,4 +34,5 @@
   height: auto;
   min-width: 146px;
   min-height: 204px;
+  display: block;
 }
