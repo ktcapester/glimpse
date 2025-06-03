@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -7,7 +7,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { VerifyService } from './verify.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
-import { HttpErrorResponse } from '@angular/common/http';
 
 describe('VerifyService', () => {
   let service: VerifyService;
