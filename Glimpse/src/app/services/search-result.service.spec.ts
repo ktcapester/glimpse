@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { SearchResultService } from './search-result.service';
-import { environment } from 'src/environments/environment';
+import { environment } from '../../environments/environment';
 import { CardSchema } from '../interfaces/schemas.interface';
 
 describe('SearchResultService', () => {
