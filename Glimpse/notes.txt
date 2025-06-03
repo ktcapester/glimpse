@@ -91,7 +91,7 @@ adding card takes to sign in
 from /backend run these:
   to update backend:
     eb deploy
-  to get running stream of logs (supposedly):
+  to get latest batch of my console.log() logs:
     eb logs --stream --log-group /aws/elasticbeanstalk/Glimpse-0-env/var/log/web.stdout.log
 
 from ./Glimpse run these:

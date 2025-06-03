@@ -3,7 +3,7 @@
   flex-direction: column;
   justify-content: center;
   box-sizing: border-box;
-  height: calc(100vh - 110px); /* header = 110px tall */
+  min-height: calc(100vh - 110px); /* header = 110px tall */
 }
 
 .footer-container {
