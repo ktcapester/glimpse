@@ -110,7 +110,7 @@ describe('SearchResultService', () => {
     const fakeListId = 'list123';
 
     service.addCard(fakeCard, fakeListId).subscribe((total) => {
-      expect(total).toBe(42);
+      expect(total).toBe({ currentTotal: 42 });
     });
 
     const req = httpMock.expectOne(`${environment.apiURL}/list/${fakeListId}`);
