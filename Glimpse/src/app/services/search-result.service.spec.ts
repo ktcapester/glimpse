@@ -53,7 +53,7 @@ describe('SearchResultService', () => {
       scryfallLink: 'https://scryfall.com/card/lotus',
       imgsrcSmall: '',
       createdAt: new Date(),
-      updateAt: new Date(),
+      updatedAt: new Date(),
     };
 
     service.getCard('Black Lotus').subscribe((card) => {
@@ -87,7 +87,7 @@ describe('SearchResultService', () => {
       scryfallLink: 'https://scryfall.com/card/lotus',
       imgsrcSmall: '',
       createdAt: new Date(),
-      updateAt: new Date(),
+      updatedAt: new Date(),
     };
 
     // Subscribe twice
