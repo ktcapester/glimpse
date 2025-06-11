@@ -69,11 +69,17 @@ const postLoginTokens = async (req, res, next) => {
     if (!token || !email) {
       throw createError(400, "Token and email are required.");
     }
+    const clientPlatform = req.header("X-Client-Platform")?.toLowerCase();
 
     const { accessToken, refreshToken } = await loginWithMagicLink(
       token,
       email
     );
+
+    if (clientPlatform === "mobile") {
+      // return both tokens as JSON so the app can store them
+      return res.json({ accessToken, refreshToken });
+    }
 
     // Set the refresh token in a secure cookie
     res.cookie("refreshToken", refreshToken, COOKIE_OPTS);
