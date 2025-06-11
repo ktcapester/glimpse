@@ -30,7 +30,7 @@ let lastAPICall = Date.now();
  * @returns {Promise<CardSearchResult[]>} An array of search results.
  * @throws Will throw an error if the Scryfall API request fails.
  */
-async function searchScryfall(searchTerm) {
+const searchScryfall = async (searchTerm) => {
   const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
   apiNamedurl.searchParams.append("fuzzy", searchTerm);
 
@@ -85,6 +85,6 @@ async function searchScryfall(searchTerm) {
       scryfallLink: singleData.scryfall_uri,
     },
   ];
-}
+};
 
 module.exports = { searchScryfall };

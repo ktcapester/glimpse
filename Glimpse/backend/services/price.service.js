@@ -32,7 +32,7 @@ let lastAPICall = Date.now();
  * @param {string} cardName - Name of the card to fetch prices for.
  * @returns {Promise<Object>} The card document from the database or an error object.
  */
-async function calculatePriceFromName(cardName) {
+const calculatePriceFromName = async (cardName) => {
   if (!cardName) {
     throw createError(400, "Card name is required.");
   }
@@ -95,7 +95,7 @@ async function calculatePriceFromName(cardName) {
 
   // Return the calc price data
   return found;
-}
+};
 
 /**
  * Process all prints of a card and calculate their prices.

@@ -39,7 +39,7 @@ async function createRefreshToken(userId) {
  * @returns {Promise<void>}
  * @throws Will throw an error if the email sending fails or a server error occurs.
  */
-async function sendMagicLink(email) {
+const sendMagicLink = async (email) => {
   console.log("sending magic link to:", email);
 
   // Check for old unused tokens for the email
@@ -79,7 +79,7 @@ async function sendMagicLink(email) {
     text: `Click here to log in: ${magicLink}`,
     html: `<a href="${magicLink}">Log in</a>`,
   });
-}
+};
 
 /**
  * Verify a magic link token and return the associated user.
@@ -91,7 +91,7 @@ async function sendMagicLink(email) {
  * @returns {Promise<string>} The user ID if verification is successful.
  * @throws Will throw an error if the token is invalid, expired, or a server error occurs.
  */
-async function verifyMagicToken(token, email) {
+const verifyMagicToken = async (token, email) => {
   console.log("verifying token+email:", token, email);
 
   // 1) Find & delete the unexpired token in one go
@@ -128,16 +128,16 @@ async function verifyMagicToken(token, email) {
   console.log("resulting user ID:", user._id);
   // Return the User
   return user;
-}
+};
 
-async function loginWithMagicLink(token, email) {
+const loginWithMagicLink = async (token, email) => {
   const user = await verifyMagicToken(token, email);
   const accessToken = generateAccessToken(user._id);
   const refreshToken = await createRefreshToken(user._id);
   return { accessToken, refreshToken };
-}
+};
 
-async function refreshAccessToken(refreshToken) {
+const refreshAccessToken = async (refreshToken) => {
   const refreshDoc = await RefreshToken.findOne({ token: refreshToken });
 
   if (!refreshDoc) {
@@ -149,11 +149,11 @@ async function refreshAccessToken(refreshToken) {
   }
 
   return generateAccessToken(refreshDoc.userId);
-}
+};
 
-async function revokeRefreshToken(refreshToken) {
+const revokeRefreshToken = async (refreshToken) => {
   await RefreshToken.deleteOne({ token: refreshToken });
-}
+};
 
 module.exports = {
   sendMagicLink,
