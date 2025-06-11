@@ -4,7 +4,7 @@
  * @param {number} ms - Number of milliseconds to delay.
  * @returns {Promise<void>} Resolves after the specified delay.
  */
-export function delay(ms) {
+function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -15,7 +15,7 @@ export function delay(ms) {
  * @property {string} User-Agent - User agent string for the application.
  * @property {string} Accept - Accept header specifying JSON response format.
  */
-export const headers = {
+const headers = {
   "User-Agent": "GlimpseApp/1.0 (https://glimpsecard.com)",
   Accept: "application/json",
 };
@@ -25,7 +25,7 @@ export const headers = {
  * @constant
  * @type {string}
  */
-export const scryfallCardAPIBase = "https://api.scryfall.com/cards";
+const scryfallCardAPIBase = "https://api.scryfall.com/cards";
 
 /**
  * Create consistent error objects.
@@ -34,4 +34,11 @@ export const scryfallCardAPIBase = "https://api.scryfall.com/cards";
  * @param {string} message - Error message.
  * @returns {Object} Error object with status and message properties.
  */
-export const createError = (status, message) => ({ status, message });
+const createError = (status, message) => ({ status, message });
+
+module.exports = {
+  createError,
+  delay,
+  scryfallCardAPIBase,
+  headers,
+};
