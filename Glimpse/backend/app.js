@@ -58,8 +58,13 @@ app.get("/", (req, res) => {
 });
 
 // ...
-// Serve AASA at /.well-known if you like, or at /
+// Serve AASA at /.well-known and at /
 app.get("/apple-app-site-association", (req, res) => {
+  res.type("application/json");
+  res.sendFile(path.join(__dirname, "apple-app-site-association"));
+});
+
+app.get("/.well-known/apple-app-site-association", (req, res) => {
   res.type("application/json");
   res.sendFile(path.join(__dirname, "apple-app-site-association"));
 });
