@@ -13,7 +13,8 @@ const { User } = require("../models/user.model");
 const { List } = require("../models/list.model");
 const { createError } = require("../utils");
 
-const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
+// ms * sec * min * hr * day
+const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 function generateAccessToken(userId) {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
@@ -21,7 +22,7 @@ function generateAccessToken(userId) {
 
 async function createRefreshToken(userId) {
   const token = uuidv4();
-  const expiresAt = new Date(Date.now() + COOKIE_MAX_AGE); // 7 days
+  const expiresAt = new Date(Date.now() + COOKIE_MAX_AGE);
   await RefreshToken.create({
     token,
     userId,
@@ -50,7 +51,7 @@ const sendMagicLink = async (email) => {
   }
   // Create new token
   const token = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 120); // Token expires in 120 minutes
 
   // Save the token to the database
   const dbtok = await Token.create({ email, token, expiresAt });
