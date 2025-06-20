@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
  * Middleware to authenticate requests using JWT.
  * @function
  * @name module:Middleware/AuthJWT.authenticateJWT
- * @param {Express.Request & { userId?: string }} req - Express request with optional userId property.
+ * @param {Express.Request | { userId?: string }} req - Express request with optional userId property.
  * @param {Express.Response} res - Express response object.
  * @param {Function} next - Express next middleware function.
  * @returns {void} Responds with an error message if authentication fails, otherwise calls the next middleware.
