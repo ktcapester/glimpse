@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: controllers/user.controller.js</title>
+    <title>JSDoc: Source: types/list.types.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: controllers/user.controller.js</h1>
+    <h1 class="page-title">Source: types/list.types.js</h1>
 
     
 
@@ -27,43 +27,23 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Controller for retrieving authenticated user information.
- * @module Controllers/User
+ * Shared types for list-related data structures.
+ * @module Types/List
  */
 
 /**
- * Specialization of the Express Request object for user retrieval.
- * @typedef {Express.Request&lt;any, any, any, any> | { userId: string }} module:Controllers/User~UserRequest
+ * Format of cards in a populated list result.
+ * @typedef {Object} CardInList
+ * @property {module:Models/Card~CardDocument} card - Fully populated card document.
+ * @property {number} quantity - Quantity of the card in the list.
  */
-
-const userService = require("../services/user.service");
-const { createError } = require("../utils");
 
 /**
- * Get details of the authenticated user.
- * @function
- * @name module:Controllers/User.getUser
- * @param {UserRequest} req - The HTTP request containing the authenticated user.
- * @param {Express.Response} res - The HTTP response object.
- * @returns {Promise&lt;Express.Response>} Responds with the user details or an error message.
+ * Summary of a list, including card entries and total price.
+ * @typedef {Object} module:Types/List~ListSummary
+ * @property {CardInList[]} list - Array of card entries.
+ * @property {number} currentTotal - Total price of the list.
  */
-const getUser = async (req, res, next) => {
-  const userId = req.userId;
-  if (!userId) {
-    return next(createError(400, "User ID is required."));
-  }
-
-  try {
-    const user = await userService.getUserByID(userId);
-    res.json(user);
-  } catch (error) {
-    next(error);
-  }
-};
-
-module.exports = {
-  getUser,
-};
 </code></pre>
         </article>
     </section>

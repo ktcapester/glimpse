@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: controllers/user.controller.js</title>
+    <title>JSDoc: Module: Services/User</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,56 +17,258 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: controllers/user.controller.js</h1>
+    <h1 class="page-title">Module: Services/User</h1>
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Controller for retrieving authenticated user information.
- * @module Controllers/User
- */
+        
+            
+        
+    
+</header>
 
-/**
- * Specialization of the Express Request object for user retrieval.
- * @typedef {Express.Request&lt;any, any, any, any> | { userId: string }} module:Controllers/User~UserRequest
- */
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description">Service for retrieving user data from the database.</div>
+        
 
-const userService = require("../services/user.service");
-const { createError } = require("../utils");
+        
+            
 
-/**
- * Get details of the authenticated user.
- * @function
- * @name module:Controllers/User.getUser
- * @param {UserRequest} req - The HTTP request containing the authenticated user.
- * @param {Express.Response} res - The HTTP response object.
- * @returns {Promise&lt;Express.Response>} Responds with the user details or an error message.
- */
-const getUser = async (req, res, next) => {
-  const userId = req.userId;
-  if (!userId) {
-    return next(createError(400, "User ID is required."));
-  }
 
-  try {
-    const user = await userService.getUserByID(userId);
-    res.json(user);
-  } catch (error) {
-    next(error);
-  }
-};
 
-module.exports = {
-  getUser,
-};
-</code></pre>
-        </article>
-    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_user.service.js.html">services/user.service.js</a>, <a href="services_user.service.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".getUserByID"><span class="type-signature">(async, static) </span>getUserByID<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Fetch a user by their ID.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_user.service.js.html">services/user.service.js</a>, <a href="services_user.service.js.html#line9">line 9</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Throws:</h5>
+
+        
+
+    <div class="param-desc">
+    
+        Will throw an error if the user is not found or a server error occurs.
+    
+    </div>
+
+
+    
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The user document from the database.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

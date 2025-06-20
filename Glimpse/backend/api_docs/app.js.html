@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: controllers/user.controller.js</title>
+    <title>JSDoc: Source: app.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: controllers/user.controller.js</h1>
+    <h1 class="page-title">Source: app.js</h1>
 
     
 
@@ -26,44 +26,104 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Controller for retrieving authenticated user information.
- * @module Controllers/User
- */
+            <pre class="prettyprint source linenums"><code>const express = require("express");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerOptions = require("./swagger.config");
+const searchRoute = require("./routes/search.route");
+const priceRoute = require("./routes/price.route");
+const listRoute = require("./routes/list.route");
+const userRoute = require("./routes/user.route");
+const magicLinkRoute = require("./routes/magiclink.route");
+const errorHandler = require("./middleware/globalErrorHandler.middle");
+const path = require("path");
+const app = express();
 
 /**
- * Specialization of the Express Request object for user retrieval.
- * @typedef {Express.Request&lt;any, any, any, any> | { userId: string }} module:Controllers/User~UserRequest
+ * Enable trust proxy to properly handle HTTPS and client IP when behind AWS ELB.
  */
-
-const userService = require("../services/user.service");
-const { createError } = require("../utils");
+app.enable("trust proxy"); // So req.secure and req.protocol reflect ELB settings
 
 /**
- * Get details of the authenticated user.
- * @function
- * @name module:Controllers/User.getUser
- * @param {UserRequest} req - The HTTP request containing the authenticated user.
- * @param {Express.Response} res - The HTTP response object.
- * @returns {Promise&lt;Express.Response>} Responds with the user details or an error message.
+ * Define allowed CORS origins.
  */
-const getUser = async (req, res, next) => {
-  const userId = req.userId;
-  if (!userId) {
-    return next(createError(400, "User ID is required."));
-  }
+const allowedOrigins = [
+  "https://glimpsecard.com",
+  "https://www.glimpsecard.com",
+  "https://api.glimpsecard.com",
+];
 
-  try {
-    const user = await userService.getUserByID(userId);
-    res.json(user);
-  } catch (error) {
-    next(error);
-  }
-};
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Client-Platform"],
+    // if I send custom headers, I need to expose them like this:
+    // exposedHeaders: ["Foo"],
+    maxAge: 600, // cache preflight response for 10 minutes
+    optionsSuccessStatus: 200,
+  })
+);
 
-module.exports = {
-  getUser,
-};
+/**
+ * Middleware to parse cookies.
+ */
+app.use(cookieParser());
+
+/**
+ * Middleware to parse incoming JSON requests.
+ */
+app.use(express.json());
+
+/**
+ * Root route to check server status.
+ */
+app.get("/", (req, res) => {
+  res.send("Hello world!");
+});
+
+// ...
+// Serve AASA at /.well-known and at /
+app.get("/apple-app-site-association", (req, res) => {
+  res.type("application/json");
+  res.sendFile(path.join(__dirname, "apple-app-site-association"));
+});
+
+app.get("/.well-known/apple-app-site-association", (req, res) => {
+  res.type("application/json");
+  res.sendFile(path.join(__dirname, "apple-app-site-association"));
+});
+
+/**
+ * Generate &amp; serve Swagger documentation at /docs.
+ */
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use(
+  "/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: "Glimpse API Docs",
+    customCss: ".swagger-ui .topbar { display: none }",
+    customfavIcon: "https://glimpsecard.com/favicon.ico",
+  })
+);
+
+/**
+ * API routes.
+ */
+app.use("/api/search", searchRoute);
+app.use("/api/price", priceRoute);
+app.use("/api/list", listRoute);
+app.use("/api/user", userRoute);
+app.use("/api/auth", magicLinkRoute);
+
+// after ALL routes, add the error handler
+app.use(errorHandler);
+
+module.exports = app;
 </code></pre>
         </article>
     </section>
