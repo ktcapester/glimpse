@@ -99,8 +99,17 @@ router.post("/verify", postLoginTokens);
  * @swagger
  * /api/auth/refresh-token:
  *   post:
- *     summary: Refresh the access token using the refresh token
+ *     summary: Refresh the access token using the refresh token in a secure cookie on the web, or in the request body on mobile.
  *     tags: [Auth]
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Access token refreshed successfully

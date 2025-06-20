@@ -91,7 +91,7 @@ const postLoginTokens = async (req, res, next) => {
 
 const postRefreshToken = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
     if (!refreshToken) {
       throw createError(401, "No refresh token provided.");
     }
