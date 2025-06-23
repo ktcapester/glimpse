@@ -15,7 +15,7 @@ describe("Global Error Handler Middleware", () => {
     app.use(errorHandler);
   });
 
-  test("should respond with 500 and default message for generic errors", async () => {
+  it("should respond with 500 and default message for generic errors", async () => {
     // Act: send a request to the error route
     const response = await request(app).get("/error");
 
@@ -24,7 +24,7 @@ describe("Global Error Handler Middleware", () => {
     expect(response.body).toEqual({ error: "Internal Server Error" });
   });
 
-  test("should respond with custom status and message when provided", async () => {
+  it("should respond with custom status and message when provided", async () => {
     // Arrange: create a new app instance for custom error
     app = express();
     app.get("/custom-error", (req, res, next) => {
