@@ -82,17 +82,7 @@ const sendMagicLink = async (email) => {
   });
 };
 
-/**
- * Verify a magic link token and return the associated user.
- * @async
- * @function
- * @name module:Services/MagicLink.verifyMagicToken
- * @param {string} token - The token to verify.
- * @param {string} email - The email address associated with the token.
- * @returns {Promise<string>} The user ID if verification is successful.
- * @throws Will throw an error if the token is invalid, expired, or a server error occurs.
- */
-const verifyMagicToken = async (token, email) => {
+const loginWithMagicLink = async (token, email) => {
   console.log("verifying token+email:", token, email);
 
   // 1) Find & delete the unexpired token in one go
@@ -127,12 +117,8 @@ const verifyMagicToken = async (token, email) => {
     await user.save();
   }
   console.log("resulting user ID:", user._id);
-  // Return the User
-  return user;
-};
 
-const loginWithMagicLink = async (token, email) => {
-  const user = await verifyMagicToken(token, email);
+  // 3) Generate access and refresh tokens
   const accessToken = generateAccessToken(user._id);
   const refreshToken = await createRefreshToken(user._id);
   return { accessToken, refreshToken };
