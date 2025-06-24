@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment';
+import { environment } from '../../environments/environment';
 import { CardSchema } from '../interfaces';
 import { shareReplay } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';

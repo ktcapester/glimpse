@@ -6,7 +6,7 @@ import {
 import { inject } from '@angular/core';
 import { CurrentTotalService } from '../services';
 import { tap } from 'rxjs';
-import { environment } from 'src/environments/environment';
+import { environment } from '../../environments/environment';
 
 export const currentTotalInterceptor: HttpInterceptorFn = (req, next) => {
   const ctService = inject(CurrentTotalService);

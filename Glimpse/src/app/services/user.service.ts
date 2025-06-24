@@ -2,7 +2,7 @@ import { effect, inject, Injectable, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { UserSchema } from '../interfaces';
 import { HttpClient } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
+import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 import { StorageService } from './storage.service';
 import { firstValueFrom } from 'rxjs';
@@ -20,20 +20,31 @@ export class UserService {
   readonly user = this.userSignal.asReadonly();
   readonly user$ = toObservable(this.userSignal);
 
+  private tryReviveUserFromCache(): UserSchema | null {
+    const raw = this.storage.getItem('user');
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw, (key, value) => {
+        if (key === 'createdAt') {
+          return new Date(value as string);
+        }
+        return value;
+      });
+    } catch {
+      this.storage.removeItem('user');
+      return null;
+    }
+  }
+
   constructor() {
     // Whenever auth state changes, fetch or clear user
     effect(() => {
       if (this.auth.isLoggedIn()) {
-        const raw = this.storage.getItem('user');
+        const loadedUser = this.tryReviveUserFromCache();
         let loaded = false;
-        if (raw) {
-          try {
-            const u: UserSchema = JSON.parse(raw);
-            this.userSignal.set(u);
-            loaded = true;
-          } catch {
-            this.storage.removeItem('user');
-          }
+        if (loadedUser) {
+          this.userSignal.set(loadedUser);
+          loaded = true;
         }
         // if no cached User, fetch from backend
         if (!loaded) {

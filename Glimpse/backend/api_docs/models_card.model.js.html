@@ -26,7 +26,37 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const mongoose = require("mongoose");
+            <pre class="prettyprint source linenums"><code>/**
+ * Mongoose model representing a card with pricing details and Scryfall metadata.
+ * @module Models/Card
+ */
+
+/**
+ * @typedef {Object} module:Models/Card~CardDocument
+ * @property {string} name - Name of the card.
+ * @property {string} scryfallLink - Scryfall link for the card.
+ * @property {string} imgsrcFull - URL to the full-size image of the card.
+ * @property {string} imgsrcSmall - URL to the small-size image of the card.
+ * @property {Object} prices - Pricing information for the card.
+ * @property {Object} prices.raw - Raw prices in various currencies.
+ * @property {number} prices.raw.usd
+ * @property {number} prices.raw.usd_etched
+ * @property {number} prices.raw.usd_foil
+ * @property {number} prices.raw.eur
+ * @property {number} prices.raw.eur_etched
+ * @property {number} prices.raw.eur_foil
+ * @property {Object} prices.calc - Calculated prices in various currencies.
+ * @property {number} prices.calc.usd
+ * @property {number} prices.calc.usd_etched
+ * @property {number} prices.calc.usd_foil
+ * @property {number} prices.calc.eur
+ * @property {number} prices.calc.eur_etched
+ * @property {number} prices.calc.eur_foil
+ * @property {Date} createdAt - Timestamp when the card was created.
+ * @property {Date} updatedAt - Timestamp when the card was last updated.
+ */
+
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 /**
@@ -174,7 +204,7 @@ cardSchema.index({ name: 1 });
 
 /**
  * Mongoose model for the card schema.
- * @type {Model}
+ * @type {Model&lt;CardDocument>}
  */
 const Card = mongoose.model("Card", cardSchema);
 
@@ -189,13 +219,13 @@ module.exports = { Card };
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Card">Card</a></li><li><a href="global.html#List">List</a></li><li><a href="global.html#Token">Token</a></li><li><a href="global.html#User">User</a></li><li><a href="global.html#activeList">activeList</a></li><li><a href="global.html#addCard">addCard</a></li><li><a href="global.html#authenticateJWT">authenticateJWT</a></li><li><a href="global.html#calculateAllPrices">calculateAllPrices</a></li><li><a href="global.html#calculatePriceFromName">calculatePriceFromName</a></li><li><a href="global.html#card">card</a></li><li><a href="global.html#cardCompareFn">cardCompareFn</a></li><li><a href="global.html#cardSchema">cardSchema</a></li><li><a href="global.html#cards">cards</a></li><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createdAt">createdAt</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#description">description</a></li><li><a href="global.html#email">email</a></li><li><a href="global.html#expiresAt">expiresAt</a></li><li><a href="global.html#extractPrice">extractPrice</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAllCards">getAllCards</a></li><li><a href="global.html#getCardSearch">getCardSearch</a></li><li><a href="global.html#getItem">getItem</a></li><li><a href="global.html#getMagicToken">getMagicToken</a></li><li><a href="global.html#getPrices">getPrices</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getUserByID">getUserByID</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#imgsrcFull">imgsrcFull</a></li><li><a href="global.html#imgsrcSmall">imgsrcSmall</a></li><li><a href="global.html#listSchema">listSchema</a></li><li><a href="global.html#lists">lists</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#onError">onError</a></li><li><a href="global.html#onListening">onListening</a></li><li><a href="global.html#postMagicLink">postMagicLink</a></li><li><a href="global.html#prices">prices</a></li><li><a href="global.html#processAllPrints">processAllPrints</a></li><li><a href="global.html#processList">processList</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#removeItem">removeItem</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#scryfallLink">scryfallLink</a></li><li><a href="global.html#searchScryfall">searchScryfall</a></li><li><a href="global.html#sendMagicLink">sendMagicLink</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li><li><a href="global.html#timestamps">timestamps</a></li><li><a href="global.html#token">token</a></li><li><a href="global.html#tokenSchema">tokenSchema</a></li><li><a href="global.html#totalPrice">totalPrice</a></li><li><a href="global.html#updateItem">updateItem</a></li><li><a href="global.html#used">used</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#userSchema">userSchema</a></li><li><a href="global.html#username">username</a></li><li><a href="global.html#verifyToken">verifyToken</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li><li><a href="module-Controllers_MagicLink.html">Controllers/MagicLink</a></li><li><a href="module-Controllers_Price.html">Controllers/Price</a></li><li><a href="module-Controllers_Search.html">Controllers/Search</a></li><li><a href="module-Controllers_User.html">Controllers/User</a></li><li><a href="module-Middleware_AuthJWT.html">Middleware/AuthJWT</a></li><li><a href="module-Models_Card.html">Models/Card</a></li><li><a href="module-Models_List.html">Models/List</a></li><li><a href="module-Models_RefreshToken.html">Models/RefreshToken</a></li><li><a href="module-Models_Token.html">Models/Token</a></li><li><a href="module-Models_User.html">Models/User</a></li><li><a href="module-Services_List.html">Services/List</a></li><li><a href="module-Services_MagicLink.html">Services/MagicLink</a></li><li><a href="module-Services_Price.html">Services/Price</a></li><li><a href="module-Services_Search.html">Services/Search</a></li><li><a href="module-Services_User.html">Services/User</a></li><li><a href="module-Types_List.html">Types/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#allowedOrigins">allowedOrigins</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#shutdown">shutdown</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#swaggerSpec">swaggerSpec</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed May 07 2025 12:09:52 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 19 2025 23:28:30 GMT-0700 (Pacific Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

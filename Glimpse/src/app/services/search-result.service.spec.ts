@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { SearchResultService } from './search-result.service';
-import { environment } from 'src/environments/environment';
+import { environment } from '../../environments/environment';
 import { CardSchema } from '../interfaces/schemas.interface';
 
 describe('SearchResultService', () => {
@@ -53,7 +53,7 @@ describe('SearchResultService', () => {
       scryfallLink: 'https://scryfall.com/card/lotus',
       imgsrcSmall: '',
       createdAt: new Date(),
-      updateAt: new Date(),
+      updatedAt: new Date(),
     };
 
     service.getCard('Black Lotus').subscribe((card) => {
@@ -87,13 +87,15 @@ describe('SearchResultService', () => {
       scryfallLink: 'https://scryfall.com/card/lotus',
       imgsrcSmall: '',
       createdAt: new Date(),
-      updateAt: new Date(),
+      updatedAt: new Date(),
     };
 
     // Subscribe twice
     const obs1 = service.getCard('Black Lotus');
     const obs2 = service.getCard('Black Lotus');
-    expect(obs1).toBe(obs2, 'should return the same shared Observable');
+    expect(obs1)
+      .withContext('should return the same shared Observable')
+      .toBe(obs2);
 
     // Trigger the HTTP once
     obs1.subscribe((card) => expect(card).toEqual(dummyCard));
@@ -110,12 +112,12 @@ describe('SearchResultService', () => {
     const fakeListId = 'list123';
 
     service.addCard(fakeCard, fakeListId).subscribe((total) => {
-      expect(total).toBe(42);
+      expect(total).toEqual({ currentTotal: 42 });
     });
 
     const req = httpMock.expectOne(`${environment.apiURL}/list/${fakeListId}`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ cardID: 'xyz' });
+    expect(req.request.body).toEqual({ cardId: 'xyz' });
 
     // Simulate server returning { currentTotal: 42 }
     req.flush({ currentTotal: 42 });

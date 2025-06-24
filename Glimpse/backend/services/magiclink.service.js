@@ -13,7 +13,8 @@ const { User } = require("../models/user.model");
 const { List } = require("../models/list.model");
 const { createError } = require("../utils");
 
-const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
+// ms * sec * min * hr * day
+const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 function generateAccessToken(userId) {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
@@ -21,7 +22,7 @@ function generateAccessToken(userId) {
 
 async function createRefreshToken(userId) {
   const token = uuidv4();
-  const expiresAt = new Date(Date.now() + COOKIE_MAX_AGE); // 7 days
+  const expiresAt = new Date(Date.now() + COOKIE_MAX_AGE);
   await RefreshToken.create({
     token,
     userId,
@@ -39,7 +40,7 @@ async function createRefreshToken(userId) {
  * @returns {Promise<void>}
  * @throws Will throw an error if the email sending fails or a server error occurs.
  */
-async function sendMagicLink(email) {
+const sendMagicLink = async (email) => {
   console.log("sending magic link to:", email);
 
   // Check for old unused tokens for the email
@@ -50,7 +51,7 @@ async function sendMagicLink(email) {
   }
   // Create new token
   const token = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 120); // Token expires in 120 minutes
 
   // Save the token to the database
   const dbtok = await Token.create({ email, token, expiresAt });
@@ -79,19 +80,9 @@ async function sendMagicLink(email) {
     text: `Click here to log in: ${magicLink}`,
     html: `<a href="${magicLink}">Log in</a>`,
   });
-}
+};
 
-/**
- * Verify a magic link token and return the associated user.
- * @async
- * @function
- * @name module:Services/MagicLink.verifyMagicToken
- * @param {string} token - The token to verify.
- * @param {string} email - The email address associated with the token.
- * @returns {Promise<string>} The user ID if verification is successful.
- * @throws Will throw an error if the token is invalid, expired, or a server error occurs.
- */
-async function verifyMagicToken(token, email) {
+const loginWithMagicLink = async (token, email) => {
   console.log("verifying token+email:", token, email);
 
   // 1) Find & delete the unexpired token in one go
@@ -126,18 +117,14 @@ async function verifyMagicToken(token, email) {
     await user.save();
   }
   console.log("resulting user ID:", user._id);
-  // Return the User
-  return user;
-}
 
-async function loginWithMagicLink(token, email) {
-  const user = await verifyMagicToken(token, email);
+  // 3) Generate access and refresh tokens
   const accessToken = generateAccessToken(user._id);
   const refreshToken = await createRefreshToken(user._id);
   return { accessToken, refreshToken };
-}
+};
 
-async function refreshAccessToken(refreshToken) {
+const refreshAccessToken = async (refreshToken) => {
   const refreshDoc = await RefreshToken.findOne({ token: refreshToken });
 
   if (!refreshDoc) {
@@ -149,11 +136,11 @@ async function refreshAccessToken(refreshToken) {
   }
 
   return generateAccessToken(refreshDoc.userId);
-}
+};
 
-async function revokeRefreshToken(refreshToken) {
+const revokeRefreshToken = async (refreshToken) => {
   await RefreshToken.deleteOne({ token: refreshToken });
-}
+};
 
 module.exports = {
   sendMagicLink,

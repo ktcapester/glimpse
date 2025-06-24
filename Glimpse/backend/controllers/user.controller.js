@@ -5,7 +5,7 @@
 
 /**
  * Specialization of the Express Request object for user retrieval.
- * @typedef {Express.Request<any, any, any, any> & { userId: string }} module:Controllers/User~UserRequest
+ * @typedef {Express.Request<any, any, any, any> | { userId: string }} module:Controllers/User~UserRequest
  */
 
 const userService = require("../services/user.service");

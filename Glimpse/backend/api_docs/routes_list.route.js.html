@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routes/list.route.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: routes/list.route.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ListParams:
+ *       type: object
+ *       properties:
+ *         listId:
+ *           type: string
+ *           description: The ID of the list.
+
+ *     CardParams:
+ *       type: object
+ *       properties:
+ *         listId:
+ *           type: string
+ *         cardId:
+ *           type: string
+ *       required:
+ *         - listId
+ *         - cardId
+ *       description: Path parameters for card operations.
+
+ *     CardUpdateBody:
+ *       type: object
+ *       properties:
+ *         quantity:
+ *           type: integer
+ *           description: New quantity of the card.
+ *       required: []
+ *       description: Request body for updating card quantity.
+
+ *     CardInList:
+ *       type: object
+ *       properties:
+ *         card:
+ *           type: object
+ *           description: Card object details.
+ *         quantity:
+ *           type: integer
+ *           description: Number of copies in the list.
+
+ *     ListResponse:
+ *       type: object
+ *       properties:
+ *         list:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/CardInList'
+ *         currentTotal:
+ *           type: number
+ *           description: Total price of all cards in the list.
+ */
+
+const express = require("express");
+const {
+  getList,
+  postList,
+  deleteList,
+  deleteCard,
+  getCard,
+  patchCard,
+} = require("../controllers/list.controller");
+const authenticateJWT = require("../middleware/authJWT.middle");
+
+const router = express.Router();
+
+/**
+ * Middleware to authenticate all routes in this router using JWT.
+ */
+router.use(authenticateJWT);
+
+/**
+ * GET all cards in a list.
+ * @param {string} listId - ID of the list.
+ */
+/**
+ * @swagger
+ * /api/list/{listId}:
+ *   get:
+ *     summary: Get all cards in a list
+ *     tags: [Lists]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: listId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List with cards and total price
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ListResponse'
+ *       404:
+ *         description: List not found
+ *       500:
+ *         description: Server error
+ */
+router.get("/:listId", getList);
+
+/**
+ * POST a card to a list.
+ * @param {string} listId - ID of the list.
+ */
+/**
+ * @swagger
+ * /api/list/{listId}:
+ *   post:
+ *     summary: Add a card to a list
+ *     tags: [Lists]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: listId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               cardId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Updated total price of the list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 currentTotal:
+ *                   type: number
+ *       404:
+ *         description: List or card not found
+ *       500:
+ *         description: Server error
+ */
+router.post("/:listId", postList);
+
+/**
+ * DELETE all cards in a list.
+ * @param {string} listId - ID of the list.
+ */
+/**
+ * @swagger
+ * /api/list/{listId}:
+ *   delete:
+ *     summary: Clear all cards from a list
+ *     tags: [Lists]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: listId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Empty list with total price reset
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ListResponse'
+ *       404:
+ *         description: List not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/:listId", deleteList);
+
+/**
+ * GET a specific card from a list.
+ * @param {string} listId - ID of the list.
+ * @param {string} cardId - ID of the card.
+ */
+/**
+ * @swagger
+ * /api/list/{listId}/cards/{cardId}:
+ *   get:
+ *     summary: Get a specific card from a list
+ *     tags: [Lists]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: listId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: cardId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Card with quantity
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 card:
+ *                   type: object
+ *                 quantity:
+ *                   type: integer
+ *       404:
+ *         description: Card not found
+ *       500:
+ *         description: Server error
+ */
+router.get("/:listId/cards/:cardId", getCard);
+
+/**
+ * PATCH a specific card in a list (update).
+ * @param {string} listId - ID of the list.
+ * @param {string} cardId - ID of the card.
+ */
+/**
+ * @swagger
+ * /api/list/{listId}/cards/{cardId}:
+ *   patch:
+ *     summary: Update a card's quantity in a list
+ *     tags: [Lists]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: listId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: cardId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CardUpdateBody'
+ *     responses:
+ *       200:
+ *         description: Updated list with new total price
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ListResponse'
+ *       400:
+ *         description: Invalid request body
+ *       404:
+ *         description: Card not found
+ *       500:
+ *         description: Server error
+ */
+router.patch("/:listId/cards/:cardId", patchCard);
+
+/**
+ * DELETE a specific card from a list.
+ * @param {string} listId - ID of the list.
+ * @param {string} cardId - ID of the card.
+ */
+/**
+ * @swagger
+ * /api/list/{listId}/cards/{cardId}:
+ *   delete:
+ *     summary: Remove a specific card from a list
+ *     tags: [Lists]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: listId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: cardId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Updated list with new total price
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ListResponse'
+ *       404:
+ *         description: Card not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/:listId/cards/:cardId", deleteCard);
+
+module.exports = router;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li><li><a href="module-Controllers_MagicLink.html">Controllers/MagicLink</a></li><li><a href="module-Controllers_Price.html">Controllers/Price</a></li><li><a href="module-Controllers_Search.html">Controllers/Search</a></li><li><a href="module-Controllers_User.html">Controllers/User</a></li><li><a href="module-Middleware_AuthJWT.html">Middleware/AuthJWT</a></li><li><a href="module-Models_Card.html">Models/Card</a></li><li><a href="module-Models_List.html">Models/List</a></li><li><a href="module-Models_RefreshToken.html">Models/RefreshToken</a></li><li><a href="module-Models_Token.html">Models/Token</a></li><li><a href="module-Models_User.html">Models/User</a></li><li><a href="module-Services_List.html">Services/List</a></li><li><a href="module-Services_MagicLink.html">Services/MagicLink</a></li><li><a href="module-Services_Price.html">Services/Price</a></li><li><a href="module-Services_Search.html">Services/Search</a></li><li><a href="module-Services_User.html">Services/User</a></li><li><a href="module-Types_List.html">Types/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#allowedOrigins">allowedOrigins</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#shutdown">shutdown</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#swaggerSpec">swaggerSpec</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 19 2025 23:28:30 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

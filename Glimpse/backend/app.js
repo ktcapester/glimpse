@@ -10,7 +10,7 @@ const listRoute = require("./routes/list.route");
 const userRoute = require("./routes/user.route");
 const magicLinkRoute = require("./routes/magiclink.route");
 const errorHandler = require("./middleware/globalErrorHandler.middle");
-
+const path = require("path");
 const app = express();
 
 /**
@@ -32,7 +32,7 @@ app.use(
     origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Client-Platform"],
     // if I send custom headers, I need to expose them like this:
     // exposedHeaders: ["Foo"],
     maxAge: 600, // cache preflight response for 10 minutes
@@ -55,6 +55,18 @@ app.use(express.json());
  */
 app.get("/", (req, res) => {
   res.send("Hello world!");
+});
+
+// ...
+// Serve AASA at /.well-known and at /
+app.get("/apple-app-site-association", (req, res) => {
+  res.type("application/json");
+  res.sendFile(path.join(__dirname, "apple-app-site-association"));
+});
+
+app.get("/.well-known/apple-app-site-association", (req, res) => {
+  res.type("application/json");
+  res.sendFile(path.join(__dirname, "apple-app-site-association"));
 });
 
 /**

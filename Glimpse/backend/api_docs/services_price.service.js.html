@@ -26,99 +26,112 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const { Card } = require("../models/card.model");
-const { delay, headers, scryfallCardAPIBase } = require("../utils");
+            <pre class="prettyprint source linenums"><code>/**
+ * Service functions for calculating card prices using Scryfall.
+ * @module Services/Price
+ */
 
-var lastAPICall = Date.now();
+/**
+ * Calculated prices in various currencies and print types.
+ * @typedef {Object} module:Services/Price~CalcPrices
+ * @property {number} usd - Average price in USD.
+ * @property {number} usd_etched - Average price in USD for etched foils.
+ * @property {number} usd_foil - Average price in USD for foils.
+ * @property {number} eur - Average price in EUR.
+ * @property {number} eur_etched - Average price in EUR for etched foils.
+ * @property {number} eur_foil - Average price in EUR for foils.
+ */
+
+const { Card } = require("../models/card.model");
+const {
+  delay,
+  headers,
+  scryfallCardAPIBase,
+  createError,
+} = require("../utils");
+
+let lastAPICall = Date.now();
 
 /**
  * Calculate prices for a card by its name and add it to the database.
  * @async
- * @function calculatePriceFromName
+ * @function
+ * @name module:Services/Price.calculatePriceFromName
  * @param {string} cardName - Name of the card to fetch prices for.
  * @returns {Promise&lt;Object>} The card document from the database or an error object.
  */
-async function calculatePriceFromName(cardName) {
-  try {
-    const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
-    apiNamedurl.searchParams.append("fuzzy", cardName);
-
-    const thisAPICall = Date.now();
-    if (thisAPICall - lastAPICall &lt; 100) {
-      // scryfall asks for 50-100ms between API calls, so wait for 100ms
-      await delay(100);
-    }
-    lastAPICall = Date.now();
-
-    const scryfallResponse = await fetch(apiNamedurl, { headers });
-    const scryfallData = await scryfallResponse.json();
-
-    // if scryfall returns a valid single card
-    if (scryfallResponse.status === 200) {
-      // compute the calculated prices from all prints
-      const allPrices = await processAllPrints(scryfallData.prints_search_uri);
-
-      // build the raw prices object
-      const rawPrices = {
-        usd: parseFloat(scryfallData.prices.usd) || 0,
-        usd_etched: parseFloat(scryfallData.prices.usd_etched) || 0,
-        usd_foil: parseFloat(scryfallData.prices.usd_foil) || 0,
-        eur: parseFloat(scryfallData.prices.eur) || 0,
-        eur_etched: parseFloat(scryfallData.prices.eur_etched) || 0,
-        eur_foil: parseFloat(scryfallData.prices.eur_foil) || 0,
-      };
-
-      // add to my DB, or update if already in it. aka "upsert" the card
-      let found = await Card.findOne({ name: scryfallData.name });
-
-      if (!found) {
-        // Card.create both creates and saves in one step
-        found = await Card.create({
-          name: scryfallData.name,
-          scryfallLink: scryfallData.scryfall_uri,
-          imgsrcFull: scryfallData.image_uris.large,
-          imgsrcSmall: scryfallData.image_uris.normal,
-          prices: {
-            raw: rawPrices,
-            calc: allPrices,
-          },
-        });
-      } else {
-        // update existing Card
-        found.scryfallLink = scryfallData.scryfall_uri;
-        found.imgsrcFull = scryfallData.image_uris.large;
-        found.imgsrcSmall = scryfallData.image_uris.small;
-        found.prices.raw = rawPrices;
-        found.prices.calc = allPrices;
-        found = await found.save();
-      }
-
-      // Return the calc price data
-      return { status: 200, data: found };
-    }
-
-    // if we got 404 from scryfall
-    return {
-      status: 500,
-      error: "Got a 404 from Scryfall, check the card name you searched.",
-      errorCode: "SERVER_ERROR",
-    };
-  } catch (error) {
-    console.error(error);
-    return {
-      status: 500,
-      error: "An error occurred while fetching data from Scryfall.",
-      errorCode: "SERVER_ERROR",
-    };
+const calculatePriceFromName = async (cardName) => {
+  if (!cardName) {
+    throw createError(400, "Card name is required.");
   }
-}
+  const thisAPICall = Date.now();
+  if (thisAPICall - lastAPICall &lt; 100) {
+    // scryfall asks for 50-100ms between API calls, so wait for 100ms
+    await delay(100);
+  }
+  lastAPICall = Date.now();
+
+  const apiNamedurl = new URL(`${scryfallCardAPIBase}/named`);
+  apiNamedurl.searchParams.append("fuzzy", cardName);
+  const scryfallResponse = await fetch(apiNamedurl, { headers });
+
+  if (!scryfallResponse.ok) {
+    if (scryfallResponse.status === 404) {
+      throw createError(404, `Card ${cardName} not found.`);
+    }
+    throw createError(502, "Error fetching card data from Scryfall.");
+  }
+  const scryfallData = await scryfallResponse.json();
+
+  // compute the calculated prices from all prints
+  const allPrices = await processAllPrints(scryfallData.prints_search_uri);
+
+  // build the raw prices object
+  const rawPrices = {
+    usd: parseFloat(scryfallData.prices.usd) || 0,
+    usd_etched: parseFloat(scryfallData.prices.usd_etched) || 0,
+    usd_foil: parseFloat(scryfallData.prices.usd_foil) || 0,
+    eur: parseFloat(scryfallData.prices.eur) || 0,
+    eur_etched: parseFloat(scryfallData.prices.eur_etched) || 0,
+    eur_foil: parseFloat(scryfallData.prices.eur_foil) || 0,
+  };
+
+  // add to my DB, or update if already in it. aka "upsert" the card
+  let found = await Card.findOne({ name: scryfallData.name });
+
+  if (!found) {
+    // Card.create both creates and saves in one step
+    found = await Card.create({
+      name: scryfallData.name,
+      scryfallLink: scryfallData.scryfall_uri,
+      imgsrcFull: scryfallData.image_uris.large,
+      imgsrcSmall: scryfallData.image_uris.normal,
+      prices: {
+        raw: rawPrices,
+        calc: allPrices,
+      },
+    });
+  } else {
+    // update existing Card
+    found.scryfallLink = scryfallData.scryfall_uri;
+    found.imgsrcFull = scryfallData.image_uris.large;
+    found.imgsrcSmall = scryfallData.image_uris.small;
+    found.prices.raw = rawPrices;
+    found.prices.calc = allPrices;
+    found = await found.save();
+  }
+
+  // Return the calc price data
+  return found;
+};
 
 /**
  * Process all prints of a card and calculate their prices.
  * @async
- * @function processAllPrints
+ * @function
+ * @name module:Services/Price.processAllPrints
  * @param {string} prints_search_uri - URI to fetch all prints of a card.
- * @returns {Promise&lt;Object>} An object containing calculated prices for all prints.
+ * @returns {Promise&lt;CalcPrices>} An object containing calculated prices for all prints.
  */
 async function processAllPrints(prints_search_uri) {
   // eg: "https://api.scryfall.com/cards/search?order=released&amp;q=oracleid%3Ab9cd714b-2ad8-4fdb-a8aa-82b17730e071&amp;unique=prints"
@@ -138,15 +151,19 @@ async function processAllPrints(prints_search_uri) {
   lastAPICall = Date.now();
 
   const all_response = await fetch(prints_no_digital, { headers });
+  if (!all_response.ok) {
+    throw createError(502, "Error fetching print data from Scryfall.");
+  }
   const all_data = await all_response.json();
   return calculateAllPrices(all_data.data);
 }
 
 /**
  * Calculate average prices for all prints of a card.
- * @function calculateAllPrices
+ * @function
+ * @name module:Services/Price.calculateAllPrices
  * @param {Array&lt;Object>} cards - Array of card objects from Scryfall.
- * @returns {Object} An object containing average prices for all prints.
+ * @returns {CalcPrices} An object containing average prices for all prints.
  */
 function calculateAllPrices(cards) {
   var usd_cards = [];
@@ -197,7 +214,8 @@ function calculateAllPrices(cards) {
 
 /**
  * Process a list of cards to calculate a weighted average price.
- * @function processList
+ * @function
+ * @name module:Services/Price.processList
  * @param {Array&lt;Object>} cards - Array of card objects.
  * @param {string} price_name - The price field to process (e.g., "usd").
  * @returns {number} The calculated weighted average price.
@@ -252,7 +270,8 @@ function processList(cards, price_name) {
 
 /**
  * Extract a specific price from a card object.
- * @function extractPrice
+ * @function
+ * @name module:Services/Price.extractPrice
  * @param {Object} card - Card object.
  * @param {string} price_name - The price field to extract (e.g., "usd").
  * @returns {number} The extracted price or NaN if not available.
@@ -278,7 +297,8 @@ function extractPrice(card, price_name) {
 
 /**
  * Compare two cards based on a specific price field.
- * @function cardCompareFn
+ * @function
+ * @name module:Services/Price.cardCompareFn
  * @param {Object} card0 - First card object.
  * @param {Object} card1 - Second card object.
  * @param {string} price_name - The price field to compare (e.g., "usd").
@@ -307,13 +327,13 @@ module.exports = { calculatePriceFromName };
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Card">Card</a></li><li><a href="global.html#List">List</a></li><li><a href="global.html#Token">Token</a></li><li><a href="global.html#User">User</a></li><li><a href="global.html#activeList">activeList</a></li><li><a href="global.html#addCard">addCard</a></li><li><a href="global.html#authenticateJWT">authenticateJWT</a></li><li><a href="global.html#calculateAllPrices">calculateAllPrices</a></li><li><a href="global.html#calculatePriceFromName">calculatePriceFromName</a></li><li><a href="global.html#card">card</a></li><li><a href="global.html#cardCompareFn">cardCompareFn</a></li><li><a href="global.html#cardSchema">cardSchema</a></li><li><a href="global.html#cards">cards</a></li><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createdAt">createdAt</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#description">description</a></li><li><a href="global.html#email">email</a></li><li><a href="global.html#expiresAt">expiresAt</a></li><li><a href="global.html#extractPrice">extractPrice</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAllCards">getAllCards</a></li><li><a href="global.html#getCardSearch">getCardSearch</a></li><li><a href="global.html#getItem">getItem</a></li><li><a href="global.html#getMagicToken">getMagicToken</a></li><li><a href="global.html#getPrices">getPrices</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getUserByID">getUserByID</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#imgsrcFull">imgsrcFull</a></li><li><a href="global.html#imgsrcSmall">imgsrcSmall</a></li><li><a href="global.html#listSchema">listSchema</a></li><li><a href="global.html#lists">lists</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#onError">onError</a></li><li><a href="global.html#onListening">onListening</a></li><li><a href="global.html#postMagicLink">postMagicLink</a></li><li><a href="global.html#prices">prices</a></li><li><a href="global.html#processAllPrints">processAllPrints</a></li><li><a href="global.html#processList">processList</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#removeItem">removeItem</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#scryfallLink">scryfallLink</a></li><li><a href="global.html#searchScryfall">searchScryfall</a></li><li><a href="global.html#sendMagicLink">sendMagicLink</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li><li><a href="global.html#timestamps">timestamps</a></li><li><a href="global.html#token">token</a></li><li><a href="global.html#tokenSchema">tokenSchema</a></li><li><a href="global.html#totalPrice">totalPrice</a></li><li><a href="global.html#updateItem">updateItem</a></li><li><a href="global.html#used">used</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#userSchema">userSchema</a></li><li><a href="global.html#username">username</a></li><li><a href="global.html#verifyToken">verifyToken</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li><li><a href="module-Controllers_MagicLink.html">Controllers/MagicLink</a></li><li><a href="module-Controllers_Price.html">Controllers/Price</a></li><li><a href="module-Controllers_Search.html">Controllers/Search</a></li><li><a href="module-Controllers_User.html">Controllers/User</a></li><li><a href="module-Middleware_AuthJWT.html">Middleware/AuthJWT</a></li><li><a href="module-Models_Card.html">Models/Card</a></li><li><a href="module-Models_List.html">Models/List</a></li><li><a href="module-Models_RefreshToken.html">Models/RefreshToken</a></li><li><a href="module-Models_Token.html">Models/Token</a></li><li><a href="module-Models_User.html">Models/User</a></li><li><a href="module-Services_List.html">Services/List</a></li><li><a href="module-Services_MagicLink.html">Services/MagicLink</a></li><li><a href="module-Services_Price.html">Services/Price</a></li><li><a href="module-Services_Search.html">Services/Search</a></li><li><a href="module-Services_User.html">Services/User</a></li><li><a href="module-Types_List.html">Types/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#allowedOrigins">allowedOrigins</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#shutdown">shutdown</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#swaggerSpec">swaggerSpec</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed May 07 2025 12:09:52 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 19 2025 23:28:30 GMT-0700 (Pacific Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

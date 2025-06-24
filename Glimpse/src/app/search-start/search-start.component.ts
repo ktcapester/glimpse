@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
 import { NgOptimizedImage } from '@angular/common';
 
@@ -9,8 +9,6 @@ import { NgOptimizedImage } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [SearchBarComponent, NgOptimizedImage],
 })
-export class SearchStartComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit(): void {}
+export class SearchStartComponent {
+  // There probably should be *some* kind of logic in this component lol
 }

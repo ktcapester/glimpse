@@ -69,20 +69,17 @@ export class CardListComponent {
   }
 
   onConfirm() {
-    const id = this.listId();
-    if (id) {
-      this.isDeleting.set(true);
-      this.listService
-        .deleteList(id)
-        .pipe(
-          tap((response) => {
-            this._listSig.set(response);
-            this.isModalActive.set(false);
-          }),
-          catchError(() => EMPTY),
-          finalize(() => this.isDeleting.set(false))
-        )
-        .subscribe();
-    }
+    this.isDeleting.set(true);
+    this.listService
+      .deleteList(this.listId())
+      .pipe(
+        tap((response) => {
+          this._listSig.set(response);
+          this.isModalActive.set(false);
+        }),
+        catchError(() => EMPTY),
+        finalize(() => this.isDeleting.set(false))
+      )
+      .subscribe();
   }
 }

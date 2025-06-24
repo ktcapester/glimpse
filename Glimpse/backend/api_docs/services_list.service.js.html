@@ -26,209 +26,213 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const { Card } = require("../models/card.model");
+            <pre class="prettyprint source linenums"><code>/**
+ * Service for managing card lists.
+ * @module Services/List
+ */
+
+/**
+ * @typedef {Object} module:Services/List~CardUpdateData
+ * @property {number} [quantity] - New quantity of the card.
+ * @property {{ calc: { usd: number } }} [prices] - Updated price info for the card.
+ */
+
+const { Card } = require("../models/card.model");
 const { List } = require("../models/list.model");
 const { createError } = require("../utils");
 
 /**
  * Fetch all cards and the total price of a list.
  * @async
- * @function getAllCards
+ * @function
+ * @name module:Services/List.getAllCards
  * @param {string} listId - ID of the list.
- * @returns {Promise&lt;Object>} An object containing the list of cards and the current total price.
- * @throws Will throw an error if the list is not found or a server error occurs.
+ * @returns {Promise&lt;module:Types/List~ListSummary>} An object containing the list of cards and the current total price.
+ * @throws {Object} If the list is not found or a server error occurs.
  */
 const getAllCards = async (listId) => {
-  try {
-    const list = await List.findById(listId).populate("cards.card");
-    if (!list) throw createError(404, "List not found");
-    return { list: list.cards, currentTotal: list.totalPrice };
-  } catch (error) {
-    throw {
-      status: error.status || 500,
-      message: error.message || "Server error",
-    };
-  }
+  const list = await List.findById(listId).populate("cards.card");
+  if (!list) throw createError(404, "List not found");
+  return { list: list.cards, currentTotal: list.totalPrice };
 };
 
 /**
  * Add a card to a list.
  * @async
- * @function addCard
+ * @function
+ * @name module:Services/List.addCard
  * @param {string} listId - ID of the list.
  * @param {string} cardId - ID of the card to add.
- * @returns {Promise&lt;Object>} An object containing the updated total price of the list.
+ * @returns {Promise&lt;{ currentTotal: number }>} An object containing the updated total price of the list.
  * @throws Will throw an error if the card or list is not found or a server error occurs.
  */
 const addCard = async (listId, cardId) => {
-  try {
-    const card = await Card.findById(cardId);
-    if (!card) throw createError(404, "Card not found");
+  const card = await Card.findById(cardId);
+  if (!card) throw createError(404, "Card not found");
 
-    const cardPrice = card.prices.calc.usd || 0;
+  const cardPrice = card.prices.calc.usd || 0;
 
-    const list = await List.findOneAndUpdate(
-      { _id: listId, "cards.card": { $ne: card._id } },
+  const listWithNewCard = await List.findOneAndUpdate(
+    { _id: listId, "cards.card": { $ne: card._id } },
+    {
+      $push: { cards: { card: card._id, quantity: 1 } },
+      $inc: { totalPrice: cardPrice },
+    },
+    { new: true }
+  );
+
+  if (!listWithNewCard) {
+    const listWithUpdatedCard = await List.findOneAndUpdate(
+      { _id: listId, "cards.card": card._id },
       {
-        $push: { cards: { card: card._id, quantity: 1 } },
-        $inc: { totalPrice: cardPrice },
+        $inc: {
+          "cards.$.quantity": 1,
+          totalPrice: cardPrice,
+        },
       },
       { new: true }
     );
-
-    if (!list) {
-      const updatedList = await List.findOneAndUpdate(
-        { _id: listId, "cards.card": card._id },
-        {
-          $inc: {
-            "cards.$.quantity": quantity,
-            totalPrice: cardPrice * quantity,
-          },
-        },
-        { new: true }
-      );
-      return { currentTotal: updatedList.totalPrice };
-    }
-
-    return { currentTotal: list.totalPrice };
-  } catch (error) {
-    throw {
-      status: error.status || 500,
-      message: error.message || "Server error",
-    };
+    return { currentTotal: listWithUpdatedCard.totalPrice };
   }
+
+  return { currentTotal: listWithNewCard.totalPrice };
 };
 
 /**
  * Clear all cards in a list.
  * @async
- * @function clearList
+ * @function
+ * @name module:Services/List.clearList
  * @param {string} listId - ID of the list.
- * @returns {Promise&lt;Object>} An object containing an empty list and a total price of 0.
+ * @returns {Promise&lt;module:Types/List~ListSummary>} An object containing an empty list and a total price of 0.
  * @throws Will throw an error if the list is not found or a server error occurs.
  */
 const clearList = async (listId) => {
-  try {
-    const updatedList = await List.findByIdAndUpdate(
-      listId,
-      { $set: { cards: [], totalPrice: 0 } },
-      { new: true }
-    );
-    if (!updatedList) throw createError(404, "List not found");
-    return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
-  } catch (error) {
-    throw {
-      status: error.status || 500,
-      message: error.message || "Server error",
-    };
-  }
+  const updatedList = await List.findByIdAndUpdate(
+    listId,
+    { $set: { cards: [], totalPrice: 0 } },
+    { new: true }
+  );
+  if (!updatedList) throw createError(404, "List not found");
+  return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
 };
 
 /**
  * Fetch a specific card from a list.
  * @async
- * @function getItem
+ * @function
+ * @name module:Services/List.getItem
  * @param {string} listId - ID of the list.
  * @param {string} cardId - ID of the card to fetch.
  * @returns {Promise&lt;Object>} The card entry from the list.
  * @throws Will throw an error if the list or card is not found or a server error occurs.
  */
 const getItem = async (listId, cardId) => {
-  try {
-    const list = await List.findById(listId).populate("cards.card");
-    if (!list) throw createError(404, "List not found");
+  const list = await List.findById(listId).populate("cards.card");
+  if (!list) throw createError(404, "List not found");
 
-    const entry = list.cards.find((c) => c.card._id.equals(cardId));
-    if (!entry) throw createError(404, "Card not found in list");
+  const entry = list.cards.find((c) => c.card._id.equals(cardId));
+  if (!entry) throw createError(404, "Card not found in list");
 
-    return entry;
-  } catch (error) {
-    throw {
-      status: error.status || 500,
-      message: error.message || "Server error",
-    };
-  }
+  return entry;
 };
 
 /**
  * Update a specific card's details in a list.
  * @async
- * @function updateItem
+ * @function
+ * @name module:Services/List.updateItem
  * @param {string} listId - ID of the list.
  * @param {string} cardId - ID of the card to update.
- * @param {Object} updates - Updates to apply (e.g., quantity or price).
- * @returns {Promise&lt;Object>} An object containing the updated list and total price.
+ * @param {CardUpdateData} updates - Updates to apply (e.g., quantity or price).
+ * @returns {Promise&lt;module:Types/List~ListSummary>} An object containing the updated list and total price.
  * @throws Will throw an error if the list, card, or updates are invalid or a server error occurs.
  */
 const updateItem = async (listId, cardId, updates) => {
-  try {
-    const card = await Card.findById(cardId);
-    if (!card) throw createError(404, "Card not found");
+  const card = await Card.findById(cardId);
+  if (!card) throw createError(404, "Card not found in DB");
+  const list = await List.findOne({ _id: listId, "cards.card": cardId });
+  if (!list) throw createError(404, "List not found");
 
-    const updatesToApply = {};
-    if (updates.quantity !== undefined) {
-      if (updates.quantity &lt;= 0)
-        throw createError(400, "Quantity must be greater than 0");
-      updatesToApply["cards.$.quantity"] = updates.quantity;
-    }
-    if (updates.prices?.calc?.usd !== undefined) {
-      if (updates.prices.calc.usd &lt; 0)
-        throw createError(400, "Price must be non-negative");
-      const priceDifference =
-        updates.prices.calc.usd - (card.prices.calc.usd || 0);
-      updatesToApply.totalPrice = { $inc: priceDifference * updates.quantity };
-    }
+  // Short-circuit if no updates are provided
+  if (!updates || Object.keys(updates).length === 0)
+    return { list: list.cards, currentTotal: list.totalPrice };
 
-    const updatedList = await List.findOneAndUpdate(
-      { _id: listId, "cards.card": cardId },
-      { $set: updatesToApply },
-      { new: true }
-    );
-    if (!updatedList) throw createError(404, "List or card not found");
-    return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
-  } catch (error) {
-    throw {
-      status: error.status || 500,
-      message: error.message || "Server error",
-    };
+  const cardEntry = list.cards.find((entry) => entry.card._id.equals(cardId));
+  if (!cardEntry) throw createError(404, "Card not found in list");
+
+  const oldPrice = card.prices.calc.usd || 0;
+  const oldQuantity = cardEntry.quantity;
+
+  const updateOps = { $set: {}, $inc: {} };
+
+  // If there is a quantity update, handle it here
+  if (updates.quantity !== undefined) {
+    if (updates.quantity &lt;= 0)
+      throw createError(400, "Quantity must be greater than 0");
+    const quantityDiff = updates.quantity - oldQuantity;
+    updateOps.$set["cards.$.quantity"] = updates.quantity;
+    updateOps.$inc.totalPrice = oldPrice * quantityDiff;
   }
+
+  // If there is a price update, handle it here
+  if (updates.prices?.calc?.usd !== undefined) {
+    if (updates.prices.calc.usd &lt; 0)
+      throw createError(400, "Price must be non-negative");
+    const newPrice = updates.prices.calc.usd;
+    const priceDifference = newPrice - oldPrice;
+    const effectiveQuantity =
+      updates.quantity !== undefined ? updates.quantity : oldQuantity;
+    // Save new price and update total price
+    updateOps.$set["cards.$.prices.calc.usd"] = newPrice;
+    updateOps.$inc.totalPrice =
+      (updateOps.$inc.totalPrice || 0) + priceDifference * effectiveQuantity;
+  }
+
+  // Remove unused update operations
+  if (Object.keys(updateOps.$set).length === 0) delete updateOps.$set;
+  if (Object.keys(updateOps.$inc).length === 0) delete updateOps.$inc;
+
+  // Update the list in one call
+  const updatedList = await List.findOneAndUpdate(
+    { _id: listId, "cards.card": cardId },
+    updateOps,
+    { new: true }
+  );
+  if (!updatedList) throw createError(404, "List or card not found");
+
+  return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
 };
 
 /**
  * Remove a specific card from a list.
  * @async
- * @function removeItem
+ * @function
+ * @name module:Services/List.removeItem
  * @param {string} listId - ID of the list.
  * @param {string} cardId - ID of the card to remove.
- * @returns {Promise&lt;Object>} An object containing the updated list and total price.
+ * @returns {Promise&lt;module:Types/List~ListSummary>} An object containing the updated list and total price.
  * @throws Will throw an error if the list or card is not found or a server error occurs.
  */
 const removeItem = async (listId, cardId) => {
-  try {
-    const list = await List.findById(listId).populate("cards.card");
-    if (!list) throw createError(404, "List not found");
+  const list = await List.findById(listId).populate("cards.card");
+  if (!list) throw createError(404, "List not found");
 
-    const card = list.cards.find((c) => c.card._id.equals(cardId));
-    if (!card) throw createError(404, "Card not found in list");
+  const card = list.cards.find((c) => c.card._id.equals(cardId));
+  if (!card) throw createError(404, "Card not found in list");
 
-    const cardPrice = card.card.prices.calc.usd || 0;
+  const cardPrice = card.card.prices.calc.usd || 0;
 
-    const updatedList = await List.findByIdAndUpdate(
-      listId,
-      {
-        $pull: { cards: { card: cardId } },
-        $inc: { totalPrice: -(card.quantity * cardPrice) },
-      },
-      { new: true }
-    );
-    if (!updatedList) throw createError(404, "List or card not found");
-    return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
-  } catch (error) {
-    throw {
-      status: error.status || 500,
-      message: error.message || "Server error",
-    };
-  }
+  const updatedList = await List.findByIdAndUpdate(
+    listId,
+    {
+      $pull: { cards: { card: cardId } },
+      $inc: { totalPrice: -(card.quantity * cardPrice) },
+    },
+    { new: true }
+  );
+  if (!updatedList) throw createError(404, "List or card not found");
+  return { list: updatedList.cards, currentTotal: updatedList.totalPrice };
 };
 
 module.exports = {
@@ -249,13 +253,13 @@ module.exports = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Card">Card</a></li><li><a href="global.html#List">List</a></li><li><a href="global.html#Token">Token</a></li><li><a href="global.html#User">User</a></li><li><a href="global.html#activeList">activeList</a></li><li><a href="global.html#addCard">addCard</a></li><li><a href="global.html#authenticateJWT">authenticateJWT</a></li><li><a href="global.html#calculateAllPrices">calculateAllPrices</a></li><li><a href="global.html#calculatePriceFromName">calculatePriceFromName</a></li><li><a href="global.html#card">card</a></li><li><a href="global.html#cardCompareFn">cardCompareFn</a></li><li><a href="global.html#cardSchema">cardSchema</a></li><li><a href="global.html#cards">cards</a></li><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createdAt">createdAt</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#description">description</a></li><li><a href="global.html#email">email</a></li><li><a href="global.html#expiresAt">expiresAt</a></li><li><a href="global.html#extractPrice">extractPrice</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAllCards">getAllCards</a></li><li><a href="global.html#getCardSearch">getCardSearch</a></li><li><a href="global.html#getItem">getItem</a></li><li><a href="global.html#getMagicToken">getMagicToken</a></li><li><a href="global.html#getPrices">getPrices</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getUserByID">getUserByID</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#imgsrcFull">imgsrcFull</a></li><li><a href="global.html#imgsrcSmall">imgsrcSmall</a></li><li><a href="global.html#listSchema">listSchema</a></li><li><a href="global.html#lists">lists</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#onError">onError</a></li><li><a href="global.html#onListening">onListening</a></li><li><a href="global.html#postMagicLink">postMagicLink</a></li><li><a href="global.html#prices">prices</a></li><li><a href="global.html#processAllPrints">processAllPrints</a></li><li><a href="global.html#processList">processList</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#removeItem">removeItem</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#scryfallLink">scryfallLink</a></li><li><a href="global.html#searchScryfall">searchScryfall</a></li><li><a href="global.html#sendMagicLink">sendMagicLink</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li><li><a href="global.html#timestamps">timestamps</a></li><li><a href="global.html#token">token</a></li><li><a href="global.html#tokenSchema">tokenSchema</a></li><li><a href="global.html#totalPrice">totalPrice</a></li><li><a href="global.html#updateItem">updateItem</a></li><li><a href="global.html#used">used</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#userSchema">userSchema</a></li><li><a href="global.html#username">username</a></li><li><a href="global.html#verifyToken">verifyToken</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li><li><a href="module-Controllers_MagicLink.html">Controllers/MagicLink</a></li><li><a href="module-Controllers_Price.html">Controllers/Price</a></li><li><a href="module-Controllers_Search.html">Controllers/Search</a></li><li><a href="module-Controllers_User.html">Controllers/User</a></li><li><a href="module-Middleware_AuthJWT.html">Middleware/AuthJWT</a></li><li><a href="module-Models_Card.html">Models/Card</a></li><li><a href="module-Models_List.html">Models/List</a></li><li><a href="module-Models_RefreshToken.html">Models/RefreshToken</a></li><li><a href="module-Models_Token.html">Models/Token</a></li><li><a href="module-Models_User.html">Models/User</a></li><li><a href="module-Services_List.html">Services/List</a></li><li><a href="module-Services_MagicLink.html">Services/MagicLink</a></li><li><a href="module-Services_Price.html">Services/Price</a></li><li><a href="module-Services_Search.html">Services/Search</a></li><li><a href="module-Services_User.html">Services/User</a></li><li><a href="module-Types_List.html">Types/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#allowedOrigins">allowedOrigins</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#shutdown">shutdown</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#swaggerSpec">swaggerSpec</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed May 07 2025 12:09:52 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 19 2025 23:28:30 GMT-0700 (Pacific Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

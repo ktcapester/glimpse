@@ -15,7 +15,7 @@ export interface ListSchema {
   totalPrice: number;
   cards: { card: string; quantity: number }[];
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
 }
 
 export interface CardSchema {
@@ -25,7 +25,7 @@ export interface CardSchema {
   imgsrcFull: string;
   imgsrcSmall: string;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
   prices:
     | {
         raw: Prices | undefined;

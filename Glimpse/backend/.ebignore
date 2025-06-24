@@ -9,3 +9,6 @@
 node_modules/
 npm-debug.log*
 *.log
+
+# ignore unit tests
+*.spec.js
