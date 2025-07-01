@@ -1,65 +1,29 @@
 const express = require("express");
 const {
-  postLoginTokens,
   postRefreshToken,
   postLogout,
-} = require("../controllers/magiclink.controller");
+} = require("../controllers/auth.controller");
 
 const router = express.Router();
-
-/**
- * POST request to verify the magic link token.
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- */
-/**
- * @swagger
- * /api/auth/verify:
- *   post:
- *     summary: Verify magic link token and return access and refresh tokens
- *     tags: [Auth]
- *     parameters:
- *       - in: query
- *         name: token
- *         required: true
- *         schema:
- *           type: string
- *         description: The magic link token to verify
- *       - in: query
- *         name: email
- *         required: true
- *         schema:
- *           type: string
- *         description: The email address associated with the token
- *     responses:
- *       200:
- *         description: Login successful, JWT returned
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Login successful.
- *                 token:
- *                   type: string
- *                   description: JWT token for authenticated requests
- *       400:
- *         description: Invalid or expired token, or missing parameters
- *       500:
- *         description: Server error
- */
-router.post("/verify", postLoginTokens);
 
 /**
  * @swagger
  * /api/auth/refresh-token:
  *   post:
- *     summary: Refresh the access token using the refresh token in a secure cookie on the web, or in the request body on mobile.
+ *     summary: Refresh access token and slide refresh-token TTL
+ *     description: >
+ *       For **web** clients, sets an HTTP-only cookie and returns `accessToken`.
+ *       For **mobile** clients, just returns `accessToken`.
  *     tags: [Auth]
+ *     parameters:
+ *       - in: header
+ *         name: X-Client-Platform
+ *         schema:
+ *           type: string
+ *           enum: [mobile, web]
+ *         description: >
+ *           If `mobile`, include `refreshToken` in the JSON body. Otherwise, the cookie will be used.
  *     requestBody:
- *       required: false
  *       content:
  *         application/json:
  *           schema:
@@ -67,9 +31,10 @@ router.post("/verify", postLoginTokens);
  *             properties:
  *               refreshToken:
  *                 type: string
+ *                 description: Mobile clients only
  *     responses:
  *       200:
- *         description: Access token refreshed successfully
+ *         description: Access token refreshed (cookie updated for web)
  *         content:
  *           application/json:
  *             schema:
