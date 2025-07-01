@@ -1,7 +1,8 @@
 const {
-  refreshAccessToken,
+  REFRESH_TOKEN_TTL_MS,
+  refreshTokens,
   revokeRefreshToken,
-} = require("../services/magiclink.service");
+} = require("../services/auth.service");
 const { createError } = require("../utils");
 
 const COOKIE_OPTS = {
@@ -9,33 +10,42 @@ const COOKIE_OPTS = {
   secure: true,
   sameSite: "None",
   domain: ".glimpsecard.com",
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  maxAge: REFRESH_TOKEN_TTL_MS,
 };
 
+/**
+ * POST /api/auth/refresh-token
+ */
 const postRefreshToken = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
-    if (!refreshToken) {
-      throw createError(401, "No refresh token provided.");
-    }
-    const newAccessToken = await refreshAccessToken(refreshToken);
-    res.json({ accessToken: newAccessToken });
-  } catch (error) {
-    next(error);
+    const incomingToken = req.cookies.refreshToken || req.body.refreshToken;
+    if (!incomingToken) throw createError(401, "No refresh token provided.");
+
+    const accessToken = await refreshTokens(incomingToken);
+
+    // Slide the cookie TTL for web clients
+    res.cookie("refreshToken", incomingToken, COOKIE_OPTS);
+
+    // Return the access token for all clients
+    res.json({ accessToken });
+  } catch (err) {
+    next(err);
   }
 };
 
+/**
+ * POST /api/auth/logout
+ */
 const postLogout = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      throw createError(401, "No refresh token provided.");
-    }
-    await revokeRefreshToken(refreshToken);
+    const token = req.cookies.refreshToken;
+    if (!token) throw createError(401, "No refresh token provided.");
+
+    await revokeRefreshToken(token);
     res.clearCookie("refreshToken");
     res.json({ message: "Logged out" });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
