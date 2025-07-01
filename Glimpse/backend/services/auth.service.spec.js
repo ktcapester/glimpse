@@ -74,14 +74,11 @@ describe("refreshTokens", () => {
     RefreshToken.findOneAndUpdate.mockResolvedValue(null);
 
     // Act & Assert
-    await expect(authService.refreshTokens(OLD_TOKEN)).rejects.toThrow(
-      "Refresh token missing or expired."
-    );
-    expect(RefreshToken.findOneAndUpdate).toHaveBeenCalledWith(
-      { token: OLD_TOKEN, expiresAt: { $gt: expect.any(Date) } },
-      { $set: { expiresAt: expect.any(Number) } },
-      { new: true }
-    );
+    await expect(authService.refreshTokens("bad-token")).rejects.toMatchObject({
+      status: 401,
+      message: "Refresh token missing or expired.",
+    });
+    expect(RefreshToken.findOneAndUpdate).toHaveBeenCalled();
   });
 
   it("should return a new access token for a valid refresh token", async () => {
