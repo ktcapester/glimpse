@@ -29,7 +29,7 @@ export class VerifyService {
       // Wait for the backend to return with a token
       const resp = await firstValueFrom(
         this.http.post<{ accessToken: string }>(
-          `${environment.apiURL}/auth/verify`,
+          `${environment.apiURL}/link/verify`,
           {},
           {
             params: { email, token },

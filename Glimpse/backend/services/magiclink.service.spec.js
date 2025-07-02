@@ -32,8 +32,6 @@ jest.mock("../models/list.model", () => ({
 jest.mock("../models/refreshtoken.model", () => ({
   RefreshToken: {
     create: jest.fn(),
-    findOne: jest.fn(),
-    deleteOne: jest.fn(),
   },
 }));
 
@@ -45,12 +43,7 @@ jest.mock("../utils", () => ({
   }),
 }));
 
-const {
-  sendMagicLink,
-  loginWithMagicLink,
-  refreshAccessToken,
-  revokeRefreshToken,
-} = require("./magiclink.service");
+const { sendMagicLink, loginWithMagicLink } = require("./magiclink.service");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
@@ -168,7 +161,7 @@ describe("loginWithMagicLink", () => {
     // Assert
     expect(User.findOne).toHaveBeenCalledWith({ email: "u@u.com" });
     expect(jwt.sign).toHaveBeenCalledWith({ userId: "user1" }, "jwtsecret", {
-      expiresIn: "15m",
+      expiresIn: "900000ms", // 15 minutes
     });
     expect(RefreshToken.create).toHaveBeenCalledWith({
       token: "refresh-uuid",
@@ -221,59 +214,5 @@ describe("loginWithMagicLink", () => {
       accessToken: "a-token",
       refreshToken: "r-token",
     });
-  });
-});
-
-describe("refreshAccessToken", () => {
-  it("should throw if refresh token is invalid", async () => {
-    // Arrange
-    RefreshToken.findOne.mockResolvedValue(null);
-
-    // Act & Assert
-    await expect(refreshAccessToken("bad")).rejects.toThrow(
-      "Invalid refresh token."
-    );
-    expect(createError).toHaveBeenCalledWith(401, "Invalid refresh token.");
-  });
-
-  it("should throw if refresh token has expired", async () => {
-    // Arrange
-    const past = new Date(Date.now() - 1000);
-    RefreshToken.findOne.mockResolvedValue({ userId: "u", expiresAt: past });
-
-    // Act & Assert
-    await expect(refreshAccessToken("bad")).rejects.toThrow(
-      "Refresh token has expired."
-    );
-    expect(createError).toHaveBeenCalledWith(401, "Refresh token has expired.");
-  });
-
-  it("should return a new access token for a valid refresh token", async () => {
-    // Arrange
-    const future = new Date(Date.now() + 100000);
-    RefreshToken.findOne.mockResolvedValue({ userId: "u2", expiresAt: future });
-    jwt.sign.mockReturnValue("new-access");
-
-    // Act
-    const token = await refreshAccessToken("good");
-
-    // Assert
-    expect(jwt.sign).toHaveBeenCalledWith({ userId: "u2" }, "jwtsecret", {
-      expiresIn: "15m",
-    });
-    expect(token).toBe("new-access");
-  });
-});
-
-describe("revokeRefreshToken", () => {
-  it("should delete the refresh token", async () => {
-    // Arrange
-    RefreshToken.deleteOne.mockResolvedValue();
-
-    // Act
-    await revokeRefreshToken("torevoke");
-
-    // Assert
-    expect(RefreshToken.deleteOne).toHaveBeenCalledWith({ token: "torevoke" });
   });
 });

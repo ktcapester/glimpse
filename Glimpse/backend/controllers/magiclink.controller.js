@@ -22,8 +22,6 @@
 const {
   sendMagicLink,
   loginWithMagicLink,
-  refreshAccessToken,
-  revokeRefreshToken,
 } = require("../services/magiclink.service");
 const { createError } = require("../utils");
 
@@ -89,36 +87,7 @@ const postLoginTokens = async (req, res, next) => {
   }
 };
 
-const postRefreshToken = async (req, res, next) => {
-  try {
-    const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
-    if (!refreshToken) {
-      throw createError(401, "No refresh token provided.");
-    }
-    const newAccessToken = await refreshAccessToken(refreshToken);
-    res.json({ accessToken: newAccessToken });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const postLogout = async (req, res, next) => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      throw createError(401, "No refresh token provided.");
-    }
-    await revokeRefreshToken(refreshToken);
-    res.clearCookie("refreshToken");
-    res.json({ message: "Logged out" });
-  } catch (error) {
-    next(error);
-  }
-};
-
 module.exports = {
   postMagicLink,
   postLoginTokens,
-  postRefreshToken,
-  postLogout,
 };

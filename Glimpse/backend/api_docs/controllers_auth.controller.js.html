@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: controllers/price.controller.js</title>
+    <title>JSDoc: Source: controllers/auth.controller.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: controllers/price.controller.js</h1>
+    <h1 class="page-title">Source: controllers/auth.controller.js</h1>
 
     
 
@@ -26,48 +26,61 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Controller for fetching card prices.
- * @module Controllers/Price
- */
-
-/**
- * Query parameters for fetching card prices.
- * @typedef {Object} module:Controllers/Price~PriceQuery
- * @property {string} name - Name of the card to fetch prices for.
- */
-
-/**
- * Specialization of the Express Request object for fetching prices.
- * @typedef {Express.Request&lt;any, any, any, PriceQuery>} module:Controllers/Price~PriceRequest
- */
-
-const pricer = require("../services/price.service");
+            <pre class="prettyprint source linenums"><code>const {
+  REFRESH_TOKEN_TTL_MS,
+  refreshTokens,
+  revokeRefreshToken,
+} = require("../services/auth.service");
 const { createError } = require("../utils");
 
-/**
- * Get card prices by name.
- * @function
- * @name module:Controllers/Price.getPrices
- * @param {PriceRequest} req - The HTTP request containing the card name as a query parameter.
- * @param {Express.Response} res - The HTTP response object.
- * @returns {Promise&lt;Express.Response>} Responds with the card price data or an error message.
- */
-const getPrices = async (req, res, next) => {
-  const cardName = req.query.name;
-  if (!cardName) {
-    return next(createError(400, "Card name is required."));
-  }
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "None",
+  domain: ".glimpsecard.com",
+  maxAge: REFRESH_TOKEN_TTL_MS,
+};
 
+/**
+ * POST /api/auth/refresh-token
+ */
+const postRefreshToken = async (req, res, next) => {
   try {
-    const result = await pricer.calculatePriceFromName(cardName);
-    return res.json(result);
-  } catch (error) {
-    next(error);
+    const incomingToken = req.cookies.refreshToken || req.body.refreshToken;
+    if (!incomingToken) throw createError(401, "No refresh token provided.");
+
+    const accessToken = await refreshTokens(incomingToken);
+
+    // Slide the cookie TTL for web clients
+    res.cookie("refreshToken", incomingToken, COOKIE_OPTS);
+
+    // Return the access token for all clients
+    res.json({ accessToken });
+  } catch (err) {
+    next(err);
   }
 };
 
-module.exports = { getPrices };
+/**
+ * POST /api/auth/logout
+ */
+const postLogout = async (req, res, next) => {
+  try {
+    const token = req.cookies.refreshToken;
+    if (!token) throw createError(401, "No refresh token provided.");
+
+    await revokeRefreshToken(token);
+    res.clearCookie("refreshToken");
+    res.json({ message: "Logged out" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  postRefreshToken,
+  postLogout,
+};
 </code></pre>
         </article>
     </section>

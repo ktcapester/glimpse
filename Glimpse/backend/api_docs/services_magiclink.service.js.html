@@ -33,30 +33,11 @@
 
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-const jwt = require("jsonwebtoken");
-const { v4: uuidv4 } = require("uuid");
-const { RefreshToken } = require("../models/refreshtoken.model");
 const { Token } = require("../models/token.model");
 const { User } = require("../models/user.model");
 const { List } = require("../models/list.model");
 const { createError } = require("../utils");
-
-const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
-
-function generateAccessToken(userId) {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
-}
-
-async function createRefreshToken(userId) {
-  const token = uuidv4();
-  const expiresAt = new Date(Date.now() + COOKIE_MAX_AGE); // 7 days
-  await RefreshToken.create({
-    token,
-    userId,
-    expiresAt,
-  });
-  return token;
-}
+const { generateAccessToken, createRefreshToken } = require("./auth.service");
 
 /**
  * Send a magic link to the user's email.
@@ -109,17 +90,7 @@ const sendMagicLink = async (email) => {
   });
 };
 
-/**
- * Verify a magic link token and return the associated user.
- * @async
- * @function
- * @name module:Services/MagicLink.verifyMagicToken
- * @param {string} token - The token to verify.
- * @param {string} email - The email address associated with the token.
- * @returns {Promise&lt;string>} The user ID if verification is successful.
- * @throws Will throw an error if the token is invalid, expired, or a server error occurs.
- */
-const verifyMagicToken = async (token, email) => {
+const loginWithMagicLink = async (token, email) => {
   console.log("verifying token+email:", token, email);
 
   // 1) Find &amp; delete the unexpired token in one go
@@ -154,40 +125,16 @@ const verifyMagicToken = async (token, email) => {
     await user.save();
   }
   console.log("resulting user ID:", user._id);
-  // Return the User
-  return user;
-};
 
-const loginWithMagicLink = async (token, email) => {
-  const user = await verifyMagicToken(token, email);
+  // 3) Generate access and refresh tokens
   const accessToken = generateAccessToken(user._id);
   const refreshToken = await createRefreshToken(user._id);
   return { accessToken, refreshToken };
 };
 
-const refreshAccessToken = async (refreshToken) => {
-  const refreshDoc = await RefreshToken.findOne({ token: refreshToken });
-
-  if (!refreshDoc) {
-    throw createError(401, "Invalid refresh token.");
-  }
-
-  if (refreshDoc.expiresAt &lt; Date.now()) {
-    throw createError(401, "Refresh token has expired.");
-  }
-
-  return generateAccessToken(refreshDoc.userId);
-};
-
-const revokeRefreshToken = async (refreshToken) => {
-  await RefreshToken.deleteOne({ token: refreshToken });
-};
-
 module.exports = {
   sendMagicLink,
   loginWithMagicLink,
-  refreshAccessToken,
-  revokeRefreshToken,
 };
 </code></pre>
         </article>
@@ -199,13 +146,13 @@ module.exports = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li><li><a href="module-Controllers_MagicLink.html">Controllers/MagicLink</a></li><li><a href="module-Controllers_Price.html">Controllers/Price</a></li><li><a href="module-Controllers_Search.html">Controllers/Search</a></li><li><a href="module-Controllers_User.html">Controllers/User</a></li><li><a href="module-Middleware_AuthJWT.html">Middleware/AuthJWT</a></li><li><a href="module-Models_Card.html">Models/Card</a></li><li><a href="module-Models_List.html">Models/List</a></li><li><a href="module-Models_RefreshToken.html">Models/RefreshToken</a></li><li><a href="module-Models_Token.html">Models/Token</a></li><li><a href="module-Models_User.html">Models/User</a></li><li><a href="module-Services_List.html">Services/List</a></li><li><a href="module-Services_MagicLink.html">Services/MagicLink</a></li><li><a href="module-Services_Price.html">Services/Price</a></li><li><a href="module-Services_Search.html">Services/Search</a></li><li><a href="module-Services_User.html">Services/User</a></li><li><a href="module-Types_List.html">Types/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#allowedOrigins">allowedOrigins</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#shutdown">shutdown</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#swaggerSpec">swaggerSpec</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Controllers_List.html">Controllers/List</a></li><li><a href="module-Controllers_MagicLink.html">Controllers/MagicLink</a></li><li><a href="module-Controllers_Price.html">Controllers/Price</a></li><li><a href="module-Controllers_Search.html">Controllers/Search</a></li><li><a href="module-Controllers_User.html">Controllers/User</a></li><li><a href="module-Middleware_AuthJWT.html">Middleware/AuthJWT</a></li><li><a href="module-Models_Card.html">Models/Card</a></li><li><a href="module-Models_List.html">Models/List</a></li><li><a href="module-Models_RefreshToken.html">Models/RefreshToken</a></li><li><a href="module-Models_Token.html">Models/Token</a></li><li><a href="module-Models_User.html">Models/User</a></li><li><a href="module-Services_List.html">Services/List</a></li><li><a href="module-Services_MagicLink.html">Services/MagicLink</a></li><li><a href="module-Services_Price.html">Services/Price</a></li><li><a href="module-Services_Search.html">Services/Search</a></li><li><a href="module-Services_User.html">Services/User</a></li><li><a href="module-Types_List.html">Types/List</a></li></ul><h3>Global</h3><ul><li><a href="global.html#allowedOrigins">allowedOrigins</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#delay">delay</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#headers">headers</a></li><li><a href="global.html#normalizePort">normalizePort</a></li><li><a href="global.html#postLogout">postLogout</a></li><li><a href="global.html#postRefreshToken">postRefreshToken</a></li><li><a href="global.html#scryfallCardAPIBase">scryfallCardAPIBase</a></li><li><a href="global.html#shutdown">shutdown</a></li><li><a href="global.html#startServer">startServer</a></li><li><a href="global.html#swaggerSpec">swaggerSpec</a></li><li><a href="global.html#testDBConnection">testDBConnection</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 19 2025 23:28:30 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 01 2025 22:47:53 GMT-0700 (Pacific Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

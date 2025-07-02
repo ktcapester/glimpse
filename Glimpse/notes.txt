@@ -94,7 +94,7 @@ from /backend run these:
   to get latest batch of my console.log() logs:
     eb logs --stream --log-group /aws/elasticbeanstalk/Glimpse-0-env/var/log/web.stdout.log
   to run tests:
-    npm run tests
+    npm run test
 
 from ./Glimpse run these:
   to update dev docs:
