@@ -2,8 +2,6 @@ const express = require("express");
 const {
   postMagicLink,
   postLoginTokens,
-  postRefreshToken,
-  postLogout,
 } = require("../controllers/magiclink.controller");
 
 const router = express.Router();
@@ -15,7 +13,7 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /api/auth/magic-link:
+ * /api/link/magic-link:
  *   post:
  *     summary: Send a magic login link to the provided email address
  *     tags: [Auth]
@@ -57,7 +55,7 @@ router.post("/magic-link", postMagicLink);
  */
 /**
  * @swagger
- * /api/auth/verify:
+ * /api/link/verify:
  *   post:
  *     summary: Verify magic link token and return access and refresh tokens
  *     tags: [Auth]
@@ -94,54 +92,5 @@ router.post("/magic-link", postMagicLink);
  *         description: Server error
  */
 router.post("/verify", postLoginTokens);
-
-/**
- * @swagger
- * /api/auth/refresh-token:
- *   post:
- *     summary: Refresh the access token using the refresh token in a secure cookie on the web, or in the request body on mobile.
- *     tags: [Auth]
- *     requestBody:
- *       required: false
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               refreshToken:
- *                 type: string
- *     responses:
- *       200:
- *         description: Access token refreshed successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 accessToken:
- *                   type: string
- *                   description: New access token
- */
-router.post("/refresh-token", postRefreshToken);
-
-/**
- * @swagger
- * /api/auth/logout:
- *   post:
- *     summary: Logout and invalidate the refresh token
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: Successfully logged out
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Logged out
- */
-router.post("/logout", postLogout);
 
 module.exports = router;

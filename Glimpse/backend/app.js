@@ -9,6 +9,7 @@ const priceRoute = require("./routes/price.route");
 const listRoute = require("./routes/list.route");
 const userRoute = require("./routes/user.route");
 const magicLinkRoute = require("./routes/magiclink.route");
+const authRoute = require("./routes/auth.route");
 const errorHandler = require("./middleware/globalErrorHandler.middle");
 const path = require("path");
 const app = express();
@@ -90,7 +91,8 @@ app.use("/api/search", searchRoute);
 app.use("/api/price", priceRoute);
 app.use("/api/list", listRoute);
 app.use("/api/user", userRoute);
-app.use("/api/auth", magicLinkRoute);
+app.use("/api/auth", authRoute);
+app.use("/api/link", magicLinkRoute);
 
 // after ALL routes, add the error handler
 app.use(errorHandler);
