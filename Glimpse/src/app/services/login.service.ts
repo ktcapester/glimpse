@@ -18,7 +18,7 @@ export class LoginService {
     try {
       const response = await firstValueFrom(
         this.http.post<{ success: boolean }>(
-          `${environment.apiURL}/auth/magic-link`,
+          `${environment.apiURL}/link/magic-link`,
           {
             email,
           }

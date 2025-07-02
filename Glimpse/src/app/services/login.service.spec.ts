@@ -11,7 +11,7 @@ describe('LoginService', () => {
   let service: LoginService;
   let httpMock: HttpTestingController;
   const testEmail = 'test@example.com';
-  const apiUrl = `${environment.apiURL}/auth/magic-link`;
+  const apiUrl = `${environment.apiURL}/link/magic-link`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({

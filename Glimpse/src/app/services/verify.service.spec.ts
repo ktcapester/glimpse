@@ -56,7 +56,7 @@ describe('VerifyService', () => {
 
     // Clean up the HTTP call
     const req = httpMock.expectOne((req) =>
-      req.url.startsWith(`${environment.apiURL}/auth/verify`)
+      req.url.startsWith(`${environment.apiURL}/link/verify`)
     );
     req.flush({}, { status: 200, statusText: 'OK' });
   });
@@ -65,7 +65,7 @@ describe('VerifyService', () => {
     service.validateToken('user@example.com', 'validToken');
 
     const req = httpMock.expectOne(
-      (req) => req.url === `${environment.apiURL}/auth/verify`
+      (req) => req.url === `${environment.apiURL}/link/verify`
     );
     expect(req.request.method).toBe('POST');
     expect(req.request.params.get('email')).toBe('user@example.com');
@@ -84,7 +84,7 @@ describe('VerifyService', () => {
     service.validateToken('user@example.com', 'badToken');
 
     const req = httpMock.expectOne(
-      (req) => req.url === `${environment.apiURL}/auth/verify`
+      (req) => req.url === `${environment.apiURL}/link/verify`
     );
     expect(req.request.method).toBe('POST');
 
