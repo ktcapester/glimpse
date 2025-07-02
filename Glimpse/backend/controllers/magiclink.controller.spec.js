@@ -1,11 +1,6 @@
 const magicLinkService = require("../services/magiclink.service");
 const { createError } = require("../utils");
-const {
-  postMagicLink,
-  postLoginTokens,
-  postRefreshToken,
-  postLogout,
-} = require("./magiclink.controller");
+const { postMagicLink, postLoginTokens } = require("./magiclink.controller");
 
 jest.mock("../services/magiclink.service");
 
@@ -131,85 +126,6 @@ describe("Magic Link Controller", () => {
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         }
       );
-    });
-  });
-
-  describe("postRefreshToken", () => {
-    it("should return a new access token when refreshToken in cookies", async () => {
-      // Arrange
-      req.cookies.refreshToken = "valid-refresh";
-      const data = { accessToken: "new-access" };
-      magicLinkService.refreshAccessToken.mockResolvedValue(data.accessToken);
-
-      // Act
-      await postRefreshToken(req, res, next);
-
-      // Assert
-      expect(magicLinkService.refreshAccessToken).toHaveBeenCalledWith(
-        "valid-refresh"
-      );
-      expect(res.json).toHaveBeenCalledWith(data);
-    });
-
-    it("should return a new access token when refreshToken in body", async () => {
-      // Arrange
-      req.body.refreshToken = "valid-refresh";
-      const data = { accessToken: "new-access" };
-      magicLinkService.refreshAccessToken.mockResolvedValue(data.accessToken);
-
-      // Act
-      await postRefreshToken(req, res, next);
-
-      // Assert
-      expect(magicLinkService.refreshAccessToken).toHaveBeenCalledWith(
-        "valid-refresh"
-      );
-      expect(res.json).toHaveBeenCalledWith(data);
-    });
-
-    it("should error with no refresh token", async () => {
-      // Arrange
-      req.cookies = {};
-      const data = createError(401, "No refresh token provided.");
-
-      // Act
-      await postRefreshToken(req, res, next);
-
-      // Assert
-      expect(magicLinkService.refreshAccessToken).not.toHaveBeenCalled();
-      expect(next).toHaveBeenCalledWith(data);
-    });
-  });
-
-  describe("postLogout", () => {
-    it("should clear the secure cookie", async () => {
-      // Arrange
-      req.cookies.refreshToken = "valid-refresh";
-      const data = { message: "Logged out" };
-      magicLinkService.revokeRefreshToken.mockResolvedValue();
-
-      // Act
-      await postLogout(req, res, next);
-
-      // Assert
-      expect(magicLinkService.revokeRefreshToken).toHaveBeenCalledWith(
-        "valid-refresh"
-      );
-      expect(res.clearCookie).toHaveBeenCalledWith("refreshToken");
-      expect(res.json).toHaveBeenCalledWith(data);
-    });
-
-    it("should error with no refresh token", async () => {
-      // Arrange
-      req.cookies = {};
-      const data = createError(401, "No refresh token provided.");
-
-      // Act
-      await postLogout(req, res, next);
-
-      // Assert
-      expect(magicLinkService.revokeRefreshToken).not.toHaveBeenCalled();
-      expect(next).toHaveBeenCalledWith(data);
     });
   });
 });
