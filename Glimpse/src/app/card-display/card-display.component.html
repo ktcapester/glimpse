@@ -1,41 +1,40 @@
 @if (card) {
-  <div class="my-top-div"></div>
-  <div class="card-image-container">
-    <img
-      [ngSrc]="card.imgsrcFull"
-      [alt]="card.name"
-      class="card-image"
-      width="336"
-      height="468"
-      />
+<div class="my-top-div"></div>
+<div class="card-image-container">
+  <img
+    [ngSrc]="card.imgsrcFull"
+    [alt]="card.name"
+    class="card-image"
+    width="336"
+    height="468"
+  />
+</div>
+<div class="prices-super">
+  <div
+    class="prices-container"
+    [ngClass]="{
+      'three-col': card.prices?.calc?.usd_etched,
+      'two-col': !card.prices?.calc?.usd_etched
+    }"
+  >
+    <div class="text label">Normal</div>
+    <div class="text label">Foil</div>
+    @if (card.prices?.calc?.usd_etched) {
+    <div class="text label">Etched</div>
+    }
+    <div class="text value">{{ card.prices?.calc?.usd | currency }}</div>
+    <div class="text value">
+      {{ card.prices?.calc?.usd_foil | currency }}
     </div>
-    <div class="prices-super">
-      <div
-        class="prices-container"
-      [ngClass]="{
-        'three-col': card.prices?.calc?.usd_etched,
-        'two-col': !card.prices?.calc?.usd_etched
-      }"
-        >
-        <div class="text label">Normal</div>
-        <div class="text label">Foil</div>
-        @if (card.prices?.calc?.usd_etched) {
-          <div class="text label">Etched</div>
-        }
-        <div class="text value">{{ card.prices?.calc?.usd | currency }}</div>
-        <div class="text value">
-          {{ card.prices?.calc?.usd_foil | currency }}
-        </div>
-        @if (card.prices?.calc?.usd_etched) {
-          <div class="text value">
-            {{ card.prices?.calc?.usd_etched | currency }}
-          </div>
-        }
-      </div>
+    @if (card.prices?.calc?.usd_etched) {
+    <div class="text value">
+      {{ card.prices?.calc?.usd_etched | currency }}
     </div>
-    <!-- everything inside <app-card-display> … </app-card-display> will go here -->
-    <ng-content></ng-content>
-  } @else {
-    <div class="spinner">{{ loadingText }}</div>
-  }
-
+    }
+  </div>
+</div>
+<!-- everything inside <app-card-display> … </app-card-display> will go here -->
+<ng-content></ng-content>
+} @else {
+<div class="spinner">{{ loadingText }}</div>
+}
