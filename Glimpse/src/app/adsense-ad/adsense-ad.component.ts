@@ -8,6 +8,7 @@ import {
   Renderer2,
   OnInit,
 } from '@angular/core';
+import { environment } from '../../environments/environment';
 
 declare global {
   interface Window {
@@ -24,9 +25,9 @@ declare global {
 })
 export class AdsenseAdComponent implements OnInit, AfterViewInit {
   /** Your ca-pub-ID. You can override this per slot if you want. */
-  @Input() adClient = 'ca-pub-2486565675043022';
+  @Input() adClient = environment.adClient;
   /** The AdSense slot ID for this unit (required) */
-  @Input() adSlot = '5474608327';
+  @Input() adSlot = environment.defaultAdSlot;
   /** e.g. "auto" or a fixed size like "300x250" */
   @Input() adFormat = 'auto';
   /** e.g. { display: 'block', width: '100%', height: '90px' } */
