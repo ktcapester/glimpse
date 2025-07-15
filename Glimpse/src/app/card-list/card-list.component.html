@@ -1,60 +1,55 @@
 @if (listData(); as listData) {
-  <div class="scrollable-list">
-    @for (item of listData.list; track item.id; let i = $index) {
-      <div
-        class="card-list-item"
-        [class.alternate-item]="i % 2 === 1"
-        (click)="onItemClick(item.id, item.name)"
-        >
-        <div
-          class="card-list-item-typography card-name-special"
-          [class.alternate-item]="i % 2 === 1"
-          >
-          {{ item.count }} {{ item.name }}
-        </div>
-        <div
-          class="card-list-item-typography"
-          [class.alternate-item]="i % 2 === 1"
-          >
-          {{ item.price * item.count | currency }}
-        </div>
-      </div>
-      } @empty {
-      <div class="empty-list">Add cards to your list!</div>
-    }
+<div class="scrollable-list">
+  @for (item of listData.list; track item.id; let i = $index) {
+  <div
+    class="card-list-item"
+    [class.alternate-item]="i % 2 === 1"
+    (click)="onItemClick(item.id, item.name)"
+  >
+    <div
+      class="card-list-item-typography card-name-special"
+      [class.alternate-item]="i % 2 === 1"
+    >
+      {{ item.count }} {{ item.name }}
+    </div>
+    <div class="card-list-item-typography" [class.alternate-item]="i % 2 === 1">
+      {{ item.price * item.count | currency }}
+    </div>
   </div>
-  @if (isModalActive()) {
-    <div class="total-container">
-      <div class="total-label">Clear list?</div>
-    </div>
-    <div class="button-container">
-      <button
-        class="large-button primary-button-style"
-        (click)="onConfirm()"
-        [disabled]="isDeleting()"
-        >
-        {{ isDeleting() ? "Clearing..." : "Yee" }}
-      </button>
-    </div>
-    <div class="button-container">
-      <button class="large-button secondary-button-style" (click)="onCancel()">
-        Cancel
-      </button>
-    </div>
-  } @else {
-    <div class="total-container">
-      <a class="total-label">Total</a>
-      <a class="total-price">{{ listData.currentTotal | currency }}</a>
-    </div>
-    <div class="button-container">
-      <button
-        class="large-button secondary-button-style"
-        (click)="onClearList()"
-        >
-        Clear list
-      </button>
-    </div>
+  } @empty {
+  <div class="empty-list">Add cards to your list!</div>
   }
+</div>
+@if (isModalActive()) {
+<div class="total-container">
+  <div class="total-label">Clear list?</div>
+</div>
+<div class="button-container">
+  <button
+    class="large-button primary-button-style"
+    (click)="onConfirm()"
+    [disabled]="isDeleting()"
+  >
+    {{ isDeleting() ? "Clearing..." : "Yee" }}
+  </button>
+</div>
+<div class="button-container">
+  <button class="large-button secondary-button-style" (click)="onCancel()">
+    Cancel
+  </button>
+</div>
 } @else {
-  <div class="spinner">Loading list details...</div>
+<div class="total-container">
+  <a class="total-label">Total</a>
+  <a class="total-price">{{ listData.currentTotal | currency }}</a>
+</div>
+<div class="button-container">
+  <button class="large-button secondary-button-style" (click)="onClearList()">
+    Clear list
+  </button>
+</div>
+} } @else {
+<div class="spinner">Loading list details...</div>
 }
+
+<app-adsense-ad></app-adsense-ad>

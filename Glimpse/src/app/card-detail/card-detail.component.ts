@@ -24,10 +24,11 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, of } from 'rxjs';
 import { isDefined } from '../type-guard.util';
 import { CardDisplayComponent } from '../card-display/card-display.component';
+import { AdsenseAdComponent } from '../adsense-ad/adsense-ad.component';
 
 @Component({
   selector: 'app-card-detail',
-  imports: [CardDisplayComponent],
+  imports: [CardDisplayComponent, AdsenseAdComponent],
   templateUrl: './card-detail.component.html',
   styleUrls: ['./card-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

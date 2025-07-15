@@ -10,13 +10,14 @@ import { Router } from '@angular/router';
 import { NgOptimizedImage } from '@angular/common';
 import { CardSuggestionService } from '../services';
 import { CardDisplayOnly } from '../interfaces';
+import { AdsenseAdComponent } from '../adsense-ad/adsense-ad.component';
 
 @Component({
   selector: 'app-suggestions',
   standalone: true,
   templateUrl: './suggestions.component.html',
   styleUrl: './suggestions.component.css',
-  imports: [NgOptimizedImage],
+  imports: [NgOptimizedImage, AdsenseAdComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'component-container' },
 })
