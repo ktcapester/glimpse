@@ -5,8 +5,8 @@
       {
         "appID": "EBBHD37YGK.org.capener.Glimpse",
         "paths": [
-          "api/auth/verify",
-          "api/auth/verify/*"
+          "api/link/verify",
+          "api/link/verify/*"
         ]
       }
     ]
