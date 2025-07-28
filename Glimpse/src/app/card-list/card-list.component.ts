@@ -12,12 +12,13 @@ import { catchError, finalize, take, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { ListData } from '../interfaces';
 import { UserService, CardListService } from '../services';
+import { AdsenseAdComponent } from '../adsense-ad/adsense-ad.component';
 
 @Component({
   selector: 'app-card-list',
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.css'],
-  imports: [CommonModule],
+  imports: [CommonModule, AdsenseAdComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'component-container' },
 })

@@ -19,10 +19,11 @@ import { UserService, SearchResultService, AuthService } from '../services';
 import { CardSchema, UserSchema } from '../interfaces';
 import { EMPTY, timer } from 'rxjs';
 import { CardDisplayComponent } from '../card-display/card-display.component';
+import { AdsenseAdComponent } from '../adsense-ad/adsense-ad.component';
 
 @Component({
   selector: 'app-search-result',
-  imports: [CardDisplayComponent],
+  imports: [CardDisplayComponent, AdsenseAdComponent],
   templateUrl: './search-result.component.html',
   styleUrls: ['./search-result.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
