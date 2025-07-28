@@ -38,7 +38,7 @@ const postRefreshToken = async (req, res, next) => {
  */
 const postLogout = async (req, res, next) => {
   try {
-    const token = req.cookies.refreshToken;
+    const token = req.cookies.refreshToken || req.body.refreshToken;
     if (!token) throw createError(401, "No refresh token provided.");
 
     await revokeRefreshToken(token);
