@@ -33,6 +33,21 @@ const getUser = async (req, res, next) => {
   }
 };
 
+const deleteUser = async (req, res, next) => {
+  const userId = req.userId;
+  if (!userId) {
+    return next(createError(400, "User ID is required."));
+  }
+
+  try {
+    const success = await userService.deleteUserByID(userId);
+    res.json(success);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUser,
+  deleteUser,
 };

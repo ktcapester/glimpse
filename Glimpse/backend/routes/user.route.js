@@ -1,6 +1,6 @@
 const express = require("express");
 const authenticateJWT = require("../middleware/authJWT.middle");
-const { getUser } = require("../controllers/user.controller");
+const { getUser, deleteUser } = require("../controllers/user.controller");
 
 const router = express.Router();
 
@@ -46,9 +46,39 @@ router.use(authenticateJWT);
  *                   description: The date the user was last updated
  *       401:
  *         description: Unauthorized - Missing or invalid JWT
+ *       400:
+ *         description: Bad Request - User ID is required
  *       500:
  *         description: Internal server error
  */
 router.get("/", getUser);
+
+/**
+ * @swagger
+ * /api/user:
+ *   delete:
+ *     summary: Delete the current user
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the user was successfully deleted
+ *       401:
+ *         description: Unauthorized - Missing or invalid JWT
+ *       400:
+ *         description: Bad Request - User ID is required
+ *       500:
+ *         description: Internal server error
+ */
+router.delete("/", deleteUser);
 
 module.exports = router;
