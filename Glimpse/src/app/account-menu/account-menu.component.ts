@@ -33,6 +33,7 @@ export class AccountMenuComponent {
   /** Handle logout action */
   onLogout() {
     console.log('onLogout called');
+    this.menuOpen.set(false);
     // this.accountService
     //   .logout()
     //   .pipe(
@@ -46,6 +47,14 @@ export class AccountMenuComponent {
   /** Handle account deletion */
   onDeleteAccount() {
     console.log('onDeleteAccount called');
+    this.menuOpen.set(false);
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account? This action cannot be undone.'
+    );
+    if (!confirmed) {
+      return;
+    }
+    console.log('delete confirmed');
     // this.accountService
     //   .deleteAccount()
     //   .pipe(
