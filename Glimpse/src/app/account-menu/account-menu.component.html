@@ -1,4 +1,4 @@
-<div class="menu-container">
+<div class="menu-container" (click)="$event.stopPropagation()">
   <button class="list-button" (click)="toggleMenu()">Account ▼</button>
   @if(menuOpen()){
   <ul class="dropdown-menu">

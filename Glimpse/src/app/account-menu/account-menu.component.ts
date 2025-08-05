@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { AuthService as AccountMenuService } from '../services';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -20,6 +20,14 @@ export class AccountMenuComponent {
   /** Toggle the dropdown menu */
   toggleMenu() {
     this.menuOpen.update((open) => !open);
+  }
+
+  /** Close the dropdown menu when clicking outside of it. */
+  @HostListener('document:click')
+  onDocumentClick() {
+    if (this.menuOpen()) {
+      this.menuOpen.set(false);
+    }
   }
 
   /** Handle logout action */
