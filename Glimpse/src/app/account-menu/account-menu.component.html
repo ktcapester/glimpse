@@ -1,0 +1,15 @@
+<div class="menu-container">
+  <button class="list-button" (click)="toggleMenu()">Account ▼</button>
+  @if(menuOpen()){
+  <ul class="dropdown-menu">
+    <li class="dropdown-item">
+      <button class="item-button" (click)="onLogout()">Logout</button>
+    </li>
+    <li class="dropdown-item delete-item">
+      <button class="item-button" (click)="onDeleteAccount()">
+        Delete Account
+      </button>
+    </li>
+  </ul>
+  }
+</div>

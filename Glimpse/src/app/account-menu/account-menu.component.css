@@ -1,0 +1,81 @@
+.relative {
+  position: relative;
+}
+.absolute {
+  position: absolute;
+}
+
+.list-button {
+  height: 44px;
+  padding: 10px 13px;
+  margin-left: 10px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--Shadow);
+  border-width: 0;
+  font-weight: 700;
+  font-size: 16px;
+  font-style: normal;
+  line-height: 150%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.list-icon {
+  margin-right: 8px;
+  width: 12px;
+  height: 20px;
+}
+
+button:hover {
+  background-color: var(--Shaded);
+}
+
+button:hover img {
+  background-color: var(--Shaded);
+}
+
+.menu-container {
+  position: relative;
+  display: inline-block;
+}
+.account-button {
+  padding: 0.5rem 1rem;
+  background-color: #2563eb; /* blue-600 */
+  color: white;
+  border: none;
+  border-radius: 0.375rem; /* rounded */
+  cursor: pointer;
+}
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 10rem;
+  background: white;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0;
+  z-index: 1000;
+}
+.dropdown-item {
+  margin: 0;
+}
+.item-button {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.item-button:hover {
+  background-color: #f3f4f6; /* gray-100 */
+}
+.delete-item .item-button {
+  color: #dc2626; /* red-600 */
+}
