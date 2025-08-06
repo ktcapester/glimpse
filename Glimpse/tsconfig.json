@@ -3,6 +3,11 @@
   "compileOnSave": false,
   "compilerOptions": {
     "strict": true,
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@shared/constants": ["shared/constants"]
+    },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
