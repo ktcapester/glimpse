@@ -1,8 +1,6 @@
 import { Component, HostListener, inject, signal } from '@angular/core';
-import { AuthService as AccountMenuService } from '../services';
+import { AccountMenuService } from '../services';
 import { Router } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-account-menu',
@@ -31,23 +29,20 @@ export class AccountMenuComponent {
   }
 
   /** Handle logout action */
-  onLogout() {
+  async onLogout() {
     console.log('onLogout called');
-    this.menuOpen.set(false);
-    // this.accountService
-    //   .logout()
-    //   .pipe(
-    //     takeUntilDestroyed(),
-    //     // navigate after successful logout
-    //     tap(() => this.router.navigate(['/login']))
-    //   )
-    //   .subscribe();
+    const success = await this.accountService.logout();
+    if (success) {
+      this.menuOpen.set(false);
+      this.router.navigate(['']);
+    } else {
+      console.log('logout failed');
+    }
   }
 
   /** Handle account deletion */
-  onDeleteAccount() {
+  async onDeleteAccount() {
     console.log('onDeleteAccount called');
-    this.menuOpen.set(false);
     const confirmed = window.confirm(
       'Are you sure you want to delete your account? This action cannot be undone.'
     );
@@ -55,12 +50,12 @@ export class AccountMenuComponent {
       return;
     }
     console.log('delete confirmed');
-    // this.accountService
-    //   .deleteAccount()
-    //   .pipe(
-    //     takeUntilDestroyed(),
-    //     tap(() => this.router.navigate(['/goodbye']))
-    //   )
-    //   .subscribe();
+    const success = await this.accountService.deleteAccount();
+    if (success) {
+      this.menuOpen.set(false);
+      this.router.navigate(['']);
+    } else {
+      console.log('deletion failed');
+    }
   }
 }
