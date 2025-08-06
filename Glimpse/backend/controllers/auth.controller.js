@@ -4,6 +4,7 @@ const {
   revokeRefreshToken,
 } = require("../services/auth.service");
 const { createError } = require("../utils");
+const { LOGOUT_SUCCESS_STRING } = require("../../shared/constants");
 
 const COOKIE_OPTS = {
   httpOnly: true,
@@ -43,7 +44,7 @@ const postLogout = async (req, res, next) => {
 
     await revokeRefreshToken(token);
     res.clearCookie("refreshToken");
-    res.json({ message: "Logged out" });
+    res.json({ message: LOGOUT_SUCCESS_STRING });
   } catch (err) {
     next(err);
   }
