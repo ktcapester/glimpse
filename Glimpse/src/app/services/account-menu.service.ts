@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { LOGOUT_SUCCESS_STRING } from '@shared/constants';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -21,7 +20,7 @@ export class AccountMenuService {
           }
         )
       );
-      if (response.message === LOGOUT_SUCCESS_STRING) {
+      if (response.message === 'Logged out') {
         return true;
       } else {
         console.log('Logout failed:', response.message);
