@@ -30,32 +30,29 @@ export class AccountMenuComponent {
 
   /** Handle logout action */
   async onLogout() {
-    console.log('onLogout called');
     const success = await this.accountService.logout();
     if (success) {
       this.menuOpen.set(false);
       this.router.navigate(['']);
     } else {
-      console.log('logout failed');
+      console.error('Failed to log out');
     }
   }
 
   /** Handle account deletion */
   async onDeleteAccount() {
-    console.log('onDeleteAccount called');
     const confirmed = window.confirm(
       'Are you sure you want to delete your account? This action cannot be undone.'
     );
     if (!confirmed) {
       return;
     }
-    console.log('delete confirmed');
     const success = await this.accountService.deleteAccount();
     if (success) {
       this.menuOpen.set(false);
       this.router.navigate(['']);
     } else {
-      console.log('deletion failed');
+      console.error('Failed to delete account');
     }
   }
 }

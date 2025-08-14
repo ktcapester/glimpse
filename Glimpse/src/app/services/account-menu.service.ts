@@ -23,11 +23,11 @@ export class AccountMenuService {
       if (response.message === 'Logged out') {
         return true;
       } else {
-        console.log('Logout failed:', response.message);
+        console.error('Logout failed:', response.message);
         return false;
       }
     } catch (error) {
-      console.log('Logout error:', error);
+      console.error('Logout error:', error);
       return false;
     }
   }
@@ -41,7 +41,7 @@ export class AccountMenuService {
       );
       return response.success;
     } catch (error) {
-      console.log('Delete account error:', error);
+      console.error('Delete account error:', error);
       return false;
     }
   }
